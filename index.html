@@ -6,6 +6,7 @@
 <title>Priorizador Estratégico 3.0 — Gerencia de Personas Socovesa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -214,6 +215,10 @@ select:focus{border-color:var(--royal);}
 .btn-calc:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,82,204,0.4);}
 .btn-calc:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none;}
 .calc-actions{display:flex;align-items:center;justify-content:center;gap:16px;padding:20px 0;border-top:1px solid var(--border);margin-top:4px;}
+.dep-selector{display:flex;flex-wrap:wrap;gap:4px;max-height:100px;overflow-y:auto;padding:6px;background:var(--bg);border-radius:8px;border:1.5px solid var(--border);}
+.dep-btn{padding:3px 10px;border:1.5px solid var(--border);border-radius:16px;background:var(--white);font-family:'Poppins',sans-serif;font-size:10px;font-weight:500;color:var(--text-light);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.dep-btn:hover{border-color:var(--sky);color:var(--sky);}
+.dep-btn.dep-act{background:#fff3e0;border-color:#ff9800;color:#e65100;font-weight:700;}
 .btn-save-now{padding:12px 28px;background:var(--turquoise);border:none;border-radius:10px;color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
 .btn-save-now:hover{background:#00b5a5;transform:translateY(-1px);}
 
@@ -382,6 +387,580 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
   #hist-panel{width:100%;}
   .cfg-inp-row{grid-template-columns:1fr;}
 }
+
+/* ══ FLUJO GERENCIA DE PERSONAS — SCOPED STYLES ══ */
+
+
+:root {
+  --bg: #F0F4FA;
+  --surface: #FFFFFF;
+  --navy: #0D2B5E;
+  --royal: #1565C0;
+  --corp: #1976D2;
+  --cian: #26C6DA;
+  --text: #0D1B2E;
+  --text-light: #546E7A;
+  --border: #D6E4F7;
+  --shadow: 0 4px 24px rgba(13,43,94,0.10);
+  --shadow-hover: 0 8px 40px rgba(13,43,94,0.18);
+
+  --p1: #1565C0; --p1-light: #E3F2FD; --p1-border: #BBDEFB;
+  --p2: #2E7D32; --p2-light: #E8F5E9; --p2-border: #C8E6C9;
+  --p3: #B8860B; --p3-light: #FFFDE7; --p3-border: #FFF176;
+  --p4: #B71C1C; --p4-light: #FFEBEE; --p4-border: #FFCDD2;
+  --p5: #6A1B9A; --p5-light: #F3E5F5; --p5-border: #E1BEE7;
+  --p6: #0D47A1; --p6-light: #E8EAF6; --p6-border: #C5CAE9;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.flujo-wrap {
+
+/* ─── HEADER ─── */
+.header {
+  background: linear-gradient(135deg, #0D2B5E 0%, #1565C0 60%, #1976D2 100%);
+  padding: 24px 36px 20px;
+  color: white;
+  display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+}
+.header-left .label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #90CAF9; margin-bottom: 6px; }
+.header-left h1 { font-family: 'DM Serif Display', serif; font-size: 24px; font-weight: 400; color: white; line-height: 1.2; }
+.header-left p { font-size: 12px; color: #BBDEFB; margin-top: 4px; }
+.header-right { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
+.p-legend {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 10px; font-weight: 600; color: white; cursor: pointer; transition: all 0.2s;
+}
+.p-legend:hover, .p-legend.active-filter { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.5); }
+.p-legend .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ─── MAIN LAYOUT ─── */
+.main { display: flex; height: calc(100vh - 96px); }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 260px; flex-shrink: 0;
+  background: var(--navy);
+  overflow-y: auto; padding: 16px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sidebar-title { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #90CAF9; padding: 0 4px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 4px; }
+.sidebar-section { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: #64B5F6; padding: 8px 4px 4px; margin-top: 4px; }
+.area-btn {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 7px; padding: 8px 10px;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 9px;
+}
+.area-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.22); }
+.area-btn.active { background: rgba(255,255,255,0.15); border-color: var(--cian); }
+.area-btn .icon { font-size: 14px; flex-shrink: 0; }
+.area-btn .info .name { font-size: 11px; font-weight: 600; color: white; }
+.area-btn .info .count { font-size: 10px; color: #90CAF9; margin-top: 1px; }
+.area-btn .arrow { margin-left: auto; color: #90CAF9; font-size: 10px; transition: transform 0.2s; }
+.area-btn.active .arrow { transform: rotate(90deg); color: var(--cian); }
+
+/* ─── CANVAS ─── */
+.canvas { flex: 1; overflow: auto; padding: 24px 28px; }
+
+/* ─── VIEW TOGGLE ─── */
+.view-controls { display: flex; gap: 8px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+.view-btn {
+  background: white; border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 14px;
+  font-size: 12px; font-weight: 600; color: var(--text-light);
+  cursor: pointer; transition: all 0.2s;
+}
+.view-btn.active { background: var(--royal); color: white; border-color: var(--royal); }
+.view-btn:hover:not(.active) { border-color: var(--royal); color: var(--royal); }
+.view-label { font-size: 11px; color: var(--text-light); margin-left: auto; }
+
+/* ─── VIEWS ─── */
+#view-flow   { display: block; }
+#view-matrix { display: none; }
+#view-tabla  { display: none; }
+
+/* ─── LAYER LABELS ─── */
+.layer-label {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-light); margin-bottom: 10px; padding-left: 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.layer-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.layer-label .layer-desc { font-size: 9px; color: #90CAF9; background: var(--navy); padding: 2px 8px; border-radius: 20px; letter-spacing: 0; text-transform: none; white-space: nowrap; }
+
+/* ─── FLOW ARROW ─── */
+.flow-arrow {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; margin: 2px 0 2px; position: relative;
+}
+.flow-arrow::before { content: ''; display: block; width: 2px; height: 24px; background: linear-gradient(to bottom, var(--royal), var(--cian)); margin: 0 auto; }
+.flow-arrow::after { content: '▼'; display: block; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); color: var(--cian); font-size: 10px; }
+
+/* ─── FLOW ROW ─── */
+.flow-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+.flow-sep { display: flex; align-items: center; color: #B0BEC5; font-size: 16px; flex-shrink: 0; padding-top: 18px; }
+
+/* ─── NODE CARD ─── */
+.node {
+  background: white; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; cursor: pointer; transition: all 0.22s; position: relative;
+  min-width: 140px; box-shadow: var(--shadow); flex: 1;
+}
+.node:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); border-color: var(--royal); }
+.node.active { border-color: var(--cian); box-shadow: 0 0 0 3px rgba(38,198,218,0.2), var(--shadow-hover); }
+.node.dim { opacity: 0.25; transform: none !important; box-shadow: none !important; }
+.node.highlight { box-shadow: 0 0 0 3px rgba(38,198,218,0.4), 0 8px 24px rgba(13,43,94,0.15) !important; opacity: 1 !important; }
+
+.node-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.node-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.node-title { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.node-area { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+.node-pilares { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 6px; }
+.p-chip { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; border: 1px solid; }
+.expand-hint { font-size: 10px; color: var(--cian); margin-top: 6px; font-weight: 600; }
+
+/* FOUNDATION STRIP */
+.foundation-strip {
+  background: linear-gradient(135deg, #0D2B5E, #1565C0); border-radius: 10px;
+  padding: 14px 18px; color: white;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  cursor: pointer; transition: all 0.22s; box-shadow: var(--shadow);
+}
+.foundation-strip:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+.foundation-strip .fs-title { font-size: 12px; font-weight: 700; }
+.foundation-strip .fs-desc { font-size: 10px; color: #BBDEFB; margin-top: 2px; }
+.foundation-strip .fs-items { display: flex; gap: 6px; flex-wrap: wrap; }
+.foundation-strip .fs-item {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 6px; padding: 4px 9px;
+  font-size: 10px; font-weight: 600; color: white;
+  cursor: pointer; transition: background 0.2s;
+}
+.foundation-strip .fs-item:hover { background: rgba(255,255,255,0.28); }
+
+/* RESULTADO NODE */
+.resultado-node {
+  background: white; border: 2px solid var(--cian); border-radius: 12px;
+  padding: 18px 20px; cursor: pointer; transition: all 0.22s;
+  box-shadow: 0 4px 32px rgba(38,198,218,0.15);
+}
+.resultado-node:hover { box-shadow: 0 8px 48px rgba(38,198,218,0.25); transform: translateY(-2px); }
+.resultado-kpis { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.resultado-kpi {
+  flex: 1; min-width: 100px; background: var(--bg); border-radius: 8px;
+  padding: 10px 12px; text-align: center; border: 1px solid var(--border);
+}
+.resultado-kpi .kpi-label { font-size: 16px; font-weight: 700; }
+.resultado-kpi .kpi-desc { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+
+/* ─── DETAIL PANEL ─── */
+.detail-panel {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 380px;
+  background: white; box-shadow: -4px 0 40px rgba(13,43,94,0.15);
+  transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  z-index: 200; overflow-y: auto; display: flex; flex-direction: column;
+}
+.detail-panel.open { transform: translateX(0); }
+.dp-header { padding: 22px 22px 14px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: white; z-index: 1; }
+.dp-close { position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--bg); border: none; cursor: pointer; font-size: 14px; color: var(--text-light); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.dp-close:hover { background: var(--border); color: var(--text); }
+.dp-icon { font-size: 26px; margin-bottom: 7px; }
+.dp-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--navy); line-height: 1.25; }
+.dp-area { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+.dp-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
+.dp-section-title { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-bottom: 7px; }
+.dp-pilares { display: flex; gap: 6px; flex-wrap: wrap; }
+.dp-p-chip { display: flex; align-items: center; gap: 6px; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 600; border: 1px solid; }
+.dp-tasks { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.dp-tasks li { display: flex; gap: 8px; align-items: flex-start; padding: 9px 11px; background: var(--bg); border-radius: 7px; border-left: 3px solid var(--cian); font-size: 12px; line-height: 1.4; }
+.dp-deps { background: #E3F2FD; border-radius: 8px; padding: 11px 13px; font-size: 12px; color: #0D47A1; border-left: 3px solid var(--cian); line-height: 1.45; }
+.dp-alert { background: #FFF8E1; border-radius: 8px; padding: 11px 13px; font-size: 12px; color: #7B5E00; border-left: 3px solid #FFB300; line-height: 1.45; }
+.dp-legal { background: #FFEBEE; border-radius: 8px; padding: 11px 13px; font-size: 12px; color: #B71C1C; border-left: 3px solid #E53935; line-height: 1.45; }
+.dp-connections { display: flex; flex-direction: column; gap: 5px; }
+.dp-conn-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg); border-radius: 7px; border: 1px solid var(--border); font-size: 11px; cursor: pointer; transition: all 0.2s; }
+.dp-conn-item:hover { border-color: var(--royal); color: var(--royal); }
+.dp-conn-item .arrow { margin-left: auto; color: var(--text-light); }
+
+/* ─── MATRIX VIEW ─── */
+.matrix-grid {
+  display: grid; grid-template-columns: 150px repeat(6, 1fr);
+  gap: 2px; font-size: 11px;
+}
+.matrix-corner { background: var(--navy); border-radius: 8px 0 0 0; display: flex; align-items: center; justify-content: center; padding: 12px 8px; color: #90CAF9; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; }
+.matrix-pilar-header { padding: 10px 6px; color: white; font-size: 10px; font-weight: 700; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.matrix-pilar-header .pnum { font-size: 15px; font-weight: 700; }
+.matrix-pilar-header .pname { font-size: 9px; font-weight: 500; opacity: 0.85; line-height: 1.2; text-align: center; }
+.matrix-area-label { background: white; border: 1px solid var(--border); padding: 10px 10px; font-size: 11px; font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 6px; }
+.matrix-cell {
+  background: white; border: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 8px 4px; min-height: 68px;
+  cursor: pointer; transition: all 0.2s; position: relative;
+}
+.matrix-cell:hover { background: var(--bg); }
+.matrix-cell:hover .matrix-tooltip { display: block; }
+.matrix-cell .dot-big { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; cursor: pointer; }
+.matrix-cell .ini-count { font-size: 9px; color: var(--text-light); }
+.matrix-cell.empty { background: #FAFBFC; cursor: default; }
+.matrix-cell.empty:hover { background: #FAFBFC; }
+.matrix-tooltip {
+  display: none; position: absolute; z-index: 50;
+  bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--navy); color: white;
+  border-radius: 8px; padding: 10px 12px;
+  font-size: 11px; white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(13,43,94,0.3);
+  min-width: 180px; max-width: 260px; white-space: normal;
+}
+.matrix-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--navy); }
+.matrix-tooltip-title { font-weight: 700; font-size: 11px; margin-bottom: 6px; color: #90CAF9; }
+.matrix-tooltip-item { font-size: 10px; padding: 2px 0; cursor: pointer; }
+.matrix-tooltip-item:hover { color: var(--cian); }
+
+/* OVERLAY */
+.overlay { position: fixed; inset: 0; background: rgba(13,27,46,0.4); z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.overlay.show { opacity: 1; pointer-events: all; }
+
+/* ─── TABLE VIEW ─── */
+.tbl-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.tbl-filter-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); }
+.tbl-filter-btn { border: 1px solid var(--border); background: white; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: var(--text-light); cursor: pointer; transition: all 0.18s; }
+.tbl-filter-btn:hover { border-color: var(--royal); color: var(--royal); }
+.tbl-filter-btn.active { background: var(--royal); color: white; border-color: var(--royal); }
+.tbl-filter-btn.tp1.active { background: #1565C0; border-color: #1565C0; }
+.tbl-filter-btn.tp2.active { background: #2E7D32; border-color: #2E7D32; }
+.tbl-filter-btn.tp3.active { background: #B8860B; border-color: #B8860B; }
+.tbl-filter-btn.tp4.active { background: #B71C1C; border-color: #B71C1C; }
+.tbl-filter-btn.tp5.active { background: #6A1B9A; border-color: #6A1B9A; }
+.tbl-filter-btn.tp6.active { background: #0D47A1; border-color: #0D47A1; }
+.tbl-count { margin-left: auto; font-size: 11px; color: var(--text-light); white-space: nowrap; }
+.tbl-count span { font-weight: 700; color: var(--royal); }
+.tbl-wrap { background: white; border-radius: 10px; box-shadow: 0 2px 16px rgba(13,43,94,0.08); overflow: hidden; border: 1px solid var(--border); }
+.tbl-wrap table { width: 100%; border-collapse: collapse; }
+.tbl-wrap thead tr { background: #1565C0; }
+.tbl-wrap thead th { color: white; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 12px 12px; text-align: left; white-space: nowrap; }
+.tbl-wrap tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.tbl-wrap tbody tr:last-child { border-bottom: none; }
+.tbl-wrap tbody tr:hover { background: #E3F2FD; }
+.tbl-wrap tbody tr.talt { background: #F5F9FF; }
+.tbl-wrap tbody tr.talt:hover { background: #E3F2FD; }
+.tbl-wrap tbody tr.thidden { display: none; }
+.tbl-wrap td { padding: 10px 12px; vertical-align: top; font-size: 12px; }
+.tbl-wrap td.tnum { text-align: center; font-weight: 700; color: #546E7A; font-size: 11px; width: 28px; }
+.tbl-obj-title { font-weight: 700; font-size: 13px; color: #0D2B5E; margin-bottom: 2px; }
+.tbl-obj-desc { font-size: 11px; color: #546E7A; line-height: 1.45; }
+.tbl-sub-pill { display: inline-block; background: #F5F9FF; border: 1px solid #D6E4F7; border-radius: 20px; padding: 3px 9px; font-size: 10px; font-weight: 600; color: #0D47A1; white-space: nowrap; }
+.tbl-pilares { display: flex; gap: 4px; flex-wrap: wrap; }
+.tbl-pchip { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 10px; font-weight: 700; border: 1.5px solid; flex-shrink: 0; }
+.tbl-resultado { font-size: 12px; color: #0D1B2E; }
+.tbl-flag { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; border-radius: 4px; padding: 3px 7px; margin-top: 5px; }
+.tbl-flag-warn { background: #FFF8E1; color: #7B5E00; }
+.tbl-flag-info { background: #E8F5E9; color: #1B5E20; }
+.tbl-flag-dep { background: #E3F2FD; color: #0D47A1; }.tbl-flag-legal { background: #FFEBEE; color: #B71C1C; }
+.tbl-flag-dep { background: #E3F2FD; color: #0D47A1; }
+.tbl-section-row td { background: #0D47A1; color: white; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 7px 12px; border: none; }
+.tbl-legend { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tbl-legend-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); }
+.tbl-legend-item { display: flex; align-items: center; gap: 5px; background: white; border: 1px solid var(--border); border-radius: 20px; padding: 3px 9px; font-size: 11px; }
+.tbl-legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--royal); }
+
+@media (max-width: 900px) { .sidebar { width: 200px; } .detail-panel { width: 100%; } }
+@media (max-width: 640px) { .sidebar { display: none; } .main { height: auto; flex-direction: column; } .canvas { padding: 14px; } }
+
+
+/* ══════════════════════════════════════════
+   SEGUIMIENTO — v4.4 Dashboard Redesign
+══════════════════════════════════════════ */
+
+/* ── Grupo de área ── */
+.seg-area-group { margin-bottom: 28px; }
+
+.seg-area-hdr {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px;
+  background: var(--white);
+  border-radius: 14px 14px 0 0;
+  border-bottom: 3px solid;
+  border-left: 1px solid #E4EAF4;
+  border-right: 1px solid #E4EAF4;
+  border-top: 1px solid #E4EAF4;
+  cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.seg-area-hdr:hover { background: #F7F9FF; }
+.seg-area-icon  { font-size: 18px; flex-shrink: 0; }
+.seg-area-name  { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+.seg-area-stats {
+  display: flex; gap: 8px; margin-left: auto; align-items: center; flex-shrink: 0;
+}
+.seg-area-stat {
+  font-size: 10px; font-weight: 600; padding: 3px 10px;
+  border-radius: 20px; white-space: nowrap;
+  display: flex; align-items: center; gap: 4px;
+}
+.seg-area-count {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 12px; border-radius: 20px;
+  color: white; flex-shrink: 0;
+}
+.seg-area-chev {
+  font-size: 13px; color: var(--text-light);
+  transition: transform 0.25s ease; margin-left: 6px; flex-shrink: 0;
+}
+.seg-area-chev.rot { transform: rotate(-90deg); }
+
+.seg-area-body {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 16px;
+  background: #F0F3FA;
+  border-radius: 0 0  14px 14px;
+  border: 1px solid #E4EAF4; border-top: none;
+}
+.seg-area-body.collapsed { display: none; }
+
+/* ── Card de iniciativa — Elevated Dashboard Style ── */
+.seg-card {
+  background: var(--white);
+  border-radius: 14px;
+  border: 1px solid #E4EAF4;
+  border-left: 5px solid var(--royal);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,40,100,0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.seg-card:hover { box-shadow: 0 6px 24px rgba(0,82,204,0.10); transform: translateY(-1px); }
+.seg-card.seg-card-open { border-color: rgba(0,82,204,0.30); box-shadow: 0 8px 32px rgba(0,82,204,0.12); transform: translateY(-1px); }
+
+/* Header de card */
+.seg-card-hdr {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  cursor: pointer; user-select: none;
+  background: var(--white);
+  transition: background 0.12s;
+}
+.seg-card-hdr:hover { background: #FAFBFF; }
+
+.seg-card-left  { flex: 1; min-width: 0; }
+.seg-card-name  { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.01em; }
+.seg-card-meta  { font-size: 10px; color: var(--text-light); margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.seg-meta-pilar {
+  background: linear-gradient(135deg, #EEF2FA, #E8F0FF); color: var(--sapphire);
+  border-radius: 6px; padding: 2px 7px;
+  font-size: 9px; font-weight: 700;
+}
+.seg-meta-sep { color: #D0D8E8; }
+
+.seg-card-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.seg-estado-sel {
+  padding: 5px 10px; border-radius: 10px;
+  border-width: 1.5px; border-style: solid;
+  font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 700;
+  cursor: pointer; outline: none; max-width: 148px;
+  transition: all 0.15s;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235A6070'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px;
+}
+.seg-estado-sel:hover { opacity: 0.85; }
+.seg-estado-badge {
+  padding: 5px 12px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+  border-width: 1.5px; border-style: solid;
+}
+.seg-reg-count {
+  font-size: 10px; font-weight: 700; color: var(--royal);
+  background: linear-gradient(135deg, #EEF2FA, #E8F0FF); border-radius: 10px;
+  padding: 3px 10px; white-space: nowrap;
+  display: flex; align-items: center; gap: 4px;
+}
+.seg-card-toggle {
+  font-size: 12px; color: var(--text-light);
+  transition: transform 0.25s ease; flex-shrink: 0;
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; background: transparent;
+  transition: transform 0.25s ease, background 0.15s;
+}
+.seg-card-hdr:hover .seg-card-toggle { background: #EEF2FA; }
+.seg-card-toggle.open { transform: rotate(180deg); }
+
+/* ── Cuerpo expandible ── */
+.seg-card-body { display: none; }
+.seg-card-body.open { display: block; }
+
+/* ── Compositor de registro — HERO ELEMENT ── */
+.seg-composer {
+  padding: 20px 24px;
+  background: linear-gradient(180deg, #F7F9FF 0%, #FFFFFF 100%);
+  border-top: 1px solid #E4EAF4;
+}
+.seg-composer-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--royal);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+}
+.seg-composer-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(0,82,204,0.20), transparent); }
+
+.seg-composer-tipo-row {
+  display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap;
+  background: #F0F3FA; border-radius: 12px; padding: 4px;
+}
+.seg-tipo-chip {
+  padding: 8px 18px; border-radius: 10px;
+  font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600;
+  border: none; background: transparent;
+  color: var(--text-light); cursor: pointer;
+  transition: all 0.18s ease; white-space: nowrap;
+  flex: 1; text-align: center;
+}
+.seg-tipo-chip:hover { color: var(--text); background: rgba(255,255,255,0.7); }
+.seg-tipo-chip.active-avance    { background: #FFFFFF; color: #0a6e5e; box-shadow: 0 2px 8px rgba(0,201,183,0.18); }
+.seg-tipo-chip.active-riesgo    { background: #FFFFFF; color: #CC3333; box-shadow: 0 2px 8px rgba(255,107,107,0.18); }
+.seg-tipo-chip.active-decision  { background: #FFFFFF; color: #003D99; box-shadow: 0 2px 8px rgba(0,82,204,0.15); }
+.seg-tipo-chip.active-hito      { background: #FFFFFF; color: #6A1B9A; box-shadow: 0 2px 8px rgba(123,45,139,0.15); }
+
+/* ── Textarea: hero-sized, Notion-like ── */
+.seg-inp {
+  width: 100%; padding: 16px 18px;
+  border: 2px solid #E4EAF4;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif; font-size: 13px;
+  color: var(--text); outline: none; resize: vertical;
+  min-height: 140px; height: 140px;
+  line-height: 1.7; background: var(--white);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  display: block;
+}
+.seg-inp:focus {
+  border-color: var(--royal);
+  box-shadow: 0 0 0 4px rgba(0,82,204,0.08), 0 4px 16px rgba(0,82,204,0.06);
+}
+.seg-inp::placeholder { color: #A8B2C4; font-size: 12px; line-height: 1.7; }
+
+.seg-composer-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px;
+}
+.seg-inp-hint { font-size: 10px; color: var(--text-light); display: flex; align-items: center; gap: 4px; }
+.seg-inp-hint kbd {
+  background: #EEF2FA; border: 1px solid #D6DEEE; border-radius: 4px;
+  padding: 1px 5px; font-size: 9px; font-family: 'Poppins', sans-serif;
+  font-weight: 600; color: var(--sapphire);
+}
+.seg-send-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 28px;
+  background: linear-gradient(135deg, var(--royal), var(--sapphire));
+  border: none; border-radius: 10px; color: white;
+  font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,82,204,0.25);
+  letter-spacing: 0.01em;
+}
+.seg-send-btn:hover  { background: linear-gradient(135deg, var(--sapphire), var(--indigo)); box-shadow: 0 4px 16px rgba(0,82,204,0.30); transform: translateY(-1px); }
+.seg-send-btn:active { transform: translateY(0) scale(0.98); box-shadow: 0 1px 4px rgba(0,82,204,0.20); }
+.seg-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Feedback de éxito inline */
+.seg-send-ok {
+  display: none; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; color: #0a6e5e;
+  background: #E8FFF5; border: 1px solid #00C9B7;
+  border-radius: 10px; padding: 8px 16px;
+  animation: seg-ok-in 0.3s ease;
+}
+.seg-send-ok.show { display: flex; }
+@keyframes seg-ok-in { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
+
+/* ── Historial — Timeline style ── */
+.seg-hist {
+  padding: 18px 24px 20px;
+  background: var(--white);
+  border-top: 1px solid #F0F3FA;
+}
+.seg-hist-toggle {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--text-light);
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  cursor: pointer; user-select: none;
+  transition: color 0.15s;
+}
+.seg-hist-toggle:hover { color: var(--royal); }
+.seg-hist-toggle::after { content: ''; flex: 1; height: 1px; background: #E4EAF4; }
+.seg-hist-toggle .seg-hist-chev { 
+  font-size: 10px; transition: transform 0.25s ease; display: inline-block; margin-left: 4px;
+}
+.seg-hist-toggle .seg-hist-chev.rot { transform: rotate(-90deg); }
+
+.seg-comments-wrap { }
+.seg-comments-wrap.collapsed { display: none; }
+
+.seg-comments { display: flex; flex-direction: column; gap: 10px; max-height: 360px; overflow-y: auto; padding-right: 4px; }
+.seg-comments::-webkit-scrollbar { width: 4px; }
+.seg-comments::-webkit-scrollbar-track { background: transparent; }
+.seg-comments::-webkit-scrollbar-thumb { background: #D6DEEE; border-radius: 4px; }
+
+.seg-comment {
+  background: #FAFBFE; border-radius: 10px;
+  padding: 12px 16px;
+  border: 1px solid #E4EAF4;
+  border-left: 4px solid #E4EAF4;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+.seg-comment:hover { box-shadow: 0 2px 8px rgba(0,40,100,0.05); }
+.seg-comment.tipo-avance   { border-left-color: #00C9B7; }
+.seg-comment.tipo-riesgo   { border-left-color: #FF6B6B; }
+.seg-comment.tipo-decision { border-left-color: #0052CC; }
+.seg-comment.tipo-hito     { border-left-color: #7B2D8B; }
+
+.seg-comment-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.seg-comment-tipo { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 8px; letter-spacing: 0.02em; }
+.seg-comment-tipo.tipo-avance   { color: #0a6e5e; background: #E8FFF5; }
+.seg-comment-tipo.tipo-riesgo   { color: #CC3333; background: #FFF0F0; }
+.seg-comment-tipo.tipo-decision { color: #003D99; background: #E8F0FF; }
+.seg-comment-tipo.tipo-hito     { color: #6A1B9A; background: #F3E5F5; }
+.seg-comment-user { font-size: 10px; color: var(--text-light); font-weight: 500; }
+.seg-comment-ts   { font-size: 10px; color: #B0B8C8; margin-left: auto; white-space: nowrap; }
+.seg-comment-txt  { font-size: 12.5px; color: var(--text); line-height: 1.65; white-space: pre-wrap; }
+
+.seg-no-comments {
+  font-size: 12px; color: var(--text-light);
+  padding: 20px; text-align: center;
+  background: linear-gradient(135deg, #FAFBFE, #F5F7FC); border-radius: 10px;
+  border: 1px dashed #D6DEEE;
+}
+.seg-no-comments-icon { font-size: 22px; margin-bottom: 6px; display: block; opacity: 0.6; }
+
+/* ── Estado activo: tipo seleccionado cambia el borde del textarea ── */
+.seg-inp.tipo-avance   { border-color: #00C9B7; }
+.seg-inp.tipo-riesgo   { border-color: #FF6B6B; }
+.seg-inp.tipo-decision { border-color: #0052CC; }
+.seg-inp.tipo-hito     { border-color: #7B2D8B; }
+.seg-inp.tipo-avance:focus   { box-shadow: 0 0 0 4px rgba(0,201,183,0.10), 0 4px 16px rgba(0,201,183,0.06); }
+.seg-inp.tipo-riesgo:focus   { box-shadow: 0 0 0 4px rgba(255,107,107,0.10), 0 4px 16px rgba(255,107,107,0.06); }
+.seg-inp.tipo-decision:focus { box-shadow: 0 0 0 4px rgba(0,82,204,0.09), 0 4px 16px rgba(0,82,204,0.06); }
+.seg-inp.tipo-hito:focus     { box-shadow: 0 0 0 4px rgba(123,45,139,0.09), 0 4px 16px rgba(123,45,139,0.06); }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .seg-card-hdr { padding: 14px 16px; gap: 10px; }
+  .seg-composer { padding: 16px; }
+  .seg-hist { padding: 16px; }
+  .seg-tipo-chip { padding: 7px 12px; font-size: 11px; }
+  .seg-send-btn { padding: 10px 20px; font-size: 12px; }
+  .seg-area-stats { display: none; }
+}
 </style>
 </head>
 <body class="readonly-mode">
@@ -444,6 +1023,8 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
       <button class="nav-btn active" onclick="showPage('proyectos')">📋 Proyectos</button>
       <button class="nav-btn" onclick="showPage('resultados')">🏆 Ranking</button>
       <button class="nav-btn" onclick="showPage('guia')">📖 Guía</button>
+      <button class="nav-btn" onclick="showPage('flujo')">🗺️ Flujo</button>
+      <button class="nav-btn" onclick="showPage('seguimiento')">📌 Seguimiento</button>
     </nav>
     <div class="header-right">
       <button class="btn-hist" onclick="toggleHist()">🕐 Historial <span id="hist-count-badge" style="display:none;background:var(--royal);color:white;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:2px;"></span></button>
@@ -461,14 +1042,14 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
   <option value="Modelo de Competencias"><option value="Sistema de Desempeño Ágil">
   <option value="Arquitectura de Habilidades"><option value="Programa Lidera tus Procesos">
   <option value="Automatizar Procesos RRHH"><option value="Liderazgo en la Era IA — Programa Lidera">
-  <option value="Apoyo Metodológico a Cultura"><option value="Plataforma MOOC (LMS + Videos)">
+  <option value="Apoyo Metodológico a Cultura"><option value="Plataforma MOON (LMS + Videos)">
   <option value="Cursos Estratégicos y Multicompetencias"><option value="Cursos de Onboarding por Cargo">
   <option value="Capacitación Obra — Oficios"><option value="Certificación Progresiva Chilevalora — Obra">
   <option value="Medición de Transferencia"><option value="Gestión del Cambio desde Capacitación">
   <option value="Modelo Mensual Control de Gestión RRHH"><option value="Workflows de Compensaciones en Sistema 1">
   <option value="Estandarización Base y Herramienta Diagnóstico Salarial">
   <option value="Gestión Integral de Cargos, Estructura y Valorización">
-  <option value="Atracción y Evaluación de Talento"><option value="Proceso de Onboarding">
+  <option value="Estandarización Selección y EVP"><option value="Proceso de Onboarding">
   <option value="Potenciar Herramientas Sistema Uno"><option value="Proceso de Offboarding">
   <option value="Revisión y Actualización de Contratos">
   <option value="Programa Trabajo Cultura"><option value="Gestión del Cambio Organizacional">
@@ -591,6 +1172,1158 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
       </div>
     </div>
   </div>
+</div>
+
+<!-- ═══════════ PAGE FLUJO ═══════════ -->
+<div id="page-flujo" class="page">
+  <div class="section-header mb-20">
+    <div><div class="section-title">Mapa</div><div class="section-label">Flujo de Procesos e Iniciativas 2026–2027</div></div>
+  </div>
+  <div class="flujo-wrap" id="flujo-inner">
+
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="label">Empresas Socovesa · Gerencia de Personas</div>
+    <h1>Flujo de Procesos e Iniciativas 2026–2027</h1>
+    <p>Arquitectura de iniciativas, pilares estratégicos y conexiones entre áreas</p>
+  </div>
+  <div class="header-right">
+    <div class="p-legend" data-action="pilar" data-pilar="p1"><div class="dot" style="background:#1565C0"></div>P1 Adaptativa</div>
+    <div class="p-legend" data-action="pilar" data-pilar="p2"><div class="dot" style="background:#2E7D32"></div>P2 Habilidades</div>
+    <div class="p-legend" data-action="pilar" data-pilar="p3"><div class="dot" style="background:#B8860B"></div>P3 Cultura</div>
+    <div class="p-legend" data-action="pilar" data-pilar="p4"><div class="dot" style="background:#B71C1C"></div>P4 Liderazgo</div>
+    <div class="p-legend" data-action="pilar" data-pilar="p5"><div class="dot" style="background:#6A1B9A"></div>P5 PVE</div>
+    <div class="p-legend" data-action="pilar" data-pilar="p6"><div class="dot" style="background:#0D47A1"></div>P6 Procesos</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">Áreas RRHH</div>
+    <div class="area-btn" data-action="area" data-area="all">
+      <div class="icon">🏢</div>
+      <div class="info"><div class="name">Todas las áreas</div><div class="count">31 iniciativas</div></div>
+    </div>
+
+    <div class="sidebar-section">Estrategia</div>
+    <div class="area-btn" data-action="area" data-area="gerente">
+      <div class="icon">🎯</div>
+      <div class="info"><div class="name">Gerente de Personas</div><div class="count">Visión estratégica</div></div>
+      <div class="arrow">›</div>
+    </div>
+
+    <div class="sidebar-section">Diseño Organizacional</div>
+    <div class="area-btn" data-action="area" data-area="do">
+      <div class="icon">🏗️</div>
+      <div class="info"><div class="name">Desarrollo Organizacional</div><div class="count">7 iniciativas</div></div>
+      <div class="arrow">›</div>
+    </div>
+    <div class="area-btn" data-action="area" data-area="cap">
+      <div class="icon">📚</div>
+      <div class="info"><div class="name">Capacitación</div><div class="count">7 iniciativas</div></div>
+      <div class="arrow">›</div>
+    </div>
+
+    <div class="sidebar-section">Gestión de Personas</div>
+    <div class="area-btn" data-action="area" data-area="rs">
+      <div class="icon">🔍</div>
+      <div class="info"><div class="name">Reclutamiento & Selección</div><div class="count">2 iniciativas</div></div>
+      <div class="arrow">›</div>
+    </div>
+    <div class="area-btn" data-action="area" data-area="rem">
+      <div class="icon">📋</div>
+      <div class="info"><div class="name">Remuneraciones / RL</div><div class="count">3 iniciativas</div></div>
+      <div class="arrow">›</div>
+    </div>
+
+    <div class="sidebar-section">Compensaciones</div>
+    <div class="area-btn" data-action="area" data-area="comp">
+      <div class="icon">⚖️</div>
+      <div class="info"><div class="name">Compensaciones</div><div class="count">4 iniciativas</div></div>
+      <div class="arrow">›</div>
+    </div>
+
+    <div class="sidebar-section">Cultura y Bienestar</div>
+    <div class="area-btn" data-action="area" data-area="cultura">
+      <div class="icon">🌱</div>
+      <div class="info"><div class="name">Cultura y Gestión del Cambio</div><div class="count">4 iniciativas</div></div>
+      <div class="arrow">›</div>
+    </div>
+    <div class="area-btn" data-action="area" data-area="cv">
+      <div class="icon">💚</div>
+      <div class="info"><div class="name">Calidad de Vida</div><div class="count">4 iniciativas</div></div>
+      <div class="arrow">›</div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas">
+    <div class="view-controls">
+      <button class="view-btn active" data-action="view" data-view="flow">⬡ Flujo de Procesos</button>
+      <button class="view-btn" data-action="view" data-view="matrix">⊞ Matriz Área × Pilar</button>
+      <button class="view-btn" data-action="view" data-view="tabla">☰ Tabla de Iniciativas</button>
+      <span class="view-label">Clic en cualquier nodo para ver detalle · Clic en pilar para filtrar</span>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- FLUJO DE PROCESOS                          -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="view-flow">
+
+      <!-- LAYER 0: NORTE ESTRATÉGICO -->
+      <div class="layer-label">NORTE ESTRATÉGICO <span class="layer-desc">Marco que orienta todas las decisiones</span></div>
+      <div class="flow-row">
+        <div class="node" style="border-top: 4px solid var(--cian); flex:1;" data-action="detail" data-id="estrategia" data-pilares="p1 p2 p3 p4 p5 p6">
+          <div class="node-header">
+            <div>
+              <div class="node-title" style="font-size:14px;">Estrategia RRHH 2026–2027</div>
+              <div class="node-area">Gerencia de Personas</div>
+            </div>
+            <div class="node-icon" style="font-size:22px;">🎯</div>
+          </div>
+          <div style="font-size:11px;color:var(--text-light);margin-top:4px;font-style:italic;">"Ser socios estratégicos del negocio gestionando los desafíos adaptativos de EESS"</div>
+          <div class="node-pilares" style="margin-top:8px;">
+            <span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span>
+            <span class="p-chip" style="color:#2E7D32;border-color:#C8E6C9;background:#E8F5E9;">P2</span>
+            <span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span>
+            <span class="p-chip" style="color:#B71C1C;border-color:#FFCDD2;background:#FFEBEE;">P4</span>
+            <span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span>
+            <span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"></div>
+
+      <!-- LAYER 1: P6 — CIMIENTOS OPERATIVOS -->
+      <div class="layer-label">CAPA 1 — CIMIENTOS OPERATIVOS (P6) <span class="layer-desc">Condición de credibilidad: sin esto nada se sostiene</span></div>
+      <div class="foundation-strip" data-action="detail" data-id="p6-sistema" data-pilares="p6">
+        <div>
+          <div class="fs-title">P6 · Procesos RRHH como Cimientos</div>
+          <div class="fs-desc">Operación confiable antes de estrategia — el derecho a la mesa se gana con esto</div>
+        </div>
+        <div class="fs-items">
+          <div class="fs-item" data-action="detail-stop" data-id="sistema-uno">Sistema Uno</div>
+          <div class="fs-item" data-action="detail-stop" data-id="offboarding">Offboarding</div>
+          <div class="fs-item" data-action="detail-stop" data-id="revision-contratos">Revisión de Contratos</div>
+          <div class="fs-item" data-action="detail-stop" data-id="diagnostico-salarial">Diagnóstico Salarial</div>
+          <div class="fs-item" data-action="detail-stop" data-id="pasaje-cargo">Pasaje de Cargo</div>
+          <div class="fs-item" data-action="detail-stop" data-id="reportabilidad">Reportabilidad</div>
+          <div class="fs-item" data-action="detail-stop" data-id="digitalizacion">Digitalización</div>
+          <div class="fs-item" data-action="detail-stop" data-id="automatizacion">Automatización RRHH</div>
+        </div>
+      </div>
+
+      <div class="flow-arrow"></div>
+
+      <!-- LAYER 2: ARQUITECTURA DE PERSONAS -->
+      <div class="layer-label">CAPA 2 — ARQUITECTURA DE PERSONAS <span class="layer-desc">Lenguaje común + inteligencia de compensaciones + pulso cultural</span></div>
+      <div class="flow-row" style="gap:6px; flex-wrap:wrap;">
+
+        <div class="node" data-pilares="p2 p3 p6" data-action="detail" data-id="competencias" style="flex:1; min-width:150px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🗂️</div>
+            <div><div class="node-title" style="font-size:11px;">Modelo de Competencias</div><div class="node-area" style="font-size:9px;">DO</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="competencias" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">🗂️ 6 competencias observables</div>
+            <div class="fs-item" data-action="detail-stop" data-id="habilidades" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">🧩 Arquitectura de Habilidades</div>
+            <div class="fs-item" data-action="detail-stop" data-id="desempeno" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">📊 Sistema Desempeño Ágil</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#2E7D32;border-color:#C8E6C9;background:#E8F5E9;">P2</span><span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span><span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span></div>
+        </div>
+
+        <div class="flow-sep">⟷</div>
+
+        <div class="node" data-pilares="p2 p5 p6" data-area-group="comp" data-action="area-group" data-area="comp" style="flex:1.3; min-width:160px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">⚖️</div>
+            <div><div class="node-title" style="font-size:11px;">Compensaciones</div><div class="node-area" style="font-size:9px;color:#26C6DA;font-weight:700;">4 INICIATIVAS</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="reportabilidad" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">📊 Control de Gestión RRHH</div>
+            <div class="fs-item" data-action="detail-stop" data-id="digitalizacion" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">⚙️ Workflows Sistema 1</div>
+            <div class="fs-item" data-action="detail-stop" data-id="diagnostico-salarial" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">💰 Diagnóstico Salarial</div>
+            <div class="fs-item" data-action="detail-stop" data-id="pasaje-cargo" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">📐 Gestión Integral Cargos</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#2E7D32;border-color:#C8E6C9;background:#E8F5E9;">P2</span><span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span><span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span></div>
+        </div>
+
+        <div class="flow-sep">⟷</div>
+
+        <div class="node" data-pilares="p3 p5" data-action="detail" data-id="medicion-cultural" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">📡</div>
+            <div><div class="node-title" style="font-size:11px;">Medición Salud Cultural</div><div class="node-area" style="font-size:9px;">Calidad de Vida + DO</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="medicion-cultural" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">📡 Pulso clima trimestral</div>
+            <div class="fs-item" data-action="detail-stop" data-id="psicosocial" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">🧠 Factores Psicosociales</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span><span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span></div>
+        </div>
+
+      </div>
+
+      <div class="flow-arrow"></div>
+
+      <!-- LAYER 3: CICLO DE VIDA DEL COLABORADOR -->
+      <div class="layer-label">CAPA 3 — CICLO DE VIDA DEL COLABORADOR <span class="layer-desc">De la atracción al egreso — experiencia completa</span></div>
+
+      <!-- 3A: Flujo principal del colaborador -->
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#90CAF9;margin-bottom:6px;padding-left:2px;">3A · Ciclo principal</div>
+      <div class="flow-row" style="gap:6px; margin-bottom:8px;">
+
+        <div class="node" data-pilares="p2 p5 p6" data-action="detail" data-id="atraccion" style="flex:1; min-width:130px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🔍</div>
+            <div><div class="node-title" style="font-size:11px;">Atracción &amp; Evaluación</div><div class="node-area" style="font-size:9px;">R&amp;S</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="atraccion" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">🔍 Proceso y herramientas</div>
+            <div class="fs-item" data-action="detail-stop" data-id="atraccion" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">🎯 Criterios estandarizados</div>
+            <div class="fs-item" data-action="detail-stop" data-id="atraccion" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">💻 ATS integrado BUK</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#2E7D32;border-color:#C8E6C9;background:#E8F5E9;">P2</span><span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span><span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span></div>
+        </div>
+
+        <div class="flow-sep" style="font-size:14px; color:var(--cian); font-weight:700; padding-top:16px;">→</div>
+
+        <div class="node" data-pilares="p1 p5 p6" data-action="detail" data-id="onboarding" style="flex:1; min-width:130px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🚀</div>
+            <div><div class="node-title" style="font-size:11px;">Onboarding</div><div class="node-area" style="font-size:9px;">R&amp;S + DO + Cap.</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="onboarding" style="font-size:9px;padding:2px 6px;background:rgba(21,101,192,0.07);border-radius:4px;cursor:pointer;">🚀 Flujo firma → productividad</div>
+            <div class="fs-item" data-action="detail-stop" data-id="cursos-onboarding" style="font-size:9px;padding:2px 6px;background:rgba(21,101,192,0.07);border-radius:4px;cursor:pointer;">🎓 Cursos obligatorios por cargo</div>
+            <div class="fs-item" data-action="detail-stop" data-id="onboarding" style="font-size:9px;padding:2px 6px;background:rgba(21,101,192,0.07);border-radius:4px;cursor:pointer;">📋 Checklist interáreas BUK</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span><span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span><span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span></div>
+        </div>
+
+        <div class="flow-sep" style="font-size:14px; color:var(--cian); font-weight:700; padding-top:16px;">→</div>
+
+        <div class="node" data-pilares="p1 p4 p6" data-action="detail" data-id="desempeno" style="flex:1; min-width:130px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">📊</div>
+            <div><div class="node-title" style="font-size:11px;">Desempeño Ágil</div><div class="node-area" style="font-size:9px;">DO</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="desempeno" style="font-size:9px;padding:2px 6px;background:rgba(183,28,28,0.07);border-radius:4px;cursor:pointer;">📊 Ciclos continuos trimestrales</div>
+            <div class="fs-item" data-action="detail-stop" data-id="reconocimiento" style="font-size:9px;padding:2px 6px;background:rgba(183,28,28,0.07);border-radius:4px;cursor:pointer;">⭐ Feedback continuo</div>
+            <div class="fs-item" data-action="detail-stop" data-id="desempeno" style="font-size:9px;padding:2px 6px;background:rgba(183,28,28,0.07);border-radius:4px;cursor:pointer;">🧭 Conversaciones 15 min</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span><span class="p-chip" style="color:#B71C1C;border-color:#FFCDD2;background:#FFEBEE;">P4</span><span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span></div>
+        </div>
+
+      </div>
+
+      <!-- 3B: Capacitación — 7 iniciativas en 3 tarjetas temáticas -->
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#90CAF9;margin-bottom:6px;padding-left:2px;">3B · Capacitación — desarrollo continuo del colaborador</div>
+      <div class="flow-row" style="gap:6px; margin-bottom:8px;">
+
+        <!-- Tarjeta 1: Plataforma y contenidos digitales -->
+        <div class="node" data-pilares="p1 p2" data-action="detail" data-id="desarrollo" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer; border-top:3px solid #1565C0;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🌙</div>
+            <div><div class="node-title" style="font-size:11px;">Plataforma MOON (LMS)</div><div class="node-area" style="font-size:9px;">Capacitación · Nivel 1</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="desarrollo" style="font-size:9px;padding:2px 6px;background:rgba(21,101,192,0.07);border-radius:4px;cursor:pointer;">🌙 LMS + videos libre acceso</div>
+            <div class="fs-item" data-action="detail-stop" data-id="cursos-onboarding" style="font-size:9px;padding:2px 6px;background:rgba(21,101,192,0.07);border-radius:4px;cursor:pointer;">🎓 Cursos obligatorios por cargo</div>
+            <div class="fs-item" data-action="detail-stop" data-id="cursos-estrategicos" style="font-size:9px;padding:2px 6px;background:rgba(21,101,192,0.07);border-radius:4px;cursor:pointer;">📖 Cursos estratégicos GESOC N2</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;">
+            <span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span>
+            <span class="p-chip" style="color:#2E7D32;border-color:#C8E6C9;background:#E8F5E9;">P2</span>
+          </div>
+        </div>
+
+        <div class="flow-sep" style="font-size:12px; color:#B0BEC5; padding-top:16px;">⟷</div>
+
+        <!-- Tarjeta 2: Formación en obra -->
+        <div class="node" data-pilares="p1 p2 p5" data-action="detail" data-id="capacitacion-obra" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer; border-top:3px solid #2E7D32;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🏗️</div>
+            <div><div class="node-title" style="font-size:11px;">Formación en Obra</div><div class="node-area" style="font-size:9px;">Capacitación · Obras</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="capacitacion-obra" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">🏗️ Programa oficios — cupos trimestrales</div>
+            <div class="fs-item" data-action="detail-stop" data-id="certificacion-obra" style="font-size:9px;padding:2px 6px;background:rgba(46,125,50,0.07);border-radius:4px;cursor:pointer;">🏅 Certificación Chilevalora / SEC</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;">
+            <span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span>
+            <span class="p-chip" style="color:#2E7D32;border-color:#C8E6C9;background:#E8F5E9;">P2</span>
+            <span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span>
+          </div>
+        </div>
+
+        <div class="flow-sep" style="font-size:12px; color:#B0BEC5; padding-top:16px;">⟷</div>
+
+        <!-- Tarjeta 3: Medición e impacto -->
+        <div class="node" data-pilares="p1 p6" data-action="detail" data-id="transferencia" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer; border-top:3px solid #0D47A1;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">📏</div>
+            <div><div class="node-title" style="font-size:11px;">Impacto y Cambio</div><div class="node-area" style="font-size:9px;">Capacitación</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="transferencia" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">📏 Medición transferencia N1 y N2</div>
+            <div class="fs-item" data-action="detail-stop" data-id="gestion-cambio-cap" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">🔀 Cap. como socia del cambio</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;">
+            <span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span>
+            <span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span>
+            <span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3C: Remuneraciones y RL — 3 iniciativas individuales -->
+      <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#90CAF9;margin-bottom:6px;padding-left:2px;">3C · Remuneraciones y Relaciones Laborales — operación confiable y egreso limpio</div>
+      <div class="flow-row" style="gap:6px;">
+
+        <div class="node" data-pilares="p1 p6" data-action="detail" data-id="sistema-uno" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer; border-top:3px solid #0D47A1;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">💻</div>
+            <div><div class="node-title" style="font-size:11px;">Potenciar Sistema Uno</div><div class="node-area" style="font-size:9px;">Remuneraciones / RL</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="sistema-uno" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">📊 Dashboard KPIs eficiencia</div>
+            <div class="fs-item" data-action="detail-stop" data-id="sistema-uno" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">🔄 Reauditar implementación</div>
+            <div class="fs-item" data-action="detail-stop" data-id="sistema-uno" style="font-size:9px;padding:2px 6px;background:rgba(13,71,161,0.07);border-radius:4px;cursor:pointer;">💰 Módulo renta variable</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;">
+            <span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span>
+            <span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span>
+          </div>
+        </div>
+
+        <div class="flow-sep" style="font-size:12px; color:#B0BEC5; padding-top:16px;">⟷</div>
+
+        <div class="node" data-pilares="p5 p6" data-action="detail" data-id="revision-contratos" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer; border-top:3px solid #6A1B9A;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">📄</div>
+            <div><div class="node-title" style="font-size:11px;">Revisión de Contratos</div><div class="node-area" style="font-size:9px;">Relaciones Laborales</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="revision-contratos" style="font-size:9px;padding:2px 6px;background:rgba(106,27,154,0.07);border-radius:4px;cursor:pointer;">🔍 Auditoría contratos vigentes</div>
+            <div class="fs-item" data-action="detail-stop" data-id="revision-contratos" style="font-size:9px;padding:2px 6px;background:rgba(106,27,154,0.07);border-radius:4px;cursor:pointer;">📝 Hitos técnicamente demostrables</div>
+            <div class="fs-item" data-action="detail-stop" data-id="revision-contratos" style="font-size:9px;padding:2px 6px;background:rgba(106,27,154,0.07);border-radius:4px;cursor:pointer;">💼 Escriturar bonos no formalizados</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;">
+            <span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span>
+            <span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span>
+          </div>
+        </div>
+
+        <div class="flow-sep" style="font-size:12px; color:#B0BEC5; padding-top:16px;">⟷</div>
+
+        <div class="node" data-pilares="p5 p6" data-action="detail" data-id="offboarding" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer; border-top:3px solid #546E7A;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🚪</div>
+            <div><div class="node-title" style="font-size:11px;">Proceso de Offboarding</div><div class="node-area" style="font-size:9px;">Remuneraciones / RL</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="offboarding" style="font-size:9px;padding:2px 6px;background:rgba(84,110,122,0.07);border-radius:4px;cursor:pointer;">📋 Checklist previo al finiquito</div>
+            <div class="fs-item" data-action="detail-stop" data-id="offboarding" style="font-size:9px;padding:2px 6px;background:rgba(84,110,122,0.07);border-radius:4px;cursor:pointer;">💵 Cierre financiero sin conflicto</div>
+            <div class="fs-item" data-action="detail-stop" data-id="offboarding" style="font-size:9px;padding:2px 6px;background:rgba(84,110,122,0.07);border-radius:4px;cursor:pointer;">⚖️ Mapeo contingencias legales</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;">
+            <span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span>
+            <span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flow-arrow"></div>
+
+      <!-- LAYER 4: CULTURA, LIDERAZGO Y BIENESTAR -->
+      <div class="layer-label">CAPA 4 — CULTURA, LIDERAZGO Y BIENESTAR <span class="layer-desc">Transversal — activa en paralelo al ciclo de vida</span></div>
+      <div class="flow-row" style="gap:6px; flex-wrap:wrap;">
+
+        <div class="node" data-pilares="p4 p1 p3" data-action="detail" data-id="liderazgo" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🧭</div>
+            <div><div class="node-title" style="font-size:11px;">Liderazgo Era IA</div><div class="node-area" style="font-size:9px;">DO · Programa Lidera</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="liderazgo" style="font-size:9px;padding:2px 6px;background:rgba(183,28,28,0.07);border-radius:4px;cursor:pointer;">🧭 Liderazgo adaptativo + IA</div>
+            <div class="fs-item" data-action="detail-stop" data-id="lidera" style="font-size:9px;padding:2px 6px;background:rgba(183,28,28,0.07);border-radius:4px;cursor:pointer;">⚡ Prog. Lidera tus Procesos</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#B71C1C;border-color:#FFCDD2;background:#FFEBEE;">P4</span><span class="p-chip" style="color:#1565C0;border-color:#BBDEFB;background:#E3F2FD;">P1</span><span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span></div>
+        </div>
+
+        <div class="node" data-pilares="p3 p5" data-area-group="cultura" data-action="area-group" data-area="cultura" style="flex:1.3; min-width:155px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🌱</div>
+            <div><div class="node-title" style="font-size:11px;">Cultura y Gestión del Cambio</div><div class="node-area" style="font-size:9px;color:#26C6DA;font-weight:700;">4 INICIATIVAS</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="programa-cultura" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">🌿 Programa Trabajo Cultura</div>
+            <div class="fs-item" data-action="detail-stop" data-id="reconocimiento" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">⭐ Reconocimiento &amp; Feedback</div>
+            <div class="fs-item" data-action="detail-stop" data-id="cambio" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">🔄 Gestión del Cambio</div>
+            <div class="fs-item" data-action="detail-stop" data-id="comunicaciones" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">📢 Comunicaciones Internas</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span><span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span><span class="p-chip" style="color:#B71C1C;border-color:#FFCDD2;background:#FFEBEE;">P4</span></div>
+        </div>
+
+        <div class="node" data-pilares="p5 p3 p6" data-area-group="cv" data-action="area-group" data-area="cv" style="flex:1.3; min-width:155px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">💚</div>
+            <div><div class="node-title" style="font-size:11px;">Calidad de Vida</div><div class="node-area" style="font-size:9px;color:#26C6DA;font-weight:700;">4 INICIATIVAS</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="medicion-cultural" style="font-size:9px;padding:2px 6px;background:rgba(106,27,154,0.07);border-radius:4px;cursor:pointer;">📡 Medición Salud Cultural</div>
+            <div class="fs-item" data-action="detail-stop" data-id="bienestar" style="font-size:9px;padding:2px 6px;background:rgba(106,27,154,0.07);border-radius:4px;cursor:pointer;">💚 Indicadores y Programas</div>
+            <div class="fs-item" data-action="detail-stop" data-id="diversidad" style="font-size:9px;padding:2px 6px;background:rgba(106,27,154,0.07);border-radius:4px;cursor:pointer;">🌈 Diversidad e Inclusión</div>
+            <div class="fs-item" data-action="detail-stop" data-id="psicosocial" style="font-size:9px;padding:2px 6px;background:rgba(106,27,154,0.07);border-radius:4px;cursor:pointer;">🧠 Factores Psicosociales</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span><span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span><span class="p-chip" style="color:#0D47A1;border-color:#C5CAE9;background:#E8EAF6;">P6</span></div>
+        </div>
+
+        <div class="node" data-pilares="p3 p5" data-action="detail" data-id="apoyo-cultura" style="flex:1; min-width:140px; padding:10px 12px; cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+            <div style="font-size:15px;">🔗</div>
+            <div><div class="node-title" style="font-size:11px;">Apoyo Metodológico Cultura</div><div class="node-area" style="font-size:9px;">DO → Cultura + CV</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="fs-item" data-action="detail-stop" data-id="apoyo-cultura" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">🔗 Soporte metodológico</div>
+            <div class="fs-item" data-action="detail-stop" data-id="apoyo-cultura" style="font-size:9px;padding:2px 6px;background:rgba(184,134,11,0.07);border-radius:4px;cursor:pointer;">📐 Co-diseño medición cultural</div>
+          </div>
+          <div class="node-pilares" style="justify-content:center;margin-top:6px;flex-wrap:wrap;gap:2px;"><span class="p-chip" style="color:#B8860B;border-color:#FFF176;background:#FFFDE7;">P3</span><span class="p-chip" style="color:#6A1B9A;border-color:#E1BEE7;background:#F3E5F5;">P5</span></div>
+        </div>
+
+      </div>
+
+      <div class="flow-arrow"></div>
+
+      <!-- LAYER 5: RESULTADO -->
+      <div class="layer-label">RESULTADO ESPERADO 2027</div>
+      <div class="resultado-node" data-action="detail" data-id="resultado" data-pilares="p1 p2 p3 p4 p5 p6">
+        <div class="node-header">
+          <div>
+            <div class="node-title" style="font-size:14px;color:var(--navy);">RRHH como Socio Estratégico</div>
+            <div class="node-area">Capacidad Organizacional para la Era Humano-Máquina</div>
+          </div>
+          <div style="font-size:26px;">🏆</div>
+        </div>
+        <div class="resultado-kpis">
+          <div class="resultado-kpi"><div class="kpi-label" style="color:var(--p6);">P6 →</div><div class="kpi-desc">Operación confiable</div></div>
+          <div class="resultado-kpi"><div class="kpi-label" style="color:var(--p2);">P1+P2 →</div><div class="kpi-desc">Organización que aprende</div></div>
+          <div class="resultado-kpi"><div class="kpi-label" style="color:var(--p3);">P3+P4 →</div><div class="kpi-desc">Cultura como ventaja</div></div>
+          <div class="resultado-kpi"><div class="kpi-label" style="color:var(--p5);">P5 →</div><div class="kpi-desc">PVE diferenciada</div></div>
+        </div>
+      </div>
+
+    </div><!-- /view-flow -->
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- MATRIZ ÁREA × PILAR                        -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="view-matrix">
+      <div class="matrix-grid">
+        <div class="matrix-corner">Área \ Pilar</div>
+        <div class="matrix-pilar-header" style="background:linear-gradient(135deg,#0D47A1,#1565C0);"><div class="pnum">P1</div><div class="pname">Capacidad Adaptativa</div></div>
+        <div class="matrix-pilar-header" style="background:linear-gradient(135deg,#1B5E20,#2E7D32);"><div class="pnum">P2</div><div class="pname">Arquitectura Skills</div></div>
+        <div class="matrix-pilar-header" style="background:linear-gradient(135deg,#827717,#B8860B);"><div class="pnum">P3</div><div class="pname">Cultura Infraestr.</div></div>
+        <div class="matrix-pilar-header" style="background:linear-gradient(135deg,#B71C1C,#C62828);"><div class="pnum">P4</div><div class="pname">Liderazgo IA</div></div>
+        <div class="matrix-pilar-header" style="background:linear-gradient(135deg,#4A148C,#6A1B9A);"><div class="pnum">P5</div><div class="pname">PVE Diferenciada</div></div>
+        <div class="matrix-pilar-header" style="background:linear-gradient(135deg,#0D2B5E,#0D47A1);"><div class="pnum">P6</div><div class="pname">Procesos Cimientos</div></div>
+
+        <!-- DO -->
+        <div class="matrix-area-label">🏗️ Des. Organizacional</div>
+        <div class="matrix-cell" data-action="matrix" data-ids="desempeno,habilidades,lidera,automatizacion,liderazgo">
+          <div class="dot-big" style="background:#1565C0;">5</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">DO · P1</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="desempeno">▸ Desempeño Ágil</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="habilidades">▸ Arquitectura de Habilidades</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="lidera">▸ Programa Lidera tus Procesos</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="automatizacion">▸ Automatizar Procesos RRHH</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="liderazgo">▸ Liderazgo Era IA</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="competencias,habilidades">
+          <div class="dot-big" style="background:#2E7D32;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">DO · P2</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="competencias">▸ Modelo de Competencias</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="habilidades">▸ Arquitectura de Habilidades</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="competencias,apoyo-cultura,liderazgo,programa-cultura">
+          <div class="dot-big" style="background:#B8860B;">4</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">DO · P3</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="competencias">▸ Modelo de Competencias</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="apoyo-cultura">▸ Apoyo Metodológico a Cultura</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="liderazgo">▸ Liderazgo Era IA</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="programa-cultura">▸ (vía Apoyo) Programa Cultura</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="desempeno,lidera,liderazgo">
+          <div class="dot-big" style="background:#C62828;">3</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">DO · P4</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="desempeno">▸ Desempeño Ágil</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="lidera">▸ Programa Lidera tus Procesos</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="liderazgo">▸ Liderazgo Era IA</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="apoyo-cultura,liderazgo">
+          <div class="dot-big" style="background:#6A1B9A;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">DO · P5</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="apoyo-cultura">▸ Apoyo Metodológico a Cultura</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="liderazgo">▸ Liderazgo Era IA</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="competencias,desempeno,automatizacion">
+          <div class="dot-big" style="background:#0D47A1;">3</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">DO · P6</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="competencias">▸ Modelo de Competencias</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="desempeno">▸ Desempeño Ágil</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="automatizacion">▸ Automatizar Procesos RRHH</div></div>
+        </div>
+
+        <!-- Capacitación -->
+        <div class="matrix-area-label">📚 Capacitación</div>
+        <div class="matrix-cell" data-action="matrix" data-ids="desarrollo,cursos-estrategicos,cursos-onboarding,capacitacion-obra,transferencia,gestion-cambio-cap">
+          <div class="dot-big" style="background:#1565C0;">6</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cap · P1</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="desarrollo">▸ MOON LMS</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="cursos-estrategicos">▸ Cursos Estratégicos</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="cursos-onboarding">▸ Cursos Onboarding</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="capacitacion-obra">▸ Capacitación Obra</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="transferencia">▸ Medición Transferencia</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="gestion-cambio-cap">▸ Gestión del Cambio</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="desarrollo,cursos-estrategicos,capacitacion-obra,certificacion-obra">
+          <div class="dot-big" style="background:#2E7D32;">4</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cap · P2</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="desarrollo">▸ MOON LMS</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="cursos-estrategicos">▸ Cursos Estratégicos</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="capacitacion-obra">▸ Capacitación Obra</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="certificacion-obra">▸ Certificación Chilevalora</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="gestion-cambio-cap">
+          <div class="dot-big" style="background:#B8860B;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cap · P3</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="gestion-cambio-cap">▸ Gestión del Cambio</div></div>
+        </div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="cursos-onboarding,certificacion-obra">
+          <div class="dot-big" style="background:#6A1B9A;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cap · P5</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="cursos-onboarding">▸ Cursos Onboarding</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="certificacion-obra">▸ Certificación Chilevalora</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="transferencia">
+          <div class="dot-big" style="background:#0D47A1;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cap · P6</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="transferencia">▸ Medición Transferencia</div></div>
+        </div>
+
+        <!-- Compensaciones -->
+        <div class="matrix-area-label">⚖️ Compensaciones</div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="diagnostico-salarial,pasaje-cargo">
+          <div class="dot-big" style="background:#2E7D32;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Comp · P2</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="diagnostico-salarial">▸ Diagnóstico Salarial</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="pasaje-cargo">▸ Gestión Integral Cargos</div></div>
+        </div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="diagnostico-salarial">
+          <div class="dot-big" style="background:#6A1B9A;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Comp · P5</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="diagnostico-salarial">▸ Diagnóstico Salarial</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="diagnostico-salarial,pasaje-cargo,reportabilidad,digitalizacion">
+          <div class="dot-big" style="background:#0D47A1;">4</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Comp · P6</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="reportabilidad">▸ Control de Gestión RRHH</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="digitalizacion">▸ Workflows Sistema 1</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="diagnostico-salarial">▸ Diagnóstico Salarial</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="pasaje-cargo">▸ Gestión Integral Cargos</div></div>
+        </div>
+
+        <!-- R&S -->
+        <div class="matrix-area-label">🔍 R&S</div>
+        <div class="matrix-cell" data-action="matrix" data-ids="onboarding">
+          <div class="dot-big" style="background:#1565C0;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">R&S · P1</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="onboarding">▸ Onboarding</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="atraccion">
+          <div class="dot-big" style="background:#2E7D32;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">R&S · P2</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="atraccion">▸ Atracción & Evaluación</div></div>
+        </div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="atraccion,onboarding">
+          <div class="dot-big" style="background:#6A1B9A;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">R&S · P5</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="atraccion">▸ Atracción & Evaluación</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="onboarding">▸ Onboarding</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="atraccion,onboarding">
+          <div class="dot-big" style="background:#0D47A1;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">R&S · P6</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="atraccion">▸ Atracción & Evaluación</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="onboarding">▸ Onboarding</div></div>
+        </div>
+
+        <!-- Remuneraciones -->
+        <div class="matrix-area-label">📋 Remuneraciones</div>
+        <div class="matrix-cell" data-action="matrix" data-ids="offboarding">
+          <div class="dot-big" style="background:#1565C0;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Rem · P1</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="offboarding">▸ Offboarding</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="offboarding">
+          <div class="dot-big" style="background:#2E7D32;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Rem · P2</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="offboarding">▸ Offboarding</div></div>
+        </div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="sistema-uno,offboarding">
+          <div class="dot-big" style="background:#0D47A1;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Rem · P6</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="sistema-uno">▸ Potenciar Sistema Uno</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="offboarding">▸ Offboarding</div></div>
+        </div>
+
+        <!-- Cultura -->
+        <div class="matrix-area-label">🌱 Cultura</div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="programa-cultura,reconocimiento,cambio,comunicaciones">
+          <div class="dot-big" style="background:#B8860B;">4</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cultura · P3</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="programa-cultura">▸ Programa Trabajo Cultura</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="reconocimiento">▸ Reconocimiento & Feedback</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="cambio">▸ Gestión del Cambio</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="comunicaciones">▸ Comunicaciones Internas</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="cambio">
+          <div class="dot-big" style="background:#C62828;">1</div><div class="ini-count">iniciativa</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cultura · P4</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="cambio">▸ Gestión del Cambio</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="programa-cultura,reconocimiento,comunicaciones">
+          <div class="dot-big" style="background:#6A1B9A;">3</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">Cultura · P5</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="programa-cultura">▸ Programa Trabajo Cultura</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="reconocimiento">▸ Reconocimiento & Feedback</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="comunicaciones">▸ Comunicaciones Internas</div></div>
+        </div>
+        <div class="matrix-cell empty"></div>
+
+        <!-- Calidad de Vida -->
+        <div class="matrix-area-label">💚 Calidad de Vida</div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="medicion-cultural,diversidad">
+          <div class="dot-big" style="background:#B8860B;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">CV · P3</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="medicion-cultural">▸ Medición Salud Cultural</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="diversidad">▸ Diversidad e Inclusión</div></div>
+        </div>
+        <div class="matrix-cell empty"></div>
+        <div class="matrix-cell" data-action="matrix" data-ids="medicion-cultural,bienestar,diversidad,psicosocial">
+          <div class="dot-big" style="background:#6A1B9A;">4</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">CV · P5</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="medicion-cultural">▸ Medición Salud Cultural</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="bienestar">▸ Calidad de Vida & D&I</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="diversidad">▸ Diversidad e Inclusión</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="psicosocial">▸ Factores Psicosociales</div></div>
+        </div>
+        <div class="matrix-cell" data-action="matrix" data-ids="bienestar,psicosocial">
+          <div class="dot-big" style="background:#0D47A1;">2</div><div class="ini-count">iniciativas</div>
+          <div class="matrix-tooltip"><div class="matrix-tooltip-title">CV · P6</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="bienestar">▸ Calidad de Vida & D&I</div><div class="matrix-tooltip-item" data-action="detail-stop" data-id="psicosocial">▸ Factores Psicosociales</div></div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:white;border-radius:9px;border:1px solid var(--border);font-size:12px;color:var(--text-light);">
+        💡 <strong style="color:var(--text);">Lectura:</strong> Pasa el cursor sobre cualquier celda para ver las iniciativas específicas. Haz clic para abrir el detalle. Celdas vacías son ausencias de cobertura — evaluar si son vacíos a cubrir.
+      </div>
+    </div><!-- /view-matrix -->
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- TABLA DE INICIATIVAS                        -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="view-tabla">
+      <div class="tbl-controls">
+        <span class="tbl-filter-label">Filtrar por pilar</span>
+        <button class="tbl-filter-btn active" data-action="tbl" data-pilar="all">Todos</button>
+        <button class="tbl-filter-btn tp1" data-action="tbl" data-pilar="P1">P1 Adaptativa</button>
+        <button class="tbl-filter-btn tp2" data-action="tbl" data-pilar="P2">P2 Habilidades</button>
+        <button class="tbl-filter-btn tp3" data-action="tbl" data-pilar="P3">P3 Cultura</button>
+        <button class="tbl-filter-btn tp4" data-action="tbl" data-pilar="P4">P4 Liderazgo</button>
+        <button class="tbl-filter-btn tp5" data-action="tbl" data-pilar="P5">P5 PVE</button>
+        <button class="tbl-filter-btn tp6" data-action="tbl" data-pilar="P6">P6 Procesos</button>
+        <span class="tbl-count">Mostrando <span id="tblCount">31</span> iniciativas</span>
+      </div>
+      <div class="tbl-wrap">
+      <table id="tblMain">
+      <thead>
+        <tr>
+          <th style="width:28px;">#</th>
+          <th style="width:22%;">Iniciativa</th>
+          <th style="width:22%;">Descripción / Alcance</th>
+          <th style="width:12%;">Área</th>
+          <th style="width:10%;">Pilares</th>
+          <th>Resultado Esperado</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- DESARROLLO ORGANIZACIONAL -->
+        <tr class="tbl-section-row"><td colspan="6">Desarrollo Organizacional</td></tr>
+
+        <tr data-tp="P2 P3 P6" data-action="detail" data-id="competencias" style="cursor:pointer;">
+          <td class="tnum">1</td>
+          <td><div class="tbl-obj-title">Modelo de Competencias</div></td>
+          <td><div class="tbl-obj-desc">De roles a habilidades: de 20 subcompetencias a 6 con conductas observables por nivel y contexto</div></td>
+          <td><span class="tbl-sub-pill">Desarrollo Org.</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Evaluaciones más rápidas, lenguaje común Selección–Desempeño–L&D
+            <div class="tbl-flag tbl-flag-dep">↔ Pieza fundante de P2 — habilita trayectorias no lineales</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P1 P4 P6" data-action="detail" data-id="desempeno" style="cursor:pointer;">
+          <td class="tnum">2</td>
+          <td><div class="tbl-obj-title">Sistema de Desempeño Ágil</div></td>
+          <td><div class="tbl-obj-desc">Ciclos trimestrales, conversaciones continuas de 15 min, conductas + resultados. Feedback integrado</div></td>
+          <td><span class="tbl-sub-pill">Desarrollo Org.</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#B71C1C;background:#FFEBEE;border-color:#FFCDD2;">P4</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Evaluación más ágil, decisiones basadas en datos, líderes habilitados para conversaciones de desempeño</div></td>
+        </tr>
+
+        <tr data-tp="P1 P2" data-action="detail" data-id="habilidades" style="cursor:pointer;">
+          <td class="tnum">3</td>
+          <td><div class="tbl-obj-title">Arquitectura de Habilidades</div></td>
+          <td><div class="tbl-obj-desc">Mapa de skills actuales vs. requeridas 2027–2030. Arquetipos de roles con núcleo estable + zona de adaptación dinámica</div></td>
+          <td><span class="tbl-sub-pill">Desarrollo Org.</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+          </div></td>
+          <td><div class="tbl-resultado">Movilidad interna real, upskilling focalizado, retención de talento crítico</div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P4 P1" data-action="detail" data-id="lidera" style="cursor:pointer;">
+          <td class="tnum">4</td>
+          <td><div class="tbl-obj-title">Programa Lidera tus Procesos</div></td>
+          <td><div class="tbl-obj-desc">Herramientas para que líderes gestionen sus procesos con autonomía y criterio en contexto IA. Diferenciado: obra vs. oficina</div></td>
+          <td><span class="tbl-sub-pill">Desarrollo Org.</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B71C1C;background:#FFEBEE;border-color:#FFCDD2;">P4</span>
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+          </div></td>
+          <td><div class="tbl-resultado">Líderes con autonomía operativa y gestión del cambio incorporada
+            <div class="tbl-flag tbl-flag-warn">⚠ Definir alcance y población objetivo antes de diseñar</div>
+          </div></td>
+        </tr>
+
+        <tr data-tp="P1 P6" data-action="detail" data-id="automatizacion" style="cursor:pointer;">
+          <td class="tnum">5</td>
+          <td><div class="tbl-obj-title">Automatizar Procesos RRHH</div></td>
+          <td><div class="tbl-obj-desc">Mapeo de procesos actuales e identificación de cuellos de botella automatizables con IA. Rediseño de workflows</div></td>
+          <td><span class="tbl-sub-pill">Desarrollo Org.</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Tiempo liberado para trabajo estratégico, mejor experiencia del colaborador</div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P4 P1 P3" data-action="detail" data-id="liderazgo" style="cursor:pointer;">
+          <td class="tnum">6</td>
+          <td><div class="tbl-obj-title">Liderazgo en la Era IA — Programa Lidera</div></td>
+          <td><div class="tbl-obj-desc">Competencias de liderazgo adaptativo, gestión del cambio en contexto IA, toma de decisiones aumentada y criterio ético</div></td>
+          <td><span class="tbl-sub-pill">Desarrollo Org.</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B71C1C;background:#FFEBEE;border-color:#FFCDD2;">P4</span>
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+          </div></td>
+          <td><div class="tbl-resultado">Líderes preparados para liderar en entornos VUCA con IA como herramienta
+            <div class="tbl-flag tbl-flag-warn">⚠ Contenido varía según nivel: obra vs. oficina</div>
+          </div></td>
+        </tr>
+
+        <tr data-tp="P3 P5" data-action="detail" data-id="apoyo-cultura" style="cursor:pointer;">
+          <td class="tnum">7</td>
+          <td><div class="tbl-obj-title">Apoyo Metodológico a Cultura</div></td>
+          <td><div class="tbl-obj-desc">Soporte metodológico a iniciativas de gestión cultural. Co-diseño modelo de medición continua de salud cultural con Calidad de Vida</div></td>
+          <td><span class="tbl-sub-pill">Desarrollo Org.</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Cultura gestionable con respaldo metodológico, alineación DO–Cultura–CV
+            <div class="tbl-flag tbl-flag-dep">↔ Definir roles explícitos: qué hace Cultura, qué hace DO, qué hace CV</div>
+          </div></td>
+        </tr>
+
+        <!-- CAPACITACIÓN -->
+        <tr class="tbl-section-row"><td colspan="6">Capacitación</td></tr>
+
+        <tr data-tp="P1 P2" data-action="detail" data-id="desarrollo" style="cursor:pointer;">
+          <td class="tnum">8</td>
+          <td><div class="tbl-obj-title">Plataforma MOON (LMS + Videos)</div></td>
+          <td><div class="tbl-obj-desc">Plataforma LMS y videos de libre disposición para autogestión del aprendizaje continuo. Nivel 1 de capacitación. Soporte clave del onboarding</div></td>
+          <td><span class="tbl-sub-pill">Capacitación</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+          </div></td>
+          <td><div class="tbl-resultado">Autogestión del aprendizaje, oferta base accesible para todos los trabajadores
+            <div class="tbl-flag tbl-flag-dep">↔ Requiere Modelo de Competencias como criterio de priorización</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P2 P1" data-action="detail" data-id="cursos-estrategicos" style="cursor:pointer;">
+          <td class="tnum">9</td>
+          <td><div class="tbl-obj-title">Cursos Estratégicos y Multicompetencias</div></td>
+          <td><div class="tbl-obj-desc">Nuevos cursos vinculados a pilares estratégicos y Modelo de Competencias. Actualización de cursos vigentes. Oferta GESOC ampliada. Nivel 2 de capacitación</div></td>
+          <td><span class="tbl-sub-pill">Capacitación</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+          </div></td>
+          <td><div class="tbl-resultado">Oferta curricular actualizada, alineada a habilidades estratégicas requeridas
+            <div class="tbl-flag tbl-flag-dep">↔ Secuencia: Modelo Competencias → diseño de cursos</div>
+          </div></td>
+        </tr>
+
+        <tr data-tp="P1 P5" data-action="detail" data-id="cursos-onboarding" style="cursor:pointer;">
+          <td class="tnum">10</td>
+          <td><div class="tbl-obj-title">Cursos de Onboarding por Cargo</div></td>
+          <td><div class="tbl-obj-desc">Diseño y actualización de cursos obligatorios por pilar estratégico para incluir en el proceso de onboarding. Nivel 1 de capacitación. Disponible en MOON desde el primer día</div></td>
+          <td><span class="tbl-sub-pill">Capacitación</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Nuevos ingresos con ruta de aprendizaje definida desde el día 1, experiencia de incorporación completa</div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P1 P2" data-action="detail" data-id="capacitacion-obra" style="cursor:pointer;">
+          <td class="tnum">11</td>
+          <td><div class="tbl-obj-title">Capacitación Obra — Oficios</div></td>
+          <td><div class="tbl-obj-desc">Programa de oficios específico para obra, proveedores internos y externos. Cupos abiertos y asignados desde la obra, disponible trimestralmente</div></td>
+          <td><span class="tbl-sub-pill">Capacitación</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+          </div></td>
+          <td><div class="tbl-resultado">Trabajadores de obra con itinerarios de desarrollo por oficio, formación de proveedores incluida</div></td>
+        </tr>
+
+        <tr data-tp="P2 P5" data-action="detail" data-id="certificacion-obra" style="cursor:pointer;">
+          <td class="tnum">12</td>
+          <td><div class="tbl-obj-title">Certificación Progresiva Chilevalora — Obra</div></td>
+          <td><div class="tbl-obj-desc">Programa de certificación de competencias Chilevalora para obra y proveedores externos. Convenio con proveedores certificados. Foco prioritario: SEC</div></td>
+          <td><span class="tbl-sub-pill">Capacitación</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Competencias acreditadas externamente, reducción de costos y tiempos de certificación
+            <div class="tbl-flag tbl-flag-info">ℹ Diferente a capacitación de oficios: certificación formal reconocida por organismos externos</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P1 P6" data-action="detail" data-id="transferencia" style="cursor:pointer;">
+          <td class="tnum">13</td>
+          <td><div class="tbl-obj-title">Medición de Transferencia</div></td>
+          <td><div class="tbl-obj-desc">Medición de % de transferencia específico al puesto de trabajo por programa (N1 y N2). Sistemas de medición de anclaje de competencias</div></td>
+          <td><span class="tbl-sub-pill">Capacitación</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Capacitación con evidencia de impacto real en el puesto, presupuesto justificado por resultados</div></td>
+        </tr>
+
+        <tr data-tp="P1 P3" data-action="detail" data-id="gestion-cambio-cap" style="cursor:pointer;">
+          <td class="tnum">14</td>
+          <td><div class="tbl-obj-title">Gestión del Cambio desde Capacitación</div></td>
+          <td><div class="tbl-obj-desc">Propuesta activa desde Capacitación para proyectos de cambio. Participar en diseño e implementación — no solo ejecutar el pedido de otras áreas</div></td>
+          <td><span class="tbl-sub-pill">Capacitación</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+          </div></td>
+          <td><div class="tbl-resultado">Capacitación como socio activo en proyectos de cambio, no proveedor pasivo
+            <div class="tbl-flag tbl-flag-dep">↔ Coordinar con Cultura para no duplicar roles en gestión del cambio</div>
+          </div></td>
+        </tr>
+
+        <!-- COMPENSACIONES -->
+        <tr class="tbl-section-row"><td colspan="6">Compensaciones</td></tr>
+
+        <tr data-tp="P6" data-action="detail" data-id="reportabilidad" style="cursor:pointer;">
+          <td class="tnum">15</td>
+          <td><div class="tbl-obj-title">Modelo Mensual Control de Gestión RRHH</div></td>
+          <td><div class="tbl-obj-desc">Matriz de 13 KPIs estratégicos validada con GG · Plantilla Excel estándar + módulo piloto Dotación · Roadmap módulos restantes 2027</div></td>
+          <td><span class="tbl-sub-pill">Compensaciones</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Gerencia con KPIs de personas disponibles mensualmente · Base para decisiones oportunas y confiables
+            <div class="tbl-flag tbl-flag-info">ℹ Excel primero — migración a Sistema Uno es el paso siguiente</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P6" data-action="detail" data-id="digitalizacion" style="cursor:pointer;">
+          <td class="tnum">16</td>
+          <td><div class="tbl-obj-title">Workflows de Compensaciones en Sistema 1</div></td>
+          <td><div class="tbl-obj-desc">4 procesos migrados de correo a Sistema 1: Cambio de Renta, Cambio de Estructura, Cambio de Cargo, Nuevo Cargo/Modificación · Gobernanza y aprobadores definidos</div></td>
+          <td><span class="tbl-sub-pill">Compensaciones</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Correo eliminado como canal de solicitudes de compensación · Procesos trazables y auditables
+            <div class="tbl-flag tbl-flag-warn">⚠ Fecha de corte del correo a definir post-piloto — compromiso concreto requerido</div>
+          </div></td>
+        </tr>
+
+        <tr data-tp="P2 P5 P6" data-action="detail" data-id="diagnostico-salarial" style="cursor:pointer;">
+          <td class="tnum">17</td>
+          <td><div class="tbl-obj-title">Estandarización Base y Herramienta Diagnóstico Salarial</div></td>
+          <td><div class="tbl-obj-desc">Saneamiento de bases · Modelo Excel de diagnóstico salarial · Política borrador y tipos de diagnóstico · Validación con GG César</div></td>
+          <td><span class="tbl-sub-pill">Compensaciones</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Modelo de diagnóstico salarial reproducible y con criterio estandarizado
+            <div class="tbl-flag tbl-flag-warn">⚠ Partir por saneamiento de datos — no se puede diagnosticar sobre bases inconsistentes</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P6 P2" data-action="detail" data-id="pasaje-cargo" style="cursor:pointer;">
+          <td class="tnum">18</td>
+          <td><div class="tbl-obj-title">Gestión Integral de Cargos, Estructura y Valorización</div></td>
+          <td><div class="tbl-obj-desc">Mapeo y documentación metodología HAY · Comité de pesaje con gobernanza explícita · Coordinación con DO para DDC · Proceso sostenible y auditable</div></td>
+          <td><span class="tbl-sub-pill">Compensaciones</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+          </div></td>
+          <td><div class="tbl-resultado">Estructura organizacional y valorización con criterio explícito · Menor discrecionalidad · Proceso coordinado con DO</div></td>
+        </tr>
+
+        <!-- R&S -->
+        <tr class="tbl-section-row"><td colspan="6">Reclutamiento y Selección</td></tr>
+
+        <tr data-tp="P2 P5 P6" data-action="detail" data-id="atraccion" style="cursor:pointer;">
+          <td class="tnum">19</td>
+          <td><div class="tbl-obj-title">Estandarización Selección y EVP</div></td>
+          <td><div class="tbl-obj-desc">Actualizar política, proceso y sistema de atracción y evaluación. Estandarizar herramientas, flujos y criterios; apalancar tecnología disponible y gestionar el cambio con clientes internos</div></td>
+          <td><span class="tbl-sub-pill">Selección</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#2E7D32;background:#E8F5E9;border-color:#C8E6C9;">P2</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Proceso estandarizado, herramientas consistentes, mejor experiencia candidato y cliente interno</div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P1 P5 P6" data-action="detail" data-id="onboarding" style="cursor:pointer;">
+          <td class="tnum">20</td>
+          <td><div class="tbl-obj-title">Proceso de Onboarding</div></td>
+          <td><div class="tbl-obj-desc">Proceso integrado desde firma hasta productividad plena. Tareas claras por área y cargo, seguimiento automatizado y métricas de cumplimiento</div></td>
+          <td><span class="tbl-sub-pill">Selección</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Reducción tiempo hasta productividad, primera experiencia de PVE coherente desde el primer día</div></td>
+        </tr>
+
+        <!-- REMUNERACIONES Y RL -->
+        <tr class="tbl-section-row"><td colspan="6">Remuneraciones y Relaciones Laborales</td></tr>
+
+        <tr data-tp="P6 P1" data-action="detail" data-id="sistema-uno" style="cursor:pointer;">
+          <td class="tnum">21</td>
+          <td><div class="tbl-obj-title">Potenciar Herramientas Sistema Uno</div></td>
+          <td><div class="tbl-obj-desc">Pata A: dashboard KPIs de eficiencia ya generada (caso emblema: firma de documentos integrada) · Pata B: reauditar implementación copy-paste por subárea, con foco en módulo de renta variable y tickets de compensación automáticos</div></td>
+          <td><span class="tbl-sub-pill">Remuneraciones</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+            <span class="tbl-pchip" style="color:#1565C0;background:#E3F2FD;border-color:#BBDEFB;">P1</span>
+          </div></td>
+          <td><div class="tbl-resultado">Valor de la plataforma demostrado con datos · Mejoras pendientes identificadas y priorizadas · Módulo variables cierra brecha con Compensaciones
+            <div class="tbl-flag tbl-flag-warn">⚠ No es proyecto de TI nuevo — trabaja con lo que ya existe</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P6 P5" data-action="detail" data-id="offboarding" style="cursor:pointer;">
+          <td class="tnum">22</td>
+          <td><div class="tbl-obj-title">Proceso de Offboarding</div></td>
+          <td><div class="tbl-obj-desc">Tres planos: (1) flujo operativo de salida con checklist previo al finiquito · (2) cierre financiero sin conflicto (comisiones, bonos, caja chica) · (3) mapeo de contingencias legales post-salida</div></td>
+          <td><span class="tbl-sub-pill">Remuneraciones / RL</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Finiquitos sin persecución de datos · Cierre financiero claro para ambas partes · Contingencias legales mapeadas y gestionadas conscientemente
+            <div class="tbl-flag tbl-flag-warn">⚠ Priorizar Plano 1 — impacto inmediato sin cambios legales</div>
+          </div></td>
+        </tr>
+
+        <tr data-tp="P6 P5" data-action="detail" data-id="revision-contratos" style="cursor:pointer;">
+          <td class="tnum">23</td>
+          <td><div class="tbl-obj-title">Revisión y Actualización de Contratos</div></td>
+          <td><div class="tbl-obj-desc">Auditoría de contratos vigentes (faena, oficios, oficina) · Incorporar hitos técnicamente demostrables · Escriturar bonos no formalizados · Doble objetivo: transparencia para el trabajador + protección legal para la empresa</div></td>
+          <td><span class="tbl-sub-pill">Relaciones Laborales</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Contratos que le hacen sentido al trabajador · Empresa con capacidad de demostrar términos contractuales · Bonos escriturados que eliminan disputas post-salida
+            <div class="tbl-flag tbl-flag-info">ℹ Diagnóstico primero, cambios después. Requiere coordinación con abogados laborales</div>
+          </div></td>
+        </tr>
+
+        <!-- CULTURA -->
+        <tr class="tbl-section-row"><td colspan="6">Cultura y Gestión del Cambio</td></tr>
+
+        <tr data-tp="P3 P5" data-action="detail" data-id="programa-cultura" style="cursor:pointer;">
+          <td class="tnum">24</td>
+          <td><div class="tbl-obj-title">Programa Trabajo Cultura</div></td>
+          <td><div class="tbl-obj-desc">Elaboración de estructura de gestión del cambio propio. Programa de trabajo cultura/medición continua. Reconocimiento del conjunto con DO</div></td>
+          <td><span class="tbl-sub-pill">Cultura</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Cultura como sistema gestionado, no como declaración
+            <div class="tbl-flag tbl-flag-dep">↔ Co-diseño con DO — definir propiedad de roles antes de ejecutar</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P3 P4" data-action="detail" data-id="cambio" style="cursor:pointer;">
+          <td class="tnum">25</td>
+          <td><div class="tbl-obj-title">Gestión del Cambio Organizacional</div></td>
+          <td><div class="tbl-obj-desc">Proyectos PI, Datos y Sostenibilidad. Metodología interna replicable. Reducir dependencia de consultoría externa</div></td>
+          <td><span class="tbl-sub-pill">Cultura</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#B71C1C;background:#FFEBEE;border-color:#FFCDD2;">P4</span>
+          </div></td>
+          <td><div class="tbl-resultado">Capacidad interna de gestión del cambio, menor dependencia externa</div></td>
+        </tr>
+
+        <tr data-tp="P3 P5" data-action="detail" data-id="reconocimiento" style="cursor:pointer;">
+          <td class="tnum">26</td>
+          <td><div class="tbl-obj-title">Reconocimiento y Feedback Continuo</div></td>
+          <td><div class="tbl-obj-desc">Sistema de reconocimiento alineado a comportamientos culturales (no solo resultados). Feedback continuo co-diseñado con DO</div></td>
+          <td><span class="tbl-sub-pill">Cultura</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Colaboradores que se sienten vistos y valorados, cultura reforzada en el día a día
+            <div class="tbl-flag tbl-flag-dep">↔ Componente del Desempeño Ágil — evitar duplicidades, acordar propiedad</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P3 P5" data-action="detail" data-id="comunicaciones" style="cursor:pointer;">
+          <td class="tnum">27</td>
+          <td><div class="tbl-obj-title">Comunicaciones Internas</div></td>
+          <td><div class="tbl-obj-desc">Newsletter unificado mensual. Posicionar Sistema Uno como plataforma de gestión y comunicación de EESS</div></td>
+          <td><span class="tbl-sub-pill">Cultura</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Canal ordenado y unificado de comunicaciones RRHH
+            <div class="tbl-flag tbl-flag-warn">⚠ El newsletter es un medio, no una estrategia — definir qué se comunica y para qué</div>
+          </div></td>
+        </tr>
+
+        <!-- CALIDAD DE VIDA -->
+        <tr class="tbl-section-row"><td colspan="6">Calidad de Vida</td></tr>
+
+        <tr data-tp="P3 P5" data-action="detail" data-id="medicion-cultural" style="cursor:pointer;">
+          <td class="tnum">28</td>
+          <td><div class="tbl-obj-title">Medición Continua Salud Cultural</div></td>
+          <td><div class="tbl-obj-desc">Pulso de clima trimestral/cuatrimestral. Herramienta de medición, frecuencia y protocolo de actuación ante resultados</div></td>
+          <td><span class="tbl-sub-pill">Calidad de Vida</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Clima medido con periodicidad, brecha declarado vs. vivido visible y accionable
+            <div class="tbl-flag tbl-flag-dep">↔ Iniciativa conjunta con DO — separar claramente de Programa Cultura</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P5 P3 P6" data-action="detail" data-id="bienestar" style="cursor:pointer;">
+          <td class="tnum">29</td>
+          <td><div class="tbl-obj-title">Calidad de Vida — Indicadores y Programas</div></td>
+          <td><div class="tbl-obj-desc">Indicadores de asistencia social obra (trimestrales) · Automatizar y eficientar procesos de beneficios · Programas estratégicos con indicadores</div></td>
+          <td><span class="tbl-sub-pill">Calidad de Vida</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Bienestar medido y comunicado, beneficios gestionados con eficiencia</div></td>
+        </tr>
+
+        <tr data-tp="P3 P5" data-action="detail" data-id="diversidad" style="cursor:pointer;">
+          <td class="tnum">30</td>
+          <td><div class="tbl-obj-title">Diversidad e Inclusión</div></td>
+          <td><div class="tbl-obj-desc">Pilar discapacidad · Pilar equidad de género · Consolidar comunidad de personas cuidadoras · Ley Karin: abordaje dimensión violencia en el trabajo</div></td>
+          <td><span class="tbl-sub-pill">Calidad de Vida</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#B8860B;background:#FFFDE7;border-color:#FFF176;">P3</span>
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+          </div></td>
+          <td><div class="tbl-resultado">Cumplimiento legal activo, organización más equitativa e inclusiva
+            <div class="tbl-flag tbl-flag-legal">🔴 Ley Karin — obligación legal activa: prioridad inmediata</div>
+          </div></td>
+        </tr>
+
+        <tr class="talt" data-tp="P5 P6" data-action="detail" data-id="psicosocial" style="cursor:pointer;">
+          <td class="tnum">31</td>
+          <td><div class="tbl-obj-title">Factores Psicosociales</div></td>
+          <td><div class="tbl-obj-desc">Aplicación SUSESO-ISTAS21 2026 · Seguimiento y definición de iniciativas oficina · Proceso obras · Seguimiento SUSESO en terreno</div></td>
+          <td><span class="tbl-sub-pill">Calidad de Vida</span></td>
+          <td><div class="tbl-pilares">
+            <span class="tbl-pchip" style="color:#6A1B9A;background:#F3E5F5;border-color:#E1BEE7;">P5</span>
+            <span class="tbl-pchip" style="color:#0D47A1;background:#E8EAF6;border-color:#C5CAE9;">P6</span>
+          </div></td>
+          <td><div class="tbl-resultado">Cumplimiento protocolo psicosocial, riesgos identificados con plan de acción</div></td>
+        </tr>
+
+      </tbody>
+      </table>
+      </div>
+
+      <div class="tbl-legend">
+        <span class="tbl-legend-title">Pilares</span>
+        <div class="tbl-legend-item"><div class="tbl-legend-dot" style="background:#1565C0;"></div>P1 Capacidad Adaptativa</div>
+        <div class="tbl-legend-item"><div class="tbl-legend-dot" style="background:#2E7D32;"></div>P2 Arquitectura de Habilidades</div>
+        <div class="tbl-legend-item"><div class="tbl-legend-dot" style="background:#B8860B;"></div>P3 Cultura como Infraestructura</div>
+        <div class="tbl-legend-item"><div class="tbl-legend-dot" style="background:#B71C1C;"></div>P4 Liderazgo en la Era IA</div>
+        <div class="tbl-legend-item"><div class="tbl-legend-dot" style="background:#6A1B9A;"></div>P5 PVE Diferenciada</div>
+        <div class="tbl-legend-item"><div class="tbl-legend-dot" style="background:#0D47A1;"></div>P6 Procesos como Cimientos</div>
+      </div>
+    </div><!-- /view-tabla -->
+
+  </div><!-- /canvas -->
+</div><!-- /main -->
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" data-action="close"></div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <div class="dp-header">
+    <button class="dp-close" data-action="close">✕</button>
+    <div class="dp-icon" id="dp-icon"></div>
+    <div class="dp-title" id="dp-title"></div>
+    <div class="dp-area" id="dp-area"></div>
+  </div>
+  <div class="dp-body" id="dp-body"></div>
+</div>
+
+
+</div>
+</div>
+
+<!-- ═══════════ PAGE SEGUIMIENTO ═══════════ -->
+<div id="page-seguimiento" class="page">
+  <div class="section-header mb-20">
+    <div><div class="section-title">Ejecución</div><div class="section-label">Seguimiento de Iniciativas</div></div>
+  </div>
+  <div class="alert-banner" id="seg-auth-note" style="display:none;">
+    <span style="font-size:16px;flex-shrink:0">🔒</span>
+    <div><strong>Inicia sesión</strong> para ver y agregar comentarios de seguimiento.</div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="toolbar" style="margin-bottom:20px;gap:10px;">
+    <select id="seg-filter-area" onchange="renderSeguimiento()" style="width:200px;padding:8px 12px;border-radius:10px;border:1.5px solid #E4EAF4;font-size:12px;font-weight:600;color:var(--text);background:white;cursor:pointer;">
+      <option value="">Todas las áreas</option>
+      <option value="do">Desarrollo Organizacional</option>
+      <option value="cap">Capacitación</option>
+      <option value="comp">Compensaciones</option>
+      <option value="rs">R&amp;S</option>
+      <option value="rem">Remuneraciones y RL</option>
+      <option value="cult">Cultura y Gestión del Cambio</option>
+      <option value="cv">Calidad de Vida</option>
+    </select>
+    <select id="seg-filter-estado" onchange="renderSeguimiento()" style="width:180px;padding:8px 12px;border-radius:10px;border:1.5px solid #E4EAF4;font-size:12px;font-weight:600;color:var(--text);background:white;cursor:pointer;">
+      <option value="">Todos los estados</option>
+      <option value="pendiente">⏳ Pendiente</option>
+      <option value="en_curso">🔄 En curso</option>
+      <option value="completado">✅ Completado</option>
+      <option value="bloqueado">🚫 Bloqueado</option>
+      <option value="pausado">⏸️ Pausado</option>
+    </select>
+    <span class="tc" id="seg-count" style="font-size:12px;font-weight:700;color:var(--royal);background:linear-gradient(135deg,#EEF2FA,#E8F0FF);padding:6px 14px;border-radius:10px;">–</span>
+  </div>
+
+  <!-- GRID INICIATIVAS -->
+  <div id="seg-grid" style="display:flex;flex-direction:column;gap:16px;"></div>
 </div>
 
 </main>
@@ -1119,7 +2852,8 @@ function showPage(n){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(n))b.classList.add('active');});
-  if(n==='config') loadConfigFields();
+  if(n==='seguimiento') loadSeguimiento();
+  if(n==='flujo') setTimeout(flujoInit, 50);
 }
 
 /* ══════════════ COLLAPSE / FILTER ════════════════════════════════════════ */
@@ -1212,6 +2946,18 @@ function setScore(id,key,val,btn){
   const mm=document.getElementById('pf-sc-'+id);if(mm){mm.textContent=sc+'/'+CRIT.length+' criterios';mm.style.color=sc===CRIT.length?'#0a6e5e':'#cc8800';}
   debouncedSave('edit');
 }
+function toggleDep(id,depId,btn){
+  const p=projects.find(x=>x.id===id); if(!p)return;
+  if(!p.deps)p.deps=[];
+  if(p.deps.includes(depId)){
+    p.deps=p.deps.filter(x=>x!==depId);
+    btn.classList.remove('dep-act');
+  } else {
+    p.deps.push(depId);
+    btn.classList.add('dep-act');
+  }
+  debouncedSave('edit');
+}
 function togglePilar(id,pilar,btn){
   const p=projects.find(x=>x.id===id);if(!p)return;
   if(p.pilares.includes(pilar)){p.pilares=p.pilares.filter(x=>x!==pilar);btn.classList.remove('act');}
@@ -1289,6 +3035,21 @@ function renderCard(p,idx){
         <div class="pil-btns">
           ${PILARES.map(pl=>`<button class="pil-btn ${p.pilares.includes(pl)?'act':''}" onclick="togglePilar(${p.id},'${pl}',this)">${pl}<span class="pt">${pl}: ${PILAR_N[pl]}</span></button>`).join('')}
         </div>
+      </div>
+    </div>
+    <div class="f-row" style="margin-bottom:12px">
+      <div class="f-grp" style="grid-column:1/-1">
+        <label class="f-lbl htip">DEPENDENCIAS <span class="ti">?<span class="tb">¿Esta iniciativa requiere que otra esté completada o en el top 40% del ranking para poder ejecutarse? Si su dependencia no está arriba, quedará Bloqueada (×0.7).</span></span></label>
+        <div class="dep-selector" id="dep-sel-${p.id}">
+          ${projects.filter(x=>x.id!==p.id&&x.nombre.trim()).map(x=>`
+            <button class="dep-btn ${(p.deps||[]).includes(x.id)?'dep-act':''}"
+              onclick="toggleDep(${p.id},${x.id},this)"
+              title="${esc(x.nombre)}">
+              ${esc(x.nombre.length>32?x.nombre.slice(0,30)+'…':x.nombre)}
+            </button>`).join('')}
+          ${projects.filter(x=>x.id!==p.id&&x.nombre.trim()).length===0?'<span style="font-size:11px;color:var(--text-light);font-style:italic">Agrega más iniciativas para definir dependencias</span>':''}
+        </div>
+        ${(p.deps||[]).length>0?`<div style="font-size:11px;color:var(--text-light);margin-top:5px;">Depende de: ${(p.deps||[]).map(d=>{const dep=projects.find(x=>x.id===d);return dep?'<strong>'+esc(dep.nombre)+'</strong>':'?';}).join(', ')}</div>`:''}
       </div>
     </div>
     ${CRIT.map(c=>`<div class="f-grp" style="margin-bottom:11px">
@@ -1409,7 +3170,7 @@ function renderM2x2(res){
         ${q[i].length===0?'<div style="font-size:11px;color:var(--text-light);font-style:italic;padding:6px 0">Sin proyectos</div>':''}
       </div>
     </div>`).join('')}
-    <div class="m2-xrow"><span>← Fácil</span><span style="opacity:0.6">Facilidad de Implementación →</span><span>Difícil →</span></div>
+    <div class="m2-xrow"><span>← Difícil</span><span style="opacity:0.6">Facilidad de Implementación →</span><span>Fácil →</span></div>
   </div></div>`;
 }
 
@@ -1527,7 +3288,7 @@ const INIT_DATA=[
   {nombre:'Liderazgo en la Era IA — Programa Lidera',tipo:'transformacional',area:'do',pilares:['P4','P1','P3'],scores:{impacto:5,urgencia:3,facilidad:2,alineacion:5}},
   {nombre:'Apoyo Metodológico a Cultura',tipo:'core',area:'do',pilares:['P3','P5'],scores:{impacto:3,urgencia:3,facilidad:3,alineacion:3}},
   // CAPACITACIÓN
-  {nombre:'Plataforma MOOC (LMS + Videos)',tipo:'habilitante',area:'cap',pilares:['P1','P2'],scores:{impacto:4,urgencia:4,facilidad:2,alineacion:4}},
+  {nombre:'Plataforma MOON (LMS + Videos)',tipo:'habilitante',area:'cap',pilares:['P1','P2'],scores:{impacto:4,urgencia:4,facilidad:2,alineacion:4}},
   {nombre:'Cursos Estratégicos y Multicompetencias',tipo:'core',area:'cap',pilares:['P2','P1'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
   {nombre:'Cursos de Onboarding por Cargo',tipo:'core',area:'cap',pilares:['P1','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:3}},
   {nombre:'Capacitación Obra — Oficios',tipo:'core',area:'cap',pilares:['P1','P2'],scores:{impacto:5,urgencia:5,facilidad:3,alineacion:4}},
@@ -1540,7 +3301,7 @@ const INIT_DATA=[
   {nombre:'Estandarización Base y Herramienta Diagnóstico Salarial',tipo:'habilitante',area:'comp',pilares:['P2','P5','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:5}},
   {nombre:'Gestión Integral de Cargos, Estructura y Valorización',tipo:'core',area:'comp',pilares:['P6','P2'],scores:{impacto:4,urgencia:4,facilidad:2,alineacion:4}},
   // R&S
-  {nombre:'Atracción y Evaluación de Talento',tipo:'core',area:'rs',pilares:['P2','P5','P6'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:3}},
+  {nombre:'Estandarización Selección y EVP',tipo:'core',area:'rs',pilares:['P2','P5','P6'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:3}},
   {nombre:'Proceso de Onboarding',tipo:'core',area:'rs',pilares:['P1','P5','P6'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
   // REMUNERACIONES Y RL
   {nombre:'Potenciar Herramientas Sistema Uno',tipo:'habilitante',area:'rem',pilares:['P6','P1'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
@@ -1551,18 +3312,968 @@ const INIT_DATA=[
   {nombre:'Gestión del Cambio Organizacional',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
   {nombre:'Reconocimiento y Feedback Continuo',tipo:'transformacional',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
   {nombre:'Comunicaciones Internas',tipo:'core',area:'cult',pilares:['P3','P5'],scores:{impacto:3,urgencia:3,facilidad:4,alineacion:3}},
-  {nombre:'Diversidad e Inclusión',tipo:'core',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:5,facilidad:3,alineacion:4}},
-  {nombre:'Medición Continua Salud Cultural',tipo:'core',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  {nombre:'Diversidad e Inclusión',tipo:'core',area:'cv',pilares:['P3','P5'],scores:{impacto:4,urgencia:5,facilidad:3,alineacion:4}},
+  {nombre:'Medición Continua Salud Cultural',tipo:'core',area:'cv',pilares:['P3','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
   // CALIDAD DE VIDA
   {nombre:'Calidad de Vida — Indicadores y Programas',tipo:'core',area:'cv',pilares:['P5','P3','P6'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:3}},
   {nombre:'Factores Psicosociales',tipo:'core',area:'cv',pilares:['P5','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:4}}
 ];
+
+
+/* ══════════════ SEGUIMIENTO ════════════════════════════════════════════════ */
+// Supabase tables needed (run once):
+// CREATE TABLE seg_estados (
+//   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+//   project_id INT NOT NULL,
+//   estado TEXT DEFAULT 'pendiente',
+//   updated_at TIMESTAMPTZ DEFAULT NOW(),
+//   updated_by TEXT
+// );
+// CREATE TABLE seg_comentarios (
+//   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+//   project_id INT NOT NULL,
+//   texto TEXT NOT NULL,
+//   created_at TIMESTAMPTZ DEFAULT NOW(),
+//   created_by TEXT,
+//   tipo TEXT DEFAULT 'avance'
+// );
+// ALTER TABLE seg_estados ENABLE ROW LEVEL SECURITY;
+// ALTER TABLE seg_comentarios ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "auth read" ON seg_estados FOR SELECT USING (auth.uid() IS NOT NULL);
+// CREATE POLICY "auth write" ON seg_estados FOR ALL USING (auth.uid() IS NOT NULL);
+// CREATE POLICY "auth read" ON seg_comentarios FOR SELECT USING (auth.uid() IS NOT NULL);
+// CREATE POLICY "auth write" ON seg_comentarios FOR ALL USING (auth.uid() IS NOT NULL);
+
+const ESTADO_OPTS = [
+  {v:'pendiente',  e:'⏳', l:'Pendiente',  bg:'#FFF9E8', bc:'#FFD44D', tc:'#856404'},
+  {v:'en_curso',   e:'🔄', l:'En curso',   bg:'#E8F4FF', bc:'#0099FF', tc:'#003D99'},
+  {v:'completado', e:'✅', l:'Completado', bg:'#E8FFF5', bc:'#00C9B7', tc:'#0a6e5e'},
+  {v:'bloqueado',  e:'🚫', l:'Bloqueado',  bg:'#FFF0F0', bc:'#FF8080', tc:'#CC3333'},
+  {v:'pausado',    e:'⏸️', l:'Pausado',    bg:'#F5F5F7', bc:'#AAAAAA', tc:'#555555'},
+];
+const TIPO_OPTS = [
+  {v:'avance',    l:'Avance'},
+  {v:'riesgo',    l:'Riesgo'},
+  {v:'decision',  l:'Decisión'},
+  {v:'hito',      l:'Hito'},
+];
+
+let _segEstados    = {};  // {project_id: estado}
+let _segComents    = {};  // {project_id: [comentarios]}
+let _segLoaded     = false;
+
+async function loadSeguimiento(){
+  if(!_supa||!_currentUser){ renderSeguimiento(); return; }
+  try {
+    const [eRes, cRes] = await Promise.all([
+      _supa.from('seg_estados').select('*'),
+      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false})
+    ]);
+    if(eRes.data) eRes.data.forEach(r=>{ _segEstados[r.project_id]=r; });
+    if(cRes.data) cRes.data.forEach(r=>{
+      if(!_segComents[r.project_id]) _segComents[r.project_id]=[];
+      _segComents[r.project_id].push(r);
+    });
+    _segLoaded = true;
+  } catch(e){ console.error('Seguimiento load error',e); }
+  renderSeguimiento();
+}
+
+async function setEstado(projectId, estado){
+  if(!_supa||!_currentUser) return;
+  const existing = _segEstados[projectId];
+  const userEmail = _currentUser.email||'unknown';
+  try {
+    if(existing){
+      await _supa.from('seg_estados').update({estado, updated_at:new Date().toISOString(), updated_by:userEmail}).eq('id',existing.id);
+      _segEstados[projectId] = {...existing, estado, updated_by:userEmail};
+    } else {
+      const {data} = await _supa.from('seg_estados').insert({project_id:projectId, estado, updated_by:userEmail}).select().single();
+      if(data) _segEstados[projectId] = data;
+    }
+    renderSeguimiento();
+  } catch(e){ console.error('setEstado error',e); }
+}
+
+async function addComentario(projectId){
+  if(!_supa||!_currentUser){ alert('Debes iniciar sesión para comentar.'); return; }
+  const inp     = document.getElementById('seg-inp-'+projectId);
+  const sendBtn = document.getElementById('seg-send-'+projectId);
+  const okBadge = document.getElementById('seg-ok-'+projectId);
+  if(!inp||!inp.value.trim()) return;
+  const texto   = inp.value.trim();
+  // Leer tipo del chip activo (data-tipo-sel en el botón, seteado por _segSetTipo)
+  const tipoVal = sendBtn?.dataset?.tipoSel || 'avance';
+  const userEmail = _currentUser.email||'unknown';
+  if(sendBtn) sendBtn.disabled=true;
+  try {
+    const {data,error} = await _supa.from('seg_comentarios')
+      .insert({project_id:projectId, texto, tipo:tipoVal, created_by:userEmail})
+      .select().single();
+    if(error) throw error;
+    if(!_segComents[projectId]) _segComents[projectId]=[];
+    _segComents[projectId].unshift(data);
+    inp.value='';
+    // Feedback inline antes de re-render
+    if(okBadge){ okBadge.classList.add('show'); setTimeout(()=>okBadge.classList.remove('show'),2200); }
+    setSyncStatus('ok','Registro guardado');
+    // Actualizar solo el historial sin colapsar la card
+    const cmtsEl = document.getElementById('seg-cmts-'+projectId);
+    const histToggle = cmtsEl?.closest('.seg-hist')?.querySelector('.seg-hist-toggle');
+    if(cmtsEl){
+      const updatedComents = (_segComents[projectId]||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+      const nC = updatedComents.length;
+      cmtsEl.innerHTML = updatedComents.map(cm=>{
+        const tipoV    = cm.tipo||'avance';
+        const tipoInfo = TIPO_OPTS.find(t=>t.v===tipoV)||TIPO_OPTS[0];
+        const dt       = new Date(cm.created_at);
+        const dtStr    = dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'})
+                         +' · '+dt.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+        return `<div class="seg-comment tipo-${tipoV}">
+          <div class="seg-comment-hdr">
+            <span class="seg-comment-tipo tipo-${tipoV}">${tipoInfo.l}</span>
+            <span class="seg-comment-user">👤 ${esc((cm.created_by||'').split('@')[0])}</span>
+            <span class="seg-comment-ts">${dtStr}</span>
+          </div>
+          <div class="seg-comment-txt">${esc(cm.texto)}</div>
+        </div>`;
+      }).join('');
+      // Actualizar label de historial
+      if(histToggle){
+        const chevEl = histToggle.querySelector('.seg-hist-chev');
+        const chevHtml = chevEl ? chevEl.outerHTML : '';
+        histToggle.innerHTML = `Historial · ${nC} registro${nC!==1?'s':''} ${chevHtml}`;
+      }
+      // Asegurar que historial esté visible
+      const wrap = document.getElementById('seg-cmts-wrap-'+projectId);
+      if(wrap) wrap.classList.remove('collapsed');
+    }
+    // Mantener textarea en foco
+    inp.focus();
+  } catch(e){
+    console.error('addComentario error',e);
+    setSyncStatus('err','Error al guardar registro');
+  }
+  finally { if(sendBtn) sendBtn.disabled=false; }
+}
+
+function toggleSegCard(id){
+  const body   = document.getElementById('seg-body-'+id);
+  const card   = document.getElementById('seg-card-'+id);
+  const toggle = document.getElementById('seg-tog-'+id);
+  if(!body||!toggle) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  toggle.classList.toggle('open', !isOpen);
+  if(card) card.classList.toggle('seg-card-open', !isOpen);
+  // Auto-focus textarea al abrir
+  if(!isOpen){
+    setTimeout(()=>{
+      const ta = document.getElementById('seg-inp-'+id);
+      if(ta) ta.focus();
+    }, 60);
+  }
+}
+
+/* ── Tipo chips: selección visual ── */
+function _segSetTipo(projectId, tipoVal){
+  document.querySelectorAll(`[data-seg-tipo-card="${projectId}"]`).forEach(c=>{
+    const isActive = c.dataset.segTipo === tipoVal;
+    c.className = 'seg-tipo-chip' + (isActive ? ' active-'+tipoVal : '');
+  });
+  const ta = document.getElementById('seg-inp-'+projectId);
+  if(ta){ ta.className = 'seg-inp tipo-'+tipoVal; ta.focus(); }
+  const btn = document.getElementById('seg-send-'+projectId);
+  if(btn) btn.dataset.tipoSel = tipoVal;
+}
+
+/* ── Card renderer — v4.4 Dashboard ── */
+function _segRenderCard(p){
+  const estadoRec  = _segEstados[p.id];
+  const estadoVal  = estadoRec?.estado||'pendiente';
+  const estadoInfo = ESTADO_OPTS.find(e=>e.v===estadoVal)||ESTADO_OPTS[0];
+  const coments    = (_segComents[p.id]||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const canEdit    = !!_currentUser;
+  const canAdmin   = isAdmin();
+  const nComents   = coments.length;
+
+  /* Estado control */
+  const estadoControl = canAdmin
+    ? `<select class="seg-estado-sel"
+        style="background:${estadoInfo.bg};border-color:${estadoInfo.bc};color:${estadoInfo.tc};"
+        onchange="setEstado(${p.id},this.value)" onclick="event.stopPropagation()">
+        ${ESTADO_OPTS.map(e=>`<option value="${e.v}" ${e.v===estadoVal?'selected':''}>${e.e} ${e.l}</option>`).join('')}
+      </select>`
+    : `<span class="seg-estado-badge" style="background:${estadoInfo.bg};border-color:${estadoInfo.bc};color:${estadoInfo.tc};">${estadoInfo.e} ${estadoInfo.l}</span>`;
+
+  /* Meta */
+  const tipoLabel = {habilitante:'🧱 Habilitante',core:'⚙️ Core',transformacional:'✨ Transformacional'}[p.tipo]||p.tipo;
+  const pilarChips = p.pilares.map(pl=>`<span class="seg-meta-pilar">${pl}</span>`).join('');
+
+  /* Historial */
+  const cmtsHtml = coments.length===0
+    ? '<div class="seg-no-comments"><span class="seg-no-comments-icon">📝</span>Sin registros aún. Documenta el primer avance arriba.</div>'
+    : coments.map(cm=>{
+        const tipoV    = cm.tipo||'avance';
+        const tipoInfo = TIPO_OPTS.find(t=>t.v===tipoV)||TIPO_OPTS[0];
+        const dt       = new Date(cm.created_at);
+        const dtStr    = dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'})
+                         +' · '+dt.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+        return `<div class="seg-comment tipo-${tipoV}">
+          <div class="seg-comment-hdr">
+            <span class="seg-comment-tipo tipo-${tipoV}">${tipoInfo.l}</span>
+            <span class="seg-comment-user">👤 ${esc((cm.created_by||'').split('@')[0])}</span>
+            <span class="seg-comment-ts">${dtStr}</span>
+          </div>
+          <div class="seg-comment-txt">${esc(cm.texto)}</div>
+        </div>`;
+      }).join('');
+
+  /* Compositor */
+  const composerHtml = canEdit
+    ? `<div class="seg-composer">
+        <div class="seg-composer-label">Registrar avance</div>
+        <div class="seg-composer-tipo-row">
+          ${TIPO_OPTS.map((t,i)=>`<button
+            class="seg-tipo-chip${i===0?' active-avance':''}"
+            data-seg-tipo="${t.v}"
+            data-seg-tipo-card="${p.id}"
+            onclick="event.stopPropagation();_segSetTipo(${p.id},'${t.v}')"
+          >${t.l}</button>`).join('')}
+        </div>
+        <textarea id="seg-inp-${p.id}" class="seg-inp tipo-avance"
+          placeholder="Escribe aquí el avance, riesgo o decisión de esta iniciativa...&#10;&#10;Sé específico: ¿qué pasó? ¿qué se decidió? ¿qué bloquea?"
+          onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();addComentario(${p.id});}"></textarea>
+        <div class="seg-composer-footer">
+          <span class="seg-inp-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> para registrar</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="seg-send-ok" id="seg-ok-${p.id}">✓ Registrado</span>
+            <button class="seg-send-btn" id="seg-send-${p.id}" data-tipo-sel="avance"
+              onclick="addComentario(${p.id})">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+              Registrar</button>
+          </div>
+        </div>
+      </div>`
+    : `<div style="padding:16px 24px;font-size:12px;color:var(--text-light);border-top:1px solid #E4EAF4;background:#FAFBFE;">🔒 Inicia sesión para registrar comentarios.</div>`;
+
+  /* Historial section — collapsible */
+  const histCollapsed = nComents === 0 ? '' : '';
+
+  return `<div class="seg-card" id="seg-card-${p.id}" style="border-left-color:${estadoInfo.bc}">
+    <div class="seg-card-hdr" onclick="toggleSegCard(${p.id})">
+      <div class="seg-card-left">
+        <div class="seg-card-name">${esc(p.nombre)}</div>
+        <div class="seg-card-meta">
+          <span>${tipoLabel}</span>
+          ${pilarChips?`<span class="seg-meta-sep">·</span>${pilarChips}`:''}
+        </div>
+      </div>
+      <div class="seg-card-right" onclick="event.stopPropagation()">
+        ${nComents>0?`<span class="seg-reg-count"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${nComents}</span>`:''}
+        ${estadoControl}
+      </div>
+      <span class="seg-card-toggle" id="seg-tog-${p.id}">▾</span>
+    </div>
+    <div class="seg-card-body" id="seg-body-${p.id}">
+      ${composerHtml}
+      <div class="seg-hist">
+        <div class="seg-hist-toggle" onclick="event.stopPropagation();_segToggleHist(${p.id})">
+          Historial · ${nComents} registro${nComents!==1?'s':''}
+          <span class="seg-hist-chev" id="seg-hist-chev-${p.id}">▾</span>
+        </div>
+        <div class="seg-comments-wrap" id="seg-cmts-wrap-${p.id}">
+          <div class="seg-comments" id="seg-cmts-${p.id}">${cmtsHtml}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleSegAreaGroup(areaKey){
+  const body = document.getElementById('seg-ag-body-'+areaKey);
+  const chev = document.getElementById('seg-ag-chev-'+areaKey);
+  if(!body||!chev) return;
+  const isCol = body.classList.contains('collapsed');
+  body.classList.toggle('collapsed',!isCol);
+  chev.classList.toggle('rot',!isCol);
+}
+
+function _segToggleHist(projectId){
+  const wrap = document.getElementById('seg-cmts-wrap-'+projectId);
+  const chev = document.getElementById('seg-hist-chev-'+projectId);
+  if(!wrap||!chev) return;
+  const isCol = wrap.classList.contains('collapsed');
+  wrap.classList.toggle('collapsed',!isCol);
+  chev.classList.toggle('rot',!isCol);
+}
+
+function renderSeguimiento(){
+  const grid    = document.getElementById('seg-grid');
+  const counter = document.getElementById('seg-count');
+  const authNote= document.getElementById('seg-auth-note');
+  if(!grid) return;
+
+  if(!_currentUser){
+    if(authNote) authNote.style.display='flex';
+    grid.innerHTML='';
+    return;
+  }
+  if(authNote) authNote.style.display='none';
+
+  const areaF   = (document.getElementById('seg-filter-area')?.value)||'';
+  const estadoF = (document.getElementById('seg-filter-estado')?.value)||'';
+
+  const filtered = projects.filter(p=>{
+    if(areaF && p.area!==areaF) return false;
+    if(estadoF){
+      const e = _segEstados[p.id]?.estado||'pendiente';
+      if(e!==estadoF) return false;
+    }
+    return p.nombre.trim()!=='';
+  });
+
+  if(counter) counter.textContent = filtered.length+' iniciativa'+(filtered.length!==1?'s':'');
+
+  if(filtered.length===0){
+    grid.innerHTML='<div class="empty-s"><div class="ei">📌</div><h3>Sin iniciativas</h3><p>Ajusta los filtros para ver más.</p></div>';
+    return;
+  }
+
+  // Si hay filtro de área activo: mostrar plano (sin agrupar)
+  if(areaF){
+    grid.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">${filtered.map(p=>_segRenderCard(p)).join('')}</div>`;
+    return;
+  }
+
+  // Agrupar por área (misma lógica que pestaña Proyectos)
+  let html = '';
+  AREAS.forEach(area=>{
+    const areaProjects = filtered.filter(p=>p.area===area.key);
+    if(areaProjects.length===0) return;
+    // Contar estados para el badge del grupo
+    const pendientes = areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='pendiente').length;
+    const enCurso    = areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='en_curso').length;
+    const completados= areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='completado').length;
+    const bloqueados = areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='bloqueado').length;
+    // Mini stat pills
+    const statPills = [];
+    if(completados>0) statPills.push(`<span class="seg-area-stat" style="background:#E8FFF5;color:#0a6e5e;">✅ ${completados}</span>`);
+    if(enCurso>0)     statPills.push(`<span class="seg-area-stat" style="background:#E8F4FF;color:#003D99;">🔄 ${enCurso}</span>`);
+    if(bloqueados>0)  statPills.push(`<span class="seg-area-stat" style="background:#FFF0F0;color:#CC3333;">🚫 ${bloqueados}</span>`);
+    if(pendientes>0)  statPills.push(`<span class="seg-area-stat" style="background:#FFF9E8;color:#856404;">⏳ ${pendientes}</span>`);
+
+    html += `<div class="seg-area-group" id="seg-ag-${area.key}">
+      <div class="seg-area-hdr" style="border-bottom-color:${area.color}" onclick="toggleSegAreaGroup('${area.key}')">
+        <span class="seg-area-icon">${area.icon}</span>
+        <span class="seg-area-name">${area.label}</span>
+        <div class="seg-area-stats">
+          ${statPills.join('')}
+          <span class="seg-area-count" style="background:${area.color}">${areaProjects.length}</span>
+        </div>
+        <span class="seg-area-chev" id="seg-ag-chev-${area.key}">▾</span>
+      </div>
+      <div class="seg-area-body" id="seg-ag-body-${area.key}">
+        ${areaProjects.map(p=>_segRenderCard(p)).join('')}
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
 
 /* ══════════════ BOOTSTRAP ══════════════════════════════════════════════════ */
 renderPesosGrid();
 updatePesosSum();
 // Auth check kicks off the full load chain
 checkSession();
+
+/* ══ FLUJO JS ══ */
+
+// ═══════════════════════════════════════════════════
+// DATA - 31 iniciativas + nodos de sistema
+// ═══════════════════════════════════════════════════
+const DETAILS = {
+
+  estrategia: {
+    icon:'🎯', title:'Estrategia RRHH 2026-2027', area:'Gerencia de Personas',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Ser socios estratégicos del negocio gestionando los desafíos adaptativos de EESS','Construir Capacidad Organizacional para la Era Humano-Máquina','Estrategia de Personas + Estrategia de Negocio = Ventaja Competitiva'],
+    dep:'Marco de referencia que orienta todas las decisiones de diseño, priorización y ejecución del área.',
+    connections:['competencias','sistema-uno','medicion-cultural','resultado']
+  },
+
+  'p6-sistema': {
+    icon:'🏛️', title:'P6 - Procesos RRHH como Cimientos', area:'Transversal',
+    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Operación confiable como condición de credibilidad estratégica','RRHH gana el derecho a la mesa estratégica siendo primero confiable en lo operativo','Incluye: nómina, contratos, finiquitos, selección, compensaciones, beneficios, capacitación, desempeño'],
+    dep:'Sin P6 sólido, cualquier iniciativa estratégica carece de base. Es la condición, no el objetivo.',
+    connections:['sistema-uno','offboarding','diagnostico-salarial','pasaje-cargo','reportabilidad','digitalizacion','automatizacion']
+  },
+
+  competencias: {
+    icon:'🗂️', title:'Modelo de Competencias', area:'Desarrollo Organizacional',
+    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Redefinir el modelo alineado a la lógica de skills (P2) y principios culturales (P3)','Reducir de 20 subcompetencias a 6 con conductas observables por nivel','Asegurar que sea el lenguaje común de selección, desempeño, desarrollo y compensación','Desarrollar arquetipos de roles: núcleo estable + zona de adaptación dinámica'],
+    dep:'Pieza fundante de P2 - sin este mapa no hay base para trayectorias no lineales. Dependencia directa con Desempeño Ágil y R&S.',
+    connections:['desempeno','atraccion','desarrollo','diagnostico-salarial']
+  },
+
+  desempeno: {
+    icon:'📊', title:'Sistema de Desempeño Ágil', area:'Desarrollo Organizacional',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Diseñar ciclos de evaluación continuos (no anuales), con foco en desarrollo','Incorporar feedback continuo como componente formal del sistema','Habilitar a líderes para conducir conversaciones de desempeño efectivas','Conversaciones de 15 min: conductas + resultados + desarrollo'],
+    dep:'Depende del Modelo de Competencias actualizado. Comparte feedback continuo con Cultura - debe ser un único sistema, no dos paralelos.',
+    connections:['competencias','liderazgo','reconocimiento','desarrollo']
+  },
+
+  habilidades: {
+    icon:'🧩', title:'Arquitectura de Habilidades', area:'Desarrollo Organizacional',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
+    tasks:['Mapear skills actuales vs. requeridas 2027-2030','Diseñar arquetipos de roles con núcleo estable y zona de adaptación dinámica','Definir trayectorias no lineales de desarrollo','Identificar skills críticos para la era IA en cada familia de roles'],
+    dep:'Habilita movilidad interna real y upskilling focalizado. Depende del Modelo de Competencias como lenguaje base.',
+    connections:['competencias','desarrollo','desempeno']
+  },
+
+  lidera: {
+    icon:'⚙️', title:'Programa Lidera tus Procesos', area:'Desarrollo Organizacional',
+    pilares:[{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'}],
+    tasks:['Dotar a líderes de herramientas para gestionar sus procesos con autonomía','Incorporar criterio de uso de IA en decisiones cotidianas de gestión','Diseñar cómo líderes actúan sobre resultados del pulso cultural'],
+    alert:'Definir población objetivo y formato antes de diseñar. El contenido varía significativamente entre líderes de obra y oficina. Esto condiciona escala, formato y recursos.',
+    connections:['desempeno','liderazgo','medicion-cultural']
+  },
+
+  automatizacion: {
+    icon:'🤖', title:'Automatizar Procesos RRHH', area:'Desarrollo Organizacional',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Mapear procesos actuales e identificar cuellos de botella automatizables','Documentar metodología y diseñar herramienta estándar de cálculo','Validar con stakeholders - política, flujo, solicitud, plazos','Implementar gobernanza y confidencialidad de datos'],
+    dep:'Iniciativa transversal que habilita eficiencia en múltiples áreas. Requiere alineación con TI y owner claro.',
+    connections:['sistema-uno','digitalizacion','resultado']
+  },
+
+  liderazgo: {
+    icon:'🧭', title:'Liderazgo en la Era IA - Programa Lidera', area:'Desarrollo Organizacional',
+    pilares:[{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'}],
+    tasks:['Desarrollar competencias de liderazgo adaptativo y gestión del cambio en contexto IA','Incluir toma de decisiones aumentada y criterio ético bajo IA','Diseñar cómo los líderes actúan sobre los resultados del pulso cultural'],
+    alert:'Definir población objetivo y formato antes de diseñar. El contenido varía significativamente entre líderes de obra y oficina.',
+    connections:['desempeno','cambio','medicion-cultural']
+  },
+
+  'apoyo-cultura': {
+    icon:'🔗', title:'Apoyo Metodológico a Cultura', area:'Desarrollo Organizacional',
+    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Soporte metodológico a iniciativas de gestión cultural','Co-diseño del modelo de medición continua de salud cultural con Calidad de Vida','Definir roles explícitos: qué hace Cultura, qué hace DO, qué hace Calidad de Vida'],
+    dep:'Iniciativa de articulación transversal - evitar duplicidades entre DO, Cultura y CV.',
+    connections:['programa-cultura','medicion-cultural','desempeno']
+  },
+
+  desarrollo: {
+    icon:'🌙', title:'Plataforma MOON (LMS + Videos)', area:'Capacitación',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
+    tasks:['Desarrollar plataforma LMS y videos de libre disposición para autogestión del aprendizaje','Nivel 1 de capacitación: oferta base accesible para todos los trabajadores','Las personas eligen sus rutas de aprendizaje — fomentar autonomía y aprendizaje continuo','Activa como soporte de onboarding: cursos obligatorios por cargo disponibles desde el primer día'],
+    alert:'Riesgo de secuencia: sin Modelo de Competencias (P2), la plataforma no tiene criterio de priorización de contenidos. Orden correcto: Competencias → MOON.',
+    connections:['competencias','desempeno','habilidades','cursos-estrategicos','cursos-onboarding']
+  },
+
+  'cursos-estrategicos': {
+    icon:'📖', title:'Cursos Estratégicos y Multicompetencias', area:'Capacitación',
+    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'}],
+    tasks:['Diseñar e implementar nuevos cursos vinculados a los pilares estratégicos y al Modelo de Competencias actualizado','Actualizar contenidos de cursos vigentes y desarrollar cursos multicompetencias','Ampliar y actualizar la oferta curricular de GESOC: Nivel 2 de capacitación','La oferta debe seguir la lógica del mapa de habilidades — no construir catálogo sin criterio previo'],
+    dep:'Depende del Modelo de Competencias actualizado. Sin ese mapa, los cursos se diseñan sin criterio de priorización estratégica.',
+    connections:['competencias','desarrollo','habilidades','transferencia']
+  },
+
+  'cursos-onboarding': {
+    icon:'🎓', title:'Cursos de Onboarding por Cargo', area:'Capacitación',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Diseñar y actualizar cursos específicos para incluir en el proceso de onboarding','Definir propuesta de cursos obligatorios por cada pilar estratégico: Nivel 1 de capacitación','Asegurar disponibilidad en plataforma MOON desde el primer día de ingreso','Coordinación con R&S y DO para integrar al flujo de onboarding end-to-end'],
+    dep:'Iniciativa coordinada con Onboarding (R&S) — los cursos son un componente del proceso de incorporación, no una acción separada.',
+    connections:['onboarding','desarrollo','competencias']
+  },
+
+  'certificacion-obra': {
+    icon:'🏅', title:'Certificación Obra — Programa Progresivo Chilevalora', area:'Capacitación',
+    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Programa de certificación de competencias Chilevalora específico para obra y proveedores externos','Establecer alianza/convenio con uno o dos proveedores de certificación: reducir costos, tiempos y agilizar proceso','Foco en certificación SEC como prioridad: alta demanda y mayor impacto en acreditación técnica','Programa progresivo: los trabajadores avanzan en niveles de competencia reconocidos externamente'],
+    dep:'Diferente a la capacitación de oficios (formación interna): esta iniciativa apunta a certificación formal reconocida por organismos externos. Coordinación con DO para alinear con mapa de habilidades.',
+    connections:['capacitacion-obra','habilidades','competencias']
+  },
+
+  'gestion-cambio-cap': {
+    icon:'🔀', title:'Gestión del Cambio desde Capacitación', area:'Capacitación',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'}],
+    tasks:['Desarrollar propuesta desde Capacitación para los distintos proyectos de cambio organizacional','Participar e incidir en el diseño e implementación de propuestas de capacitación vinculadas a proyectos clave','No limitarse a ejecutar el pedido de otras áreas — tener criterio propio sobre qué capacitación habilita qué cambio','Construir capacidad interna: que Capacitación sea un socio activo en proyectos de cambio, no un proveedor pasivo'],
+    dep:'Requiere coordinación con Cultura y Gestión del Cambio para no duplicar roles. Capacitación aporta el componente de habilitación de habilidades; Cultura aporta el componente de adhesión y significado.',
+    connections:['cambio','apoyo-cultura','programa-cultura','competencias']
+  },
+
+  'capacitacion-obra': {
+    icon:'🏗️', title:'Capacitación Obra - Oficios', area:'Capacitación',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
+    tasks:['Diseñar formato específico para capacitación en obra, diferenciado de oficina','Vinculación con programas de la Cámara Chilena de la Construcción','Desarrollar itinerarios de formación por oficio'],
+    dep:'Requiere coordinación con jefes de obra y supervisores para validar formatos y disponibilidad horaria.',
+    connections:['desarrollo','habilidades']
+  },
+
+  transferencia: {
+    icon:'📏', title:'Medición de Transferencia', area:'Capacitación',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Medir transferencia y anclaje al puesto de trabajo (nivel 3 Kirkpatrick)','Diseñar pilotos antes de escalar cualquier programa','Construir metodología de evaluación de impacto replicable'],
+    dep:'Sin medición de transferencia, el presupuesto de capacitación no puede justificarse estratégicamente.',
+    connections:['desarrollo','desempeno']
+  },
+
+  'diagnostico-salarial': {
+    icon:'💰', title:'Estandarización Base y Herramienta Diagnóstico Salarial', area:'Compensaciones',
+    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Sanear bases de datos (Personal y Remuneraciones) como punto de partida','Definir fuentes e inputs del modelo: encuestas de mercado + Finanzas','Construir modelo Excel base para diagnóstico salarial estandarizado','Desarrollar política borrador y tipos de diagnóstico aplicables','Validación inicial con GG César antes de cierre de año'],
+    alert:'Vacío crítico: sin acuerdo previo sobre el entregable y su uso, el diagnóstico pierde efecto. Iniciar con saneamiento de base de datos — no se puede diagnosticar sobre datos inconsistentes.',
+    connections:['competencias','pasaje-cargo','resultado']
+  },
+
+  'pasaje-cargo': {
+    icon:'📐', title:'Gestión Integral de Cargos, Estructura y Valorización', area:'Compensaciones',
+    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
+    tasks:['Mapear el proceso actual de pesaje de cargos (metodología HAY)','Documentar metodología preliminar con criterios explícitos y replicables','Coordinación con DO para alinear con Descriptores de Cargo (DDC)','Establecer comité de pesaje: quiénes participan, con qué frecuencia, con qué criterio','Definir gobernanza del proceso: quién aprueba, quién ejecuta, quién fiscaliza'],
+    dep:'Iniciativa que consolida tres dimensiones: estructura organizacional, descripción de cargos (DO) y valorización (Compensaciones). Sin coordinación entre estas tres piezas, el proceso es inconsistente.',
+    connections:['sistema-uno','diagnostico-salarial','reportabilidad']
+  },
+
+  reportabilidad: {
+    icon:'📊', title:'Modelo Mensual de Control de Gestión RRHH', area:'Compensaciones',
+    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Levantamiento de requerimientos con GG César: qué información necesita el negocio de RRHH','Inventario de reportes actuales por área: Personal y Rem, CdV, Legal, Finanzas, DO','Construir matriz de 13 KPIs estratégicos validada con GG César','Desarrollar plantilla estándar en Excel + módulo piloto de Dotación','Definir roadmap de módulos restantes para 2027'],
+    dep:'Modelo en Excel como primera versión (confiable, rápido de implementar). La migración a Sistema Uno es el paso siguiente — no el punto de partida.',
+    connections:['sistema-uno','pasaje-cargo','resultado']
+  },
+
+  digitalizacion: {
+    icon:'⚙️', title:'Workflows de Compensaciones y Estructura en Sistema 1', area:'Compensaciones',
+    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Levantar 4 procesos actuales (todos por correo hoy) para migrar a Sistema 1: Cambio de Renta, Cambio de Estructura, Cambio de Cargo, Nuevo Cargo/Modificación','Workflow 1: Cambio de Renta (piloto inicial con Personal y Rem.)','Definir gobernanza y aprobadores por workflow con gerencias solicitantes','Parametrización en Sistema 1 + pruebas con usuarios clave y capacitación','Activación oficial con fecha de corte del correo por workflow — el correo deja de ser el canal'],
+    dep:'Coordinación estrecha con TI, Remuneraciones y gerencias solicitantes. El correo como canal de solicitud es el problema a resolver — cada workflow migrado elimina una fuente de error y retraso.',
+    connections:['sistema-uno','reportabilidad','automatizacion']
+  },
+
+  atraccion: {
+    icon:'🔍', title:'Estandarización Selección y EVP', area:'Reclutamiento y Selección',
+    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Actualizar política, proceso y sistema de atracción y evaluación de talento','Estandarizar herramientas, flujos y criterios de evaluación','Apalancar tecnología disponible (ATS, evaluaciones en línea)','Gestionar el cambio con los clientes internos'],
+    dep:'La calidad de selección depende del Modelo de Competencias. Sin perfil de skills, los criterios de evaluación son ambiguos.',
+    connections:['competencias','onboarding','sistema-uno']
+  },
+
+  onboarding: {
+    icon:'🚀', title:'Proceso de Onboarding', area:'R&S + DO + Capacitación',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Diseñar proceso integrado desde firma hasta productividad plena','Tareas claras por área y cargo con seguimiento automatizado','Métricas de cumplimiento - para que el colaborador aporte desde el primer día','Incluir inducción cultural (DO) y formación inicial (Capacitación)'],
+    dep:'El onboarding es la primera experiencia concreta de la PVE - define la percepción inicial del colaborador. No puede ser solo un checklist administrativo.',
+    connections:['atraccion','desempeno','medicion-cultural']
+  },
+
+  'sistema-uno': {
+    icon:'💻', title:'Potenciar Herramientas Sistema Uno', area:'Remuneraciones y Relaciones Laborales',
+    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'}],
+    tasks:[
+      '— PATA A: Evidenciar eficiencia generada —',
+      'Construir dashboard con KPIs que muestre ahorro de tiempo por proceso ya migrado a Sistema Uno',
+      'Caso emblema: firma de documentos integrada (antes: salir a plataforma externa → hoy: flujo completo en Sistema Uno). Medir tiempo ahorrado para el creador del doc, el firmante y el empleador',
+      'Objetivo: demostrar con datos que la migración generó valor y generar criterio para próximas decisiones de mejora',
+      '— PATA B: Reauditar implementación copy-paste —',
+      'Hacer ronda con cada subárea de la Gerencia de Personas: levantar qué fue replicado sin análisis y qué podría mejorarse dentro de la plataforma',
+      'Foco prioritario: módulo de KPIs/variables — permite automatizar cálculo de renta variable y generar tickets de compensación automáticamente (cubre requisito legal + eficiencia administrativa en un solo flujo)'
+    ],
+    alert:'Iniciativa con dos componentes distintos: (A) demostrar valor ya generado con datos, y (B) reauditar implementaciones copy-paste para identificar mejoras pendientes. El módulo de variables tiene potencial de cerrar la brecha operativa con Compensaciones (pesajes). No es un proyecto de TI nuevo — trabaja con lo que ya existe.',
+    connections:['pasaje-cargo','reportabilidad','digitalizacion','offboarding','revision-contratos']
+  },
+
+  offboarding: {
+    icon:'🚪', title:'Proceso de Offboarding', area:'Remuneraciones / Relaciones Laborales',
+    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:[
+      '— PLANO 1: Flujo operativo de salida —',
+      'Mapear el proceso completo desde aviso de baja hasta cierre: quién notifica qué, en qué plazo, qué información debe llegar a Remuneraciones antes del día 10 del finiquito',
+      'Problema actual: información llega incompleta al momento del finiquito (caja chica sin confirmar, comisiones sin dato disponible, equipos TI sin recuperar)',
+      'Meta: cuando llegue el aviso de baja, el área ya viene con checklist completo. Remuneraciones revisa — no persigue',
+      '— PLANO 2: Cierre financiero sin conflicto —',
+      'Comisiones de ventas: el desfase entre pago y finiquito genera firma "a ojos cerrados" — diseñar protocolo que resuelva esto antes del día 10',
+      'Bonos no escriturados: generan disputas post-salida entre Compensaciones y el trabajador. Requiere coordinación con iniciativa Revisión de Contratos',
+      'Caja chica: pasar de recuperación reactiva a protocolo preventivo (información confirmada antes del finiquito)',
+      '— PLANO 3: Gestión de contingencias post-salida —',
+      'Mapear dónde están las contingencias legales antes de que exploten — saber qué es corregible y qué se asume conscientemente',
+      'Vinculado directamente con Revisión y Actualización de Contratos: un contrato claro reduce las contingencias en la salida'
+    ],
+    alert:'El offboarding tiene tres planos superpuestos que hoy no están diferenciados: (1) proceso operativo de cierre, (2) cierre financiero limpio, y (3) gestión de contingencias legales. Resolver solo uno sin los otros genera eficiencia parcial. Priorizar Plano 1 tiene impacto inmediato en Remuneraciones y no requiere cambios legales.',
+    connections:['sistema-uno','revision-contratos','pasaje-cargo']
+  },
+
+  'revision-contratos': {
+    icon:'📄', title:'Revisión y Actualización de Contratos', area:'Relaciones Laborales',
+    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:[
+      '— OBJETIVO 1: Transparencia para el trabajador —',
+      'Auditoría completa de contratos vigentes por tipo (faena, oficios, oficina): verificar que lo que dice el contrato le haga sentido a quien lo firma',
+      'Política actual: contratos por faena con descripción específica (ej: "maestro pintor, obra gruesa del edificio Las Lías") — verificar que la ejecución esté alineada',
+      '— OBJETIVO 2: Protección legal de la empresa —',
+      'Mapear contingencias actuales: dónde hay dificultad para demostrar el término de la faena o del vínculo laboral',
+      'Evaluar incorporación de hitos técnicamente demostrables en contratos de obra (entregables específicos verificables por terceros)',
+      'Documentar y escriturar bonos que hoy se pagan sin respaldo formal (seguridad, resultado empresa, etc.): sin papel, hay debate',
+      '— CONDICIÓN PREVIA —',
+      'Coordinación con abogados laborales antes de modificar cualquier documento. Este levantamiento es diagnóstico primero, propuesta de cambio después'
+    ],
+    alert:'Doble objetivo simultáneo: transparencia para el trabajador (sabe exactamente para qué fue contratado y cuándo termina) y protección legal de la empresa (puede demostrar el término de la relación contractual). Requiere coordinación externa antes de ejecutar cambios. Vinculada directamente con el Plano 3 del Offboarding.',
+    connections:['offboarding','sistema-uno']
+  },
+
+  'programa-cultura': {
+    icon:'🌿', title:'Programa Trabajo Cultura', area:'Cultura y Gestión del Cambio',
+    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Elaborar estructura de gestión del cambio propia de Socovesa','Desarrollar un Programa de feedback continuo','Alinear reconocimiento del conjunto con DO','Traducir principios culturales en comportamientos observables por área y nivel'],
+    dep:'Iniciativa de elaboración y despliegue cultural - distinta a la medición. Cultura lidera; DO apoya metodológicamente.',
+    connections:['reconocimiento','medicion-cultural','cambio','apoyo-cultura']
+  },
+
+  cambio: {
+    icon:'🔄', title:'Gestión del Cambio Organizacional', area:'Cultura y Gestión del Cambio',
+    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'}],
+    tasks:['Acompañar el cambio organizacional en proyectos PI, Datos y Sostenibilidad','Desarrollar metodología interna de gestión del cambio replicable','No depender de consultoría externa en cada proyecto - construir capacidad interna'],
+    dep:'La metodología de gestión del cambio debe ser internalizada, no externalizada en cada proyecto.',
+    connections:['liderazgo','programa-cultura','medicion-cultural']
+  },
+
+  reconocimiento: {
+    icon:'⭐', title:'Reconocimiento y Feedback Continuo', area:'Cultura y Calidad de Vida + DO',
+    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Diseñar sistema de reconocimiento alineado a comportamientos culturales (no solo resultados)','Co-diseñar feedback continuo con DO: quién lo facilita, ciclo y registro','Articular con Sistema de Desempeño Ágil - evitar duplicidades'],
+    dep:'El feedback continuo es componente del Sistema de Desempeño Ágil (DO). Debe ser un único sistema alimentado por dos áreas. Acordar propiedad antes de ejecutar.',
+    connections:['desempeno','programa-cultura','medicion-cultural']
+  },
+
+  comunicaciones: {
+    icon:'📢', title:'Comunicaciones Internas', area:'Cultura y Gestión del Cambio',
+    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Newsletter unificado una vez al mes - canal ordenado de comunicaciones RRHH','Posicionar Sistema Uno como plataforma de gestión y comunicación de EESS'],
+    alert:'El newsletter es un medio, no una estrategia - definir primero qué se comunica y para qué antes de diseñar el formato.',
+    connections:['programa-cultura','sistema-uno']
+  },
+
+  'medicion-cultural': {
+    icon:'📡', title:'Medición Continua Salud Cultural', area:'Calidad de Vida + DO',
+    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Diseñar modelo de pulso de clima trimestral/cuatrimestral: qué se mide, con qué herramienta, quién actúa','Establecer protocolo de actuación ante resultados críticos','Calidad de Vida lidera la medición; DO lidera el análisis y la acción'],
+    dep:'Iniciativa de medición de clima - distinta al Programa Cultura. Requiere acuerdo explícito de roles entre Calidad de Vida y DO para evitar duplicidades.',
+    connections:['programa-cultura','apoyo-cultura','liderazgo','resultado']
+  },
+
+  bienestar: {
+    icon:'💚', title:'Calidad de Vida - Indicadores y Programas', area:'Calidad de Vida',
+    pilares:[{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Obra: generar indicadores de asistencia social trimestrales (bienestar, clima, uso de programas)','Automatizar y eficientar procesos de gestión de beneficios','Posicionar programas estratégicos con indicadores de alcance e impacto','Seguimiento y definición de iniciativas Proceso Psicosocial oficina'],
+    connections:['psicosocial','medicion-cultural','resultado']
+  },
+
+  diversidad: {
+    icon:'🌈', title:'Diversidad e Inclusión', area:'Calidad de Vida',
+    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
+    tasks:['Sostener pilar de discapacidad - compromisos concretos con métricas','Desarrollar pilar de equidad de género','Consolidar comunidad de personas cuidadoras','Ley Karin: abordaje dimensión violencia en el trabajo'],
+    legal:'🔴 Ley Karin - obligación legal activa: verificar estado de cumplimiento como prioridad inmediata antes de avanzar otras iniciativas de este bloque.',
+    connections:['bienestar','psicosocial','programa-cultura']
+  },
+
+  psicosocial: {
+    icon:'🧠', title:'Factores Psicosociales', area:'Calidad de Vida',
+    pilares:[{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['Aplicar SUSESO-ISTAS21 2026','Seguimiento y definición de iniciativas de oficina','Seguimiento proceso obras en terreno','Integrar resultados a planes de mejora del área'],
+    dep:'Los resultados del diagnóstico psicosocial deben alimentar el plan de acción de Calidad de Vida y ser coherentes con el pulso cultural.',
+    connections:['bienestar','medicion-cultural','resultado']
+  },
+
+  resultado: {
+    icon:'🏆', title:'RRHH como Socio Estratégico', area:'Resultado esperado 2026-2027',
+    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
+    tasks:['P6 funcionando: operación confiable que libera tiempo estratégico','P1+P2: organización que aprende y despliega talento según habilidades','P3+P4: cultura como ventaja competitiva, líderes preparados para la era IA','P5: propuesta de valor al empleado diferenciada y comunicada con evidencia'],
+    dep:'Capacidad Organizacional para la Era Humano-Máquina: Estrategia de Personas + Estrategia de Negocio.',
+    connections:[]
+  }
+};
+
+// ═══════════════════════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════════════════════
+function flujo_openDetail(id) {
+  const d = DETAILS[id];
+  if (!d) return;
+  document.getElementById('dp-icon').textContent = d.icon;
+  document.getElementById('dp-title').textContent = d.title;
+  document.getElementById('dp-area').textContent = d.area;
+
+  let html = '';
+
+  if (d.pilares && d.pilares.length) {
+    html += '<div><div class="dp-section-title">Pilares vinculados<\/div><div class="dp-pilares">';
+    d.pilares.forEach(p => {
+      html += '<div class="dp-p-chip" style="background:' + p.bg + ';color:' + p.color + ';border-color:' + p.color + '33;">' + p.code + ' · ' + p.label + '<\/div>';
+    });
+    html += '<\/div><\/div>';
+  }
+
+  if (d.tasks && d.tasks.length) {
+    html += '<div><div class="dp-section-title">Iniciativas / acciones clave<\/div><ul class="dp-tasks">';
+    d.tasks.forEach(t => { html += '<li>▸ ' + t + '<\/li>'; });
+    html += '<\/ul><\/div>';
+  }
+
+  if (d.legal) html += '<div class="dp-legal">' + d.legal + '<\/div>';
+  if (d.alert) html += '<div class="dp-alert">⚠ ' + d.alert + '<\/div>';
+  if (d.dep)   html += '<div class="dp-deps">↔ ' + d.dep + '<\/div>';
+
+  if (d.connections && d.connections.length) {
+    html += '<div><div class="dp-section-title">Conectado con<\/div><div class="dp-connections">';
+    d.connections.forEach(cid => {
+      const c = DETAILS[cid];
+      if (c) html += '<div class="dp-conn-item" data-action="detail" data-id="' + cid + '">' + c.icon + ' ' + c.title + '<span class="arrow">→<\/span><\/div>';
+    });
+    html += '<\/div><\/div>';
+  }
+
+  document.getElementById('dp-body').innerHTML = html;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+
+function flujo_closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════
+// VIEW TOGGLE
+// ═══════════════════════════════════════════════════
+function flujo_setView(view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector('[data-action="view"][data-view="' + view + '"]');
+  if (btn) btn.classList.add('active');
+  document.getElementById('view-flow').style.display   = view === 'flow'   ? 'block' : 'none';
+  document.getElementById('view-matrix').style.display = view === 'matrix' ? 'block' : 'none';
+  document.getElementById('view-tabla').style.display  = view === 'tabla'  ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════
+// TABLA FILTER
+// ═══════════════════════════════════════════════════
+function flujo_tblFilter(pilar) {
+  document.querySelectorAll('.tbl-filter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector('[data-action="tbl"][data-pilar="' + pilar + '"]');
+  if (btn) btn.classList.add('active');
+  const rows = document.querySelectorAll('#tblMain tbody tr[data-tp]');
+  let visible = 0;
+  rows.forEach(row => {
+    if (pilar === 'all') { row.classList.remove('thidden'); visible++; }
+    else {
+      const ps = row.dataset.tp || '';
+      if (ps.includes(pilar)) { row.classList.remove('thidden'); visible++; }
+      else { row.classList.add('thidden'); }
+    }
+  });
+  document.getElementById('tblCount').textContent = visible;
+}
+
+// ═══════════════════════════════════════════════════
+// FILTER BY PILAR (header legends)
+// ═══════════════════════════════════════════════════
+let activeFilter = null;
+function flujo_filterByPilar(pilar, el) {
+  if (activeFilter === pilar) {
+    activeFilter = null;
+    document.querySelectorAll('.p-legend').forEach(l => l.classList.remove('active-filter'));
+    document.querySelectorAll('.node, .foundation-strip, .resultado-node').forEach(n => n.classList.remove('dim','highlight'));
+    return;
+  }
+  activeFilter = pilar;
+  document.querySelectorAll('.p-legend').forEach(l => l.classList.remove('active-filter'));
+  if (el) el.classList.add('active-filter');
+  document.querySelectorAll('.node, .foundation-strip, .resultado-node').forEach(n => {
+    const ps = (n.dataset.pilares || '').split(' ');
+    if (ps.includes(pilar)) { n.classList.remove('dim'); n.classList.add('highlight'); }
+    else { n.classList.remove('highlight'); n.classList.add('dim'); }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// FILTER BY AREA (sidebar)
+// ═══════════════════════════════════════════════════
+const AREA_MAP = {
+  gerente: ['estrategia','resultado'],
+  do: ['competencias','desempeno','habilidades','lidera','automatizacion','liderazgo','apoyo-cultura'],
+  cap: ['desarrollo','cursos-estrategicos','cursos-onboarding','capacitacion-obra','certificacion-obra','transferencia','gestion-cambio-cap'],
+  comp: ['diagnostico-salarial','pasaje-cargo','reportabilidad','digitalizacion'],
+  rs: ['atraccion','onboarding'],
+  rem: ['sistema-uno','offboarding','revision-contratos'],
+  cultura: ['programa-cultura','cambio','reconocimiento','comunicaciones'],
+  cv: ['medicion-cultural','bienestar','diversidad','psicosocial']
+};
+
+function flujo_filterByArea(area) {
+  document.querySelectorAll('.area-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector('[data-action="area"][data-area="' + area + '"]');
+  if (btn) btn.classList.add('active');
+  activeFilter = null;
+  document.querySelectorAll('.p-legend').forEach(l => l.classList.remove('active-filter'));
+  document.querySelectorAll('.node, .foundation-strip, .resultado-node').forEach(n => n.classList.remove('dim','highlight'));
+  if (area === 'all') return;
+
+  const show = AREA_MAP[area] || [];
+  document.querySelectorAll('.node, .foundation-strip').forEach(n => {
+    const id = n.dataset.id || '';
+    const areaGroup = n.dataset.areaGroup || '';
+    // Resaltar si: el nodo tiene data-id en el mapa, o el nodo es el grupo de esta área
+    if (show.includes(id) || areaGroup === area) {
+      n.classList.add('highlight');
+    } else if (!id && !areaGroup) {
+      // nodo sin id ni grupo: no tocar
+    } else {
+      n.classList.add('dim');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// AREA GROUP PANEL — abre panel con todas las iniciativas de un área
+// ═══════════════════════════════════════════════════
+const AREA_LABELS = {
+  cap:     { icon: '📚', title: 'Capacitación',                     subtitle: '7 iniciativas' },
+  rem:     { icon: '📋', title: 'Remuneraciones y Relaciones Laborales', subtitle: '3 iniciativas' },
+  do:      { icon: '🏗️', title: 'Desarrollo Organizacional',         subtitle: '7 iniciativas' },
+  comp:    { icon: '⚖️', title: 'Compensaciones',                    subtitle: '4 iniciativas' },
+  rs:      { icon: '🔍', title: 'Reclutamiento y Selección',         subtitle: '2 iniciativas' },
+  cultura: { icon: '🌱', title: 'Cultura y Gestión del Cambio',      subtitle: '4 iniciativas' },
+  cv:      { icon: '💚', title: 'Calidad de Vida',                   subtitle: '4 iniciativas' },
+  do_lidera: { icon: '🧭', title: 'Liderazgo en la Era IA',          subtitle: '2 iniciativas' }
+};
+
+function flujo_openAreaGroup(area) {
+  const ids = AREA_MAP[area] || [];
+  const meta = AREA_LABELS[area] || { icon: '📂', title: area, subtitle: ids.length + ' iniciativas' };
+  const items = ids.map(id => DETAILS[id]).filter(Boolean);
+  if (!items.length) return;
+
+  document.getElementById('dp-icon').textContent = meta.icon;
+  document.getElementById('dp-title').textContent = meta.title;
+  document.getElementById('dp-area').textContent = meta.subtitle + ' · Clic en cada tarjeta para ver detalle completo';
+
+  let html = '<div><div class="dp-section-title">Iniciativas del área</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">';
+
+  ids.forEach(id => {
+    const d = DETAILS[id];
+    if (!d) return;
+    // Chips de pilares
+    const pilarChips = (d.pilares || []).map(p =>
+      '<span style="display:inline-flex;align-items:center;gap:3px;background:' + p.bg + ';color:' + p.color + ';border:1px solid ' + p.color + '33;border-radius:10px;padding:1px 7px;font-size:9px;font-weight:700;">' + p.code + '<\/span>'
+    ).join(' ');
+    // Primera task como preview
+    const preview = (d.tasks && d.tasks.length)
+      ? d.tasks.filter(t => !t.startsWith('—'))[0] || d.tasks[0]
+      : '';
+    html += '<div class="dp-conn-item" data-action="detail" data-id="' + id + '" style="display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#F8FAFD;cursor:pointer;transition:all 0.15s;">';
+    html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">';
+    html += '<div style="flex:1;">';
+    html += '<div style="font-weight:700;font-size:12px;color:var(--navy);margin-bottom:4px;">' + d.icon + ' ' + d.title + '<\/div>';
+    if (pilarChips) html += '<div style="margin-bottom:5px;">' + pilarChips + '<\/div>';
+    if (preview) html += '<div style="font-size:10px;color:var(--text-light);line-height:1.4;">' + preview + '<\/div>';
+    html += '<\/div>';
+    html += '<span style="color:var(--cian);font-size:14px;flex-shrink:0;margin-top:2px;">→<\/span>';
+    html += '<\/div>';
+    html += '<\/div>';
+  });
+
+  html += '<\/div><\/div>';
+
+  document.getElementById('dp-body').innerHTML = html;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+
+
+function flujo_showMatrixDetail(idsStr) {
+  const ids = idsStr.split(',').map(s => s.trim()).filter(Boolean);
+  if (!ids.length) return;
+  if (ids.length === 1) { flujo_openDetail(ids[0]); return; }
+
+  const items = ids.map(id => DETAILS[id]).filter(Boolean);
+  if (!items.length) return;
+
+  document.getElementById('dp-icon').textContent = '📋';
+  document.getElementById('dp-title').textContent = items.length + ' iniciativas';
+  document.getElementById('dp-area').textContent = 'Haz clic en cada una para ver detalle';
+
+  let html = '<div><div class="dp-section-title">Iniciativas en esta celda<\/div><div class="dp-connections">';
+  ids.forEach(id => {
+    const c = DETAILS[id];
+    if (c) html += '<div class="dp-conn-item" data-action="detail" data-id="' + id + '">' + c.icon + ' ' + c.title + '<span class="arrow">→<\/span><\/div>';
+  });
+  html += '<\/div><\/div>';
+
+  document.getElementById('dp-body').innerHTML = html;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════
+// EVENT DELEGATION - único listener para todo
+// ═══════════════════════════════════════════════════
+let _flujoInited = false;
+function flujoInit() {
+  if(_flujoInited) return;
+  _flujoInited = true;
+
+  document.body.addEventListener('click', function(e) {
+    const el = e.target.closest('[data-action]');
+    if (!el) return;
+    const action = el.dataset.action;
+
+    if (action === 'detail') {
+      flujo_openDetail(el.dataset.id);
+    }
+    else if (action === 'detail-stop') {
+      e.stopPropagation();
+      flujo_openDetail(el.dataset.id);
+    }
+    else if (action === 'area-group') {
+      e.stopPropagation();
+      flujo_openAreaGroup(el.dataset.area);
+    }
+    else if (action === 'close') {
+      flujo_closeDetail();
+    }
+    else if (action === 'view') {
+      flujo_setView(el.dataset.view);
+    }
+    else if (action === 'pilar') {
+      flujo_filterByPilar(el.dataset.pilar, el);
+    }
+    else if (action === 'area') {
+      flujo_filterByArea(el.dataset.area);
+    }
+    else if (action === 'tbl') {
+      flujo_tblFilter(el.dataset.pilar);
+    }
+    else if (action === 'matrix') {
+      flujo_showMatrixDetail(el.dataset.ids);
+    }
+  });
+
+  // Overlay click closes panel
+  document.getElementById('overlay').addEventListener('click', flujo_closeDetail);
+
+  // Keyboard ESC
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') flujo_closeDetail(); });
+
+  // Table rows with data-id open detail
+  document.querySelectorAll('#tblMain tbody tr[data-id]').forEach(row => {
+    row.style.cursor = 'pointer';
+  });
+}
+
 </script>
 </body>
 </html>
