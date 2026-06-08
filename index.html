@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Priorizador Estratégico 3.0 — Socovesa RRHH</title>
+<title>Priorizador Estratégico 3.0 — Gerencia de Personas Socovesa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -64,9 +64,7 @@ body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min
 .hist-restore{font-size:10px;background:none;border:1px solid var(--border);color:var(--text-light);border-radius:5px;padding:2px 8px;cursor:pointer;margin-top:6px;}
 .hist-restore:hover{border-color:var(--royal);color:var(--royal);}
 .hist-footer{padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0;}
-.btn-gh-backup{width:100%;padding:10px;background:var(--navy);border:none;border-radius:8px;color:white;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn-gh-backup:hover{background:#002244;}
-.btn-gh-backup:disabled{opacity:0.5;cursor:not-allowed;}
+
 
 /* ═══ USER BADGE (header) ═══ */
 .user-badge{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 12px 5px 5px;cursor:default;}
@@ -74,6 +72,8 @@ body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min
 .user-name{font-size:11px;font-weight:600;color:var(--text);}
 .btn-logout{background:none;border:1px solid var(--border);color:var(--text-light);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;margin-left:4px;}
 .btn-logout:hover{border-color:#ff8080;color:#cc3333;}
+.btn-admin-login{padding:6px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--text-light);cursor:pointer;transition:all 0.15s;}
+.btn-admin-login:hover{border-color:var(--royal);color:var(--royal);}
 
 /* HEADER */
 .app-header{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
@@ -348,6 +348,12 @@ select:focus{border-color:var(--royal);}
 .empty-s .ei{font-size:44px;margin-bottom:14px;opacity:0.45;}
 .empty-s h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;}
 .empty-s p{font-size:13px;}
+/* readonly: block structural changes only — exploration still allowed */
+.readonly-mode .btn-rm{pointer-events:none;opacity:0.3;}
+.readonly-mode .btn-add-area{pointer-events:none;opacity:0.3;}
+.readonly-mode .btn-save-now{display:none;}
+.readonly-badge{display:none;background:#FFF9E8;border:1px solid #FFD44D;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#856404;margin-bottom:12px;text-align:center;}
+.readonly-mode .readonly-badge{display:block;}
 footer{background:var(--white);border-top:1px solid var(--border);text-align:center;padding:14px;font-size:11px;color:var(--text-light);margin-top:40px;}
 
 /* CONFIG PANEL */
@@ -378,19 +384,20 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
 }
 </style>
 </head>
-<body>
+<body class="readonly-mode">
 
-<!-- ═══ AUTH OVERLAY ═══ -->
-<div id="auth-overlay">
+<!-- ═══ AUTH OVERLAY (solo admins) ═══ -->
+<div id="auth-overlay" class="hidden">
   <div class="auth-box">
     <div class="auth-logo">P</div>
-    <div class="auth-title">Priorizador Estratégico</div>
-    <div class="auth-sub">Gerencia de Personas · Empresas Socovesa<br>Acceso restringido — solo editores autorizados</div>
-    <input class="auth-inp" id="auth-email" type="email" placeholder="correo@socovesa.cl" autocomplete="email">
+    <div class="auth-title">Acceso de Administrador</div>
+    <div class="auth-sub">Gerencia de Personas · Socovesa<br>Solo editores autorizados</div>
+    <input class="auth-inp" id="auth-email" type="email" placeholder="correo@eess.cl" autocomplete="email">
     <input class="auth-inp" id="auth-pass" type="password" placeholder="Contraseña" autocomplete="current-password">
     <button class="auth-btn" id="auth-btn" onclick="doLogin()">Ingresar</button>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-loading" id="auth-loading"></div>
+    <button onclick="closeLoginOverlay()" style="margin-top:12px;background:none;border:none;color:var(--text-light);font-size:12px;cursor:pointer;font-family:Poppins,sans-serif;">Cancelar</button>
   </div>
 </div>
 
@@ -412,11 +419,12 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
     <button class="hist-close" onclick="toggleHist()">✕</button>
   </div>
   <div class="hist-list" id="hist-list"><div class="hist-empty">Cargando historial…</div></div>
-  <div class="hist-footer">
-    <button class="btn-gh-backup" id="btn-gh-backup" onclick="pushToGitHub()">
-      <span>📦</span> Exportar snapshot a GitHub
+  <div id="hist-footer-admin" style="display:none;padding:14px 16px;border-top:1px solid var(--border);">
+    <button onclick="publishToGitHub('Publicado por '+(_currentUser?.email||'admin'))" style="width:100%;padding:10px;background:var(--navy);border:none;border-radius:8px;color:white;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      🌐 Publicar versión actual para el equipo
     </button>
-    <div style="font-size:10px;color:var(--text-light);margin-top:8px;text-align:center;">Guarda una copia versionada del portafolio completo en tu repositorio</div>
+    <div style="font-size:10px;color:var(--text-light);margin-top:7px;text-align:center;">Actualiza GitHub Pages — el equipo ve los cambios al recargar</div>
+  </div>
   </div>
 </div>
 
@@ -436,10 +444,10 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
       <button class="nav-btn active" onclick="showPage('proyectos')">📋 Proyectos</button>
       <button class="nav-btn" onclick="showPage('resultados')">🏆 Ranking</button>
       <button class="nav-btn" onclick="showPage('guia')">📖 Guía</button>
-      <button class="nav-btn" onclick="showPage('config')">⚙️ Configurar</button>
     </nav>
     <div class="header-right">
       <button class="btn-hist" onclick="toggleHist()">🕐 Historial <span id="hist-count-badge" style="display:none;background:var(--royal);color:white;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:2px;"></span></button>
+      <button class="btn-admin-login" id="btn-admin-login" onclick="showLoginOverlay()" title="Acceso administrador">🔑 Admin</button>
       <div class="user-badge" id="user-badge" style="display:none;">
         <div class="user-av" id="user-av">?</div>
         <div class="user-name" id="user-name-lbl">–</div>
@@ -476,6 +484,7 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
     <div><div class="section-title">Paso 1</div><div class="section-label">Define y evalúa tus proyectos</div></div>
     <button class="btn-calc" onclick="addProjectModal()">+ Nuevo Proyecto</button>
   </div>
+  <div class="readonly-badge">👁️ Modo exploración — puedes ajustar scores y calcular escenarios, pero los cambios no se guardan</div>
   <div class="alert-banner">
     <span style="font-size:16px;flex-shrink:0">💡</span>
     <div><strong>Lógica de portafolio activa.</strong> Habilitantes ×1.3 · Transformacionales ×1.1 · Proyectos bloqueados penalizados −30%. Las iniciativas están organizadas por área.</div>
@@ -514,8 +523,11 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
   <div id="areas-container"></div>
 
   <div class="calc-actions">
-    <button class="btn-save-now" onclick="saveToSupabase('manual')">💾 Guardar ahora</button>
+    <div id="readonly-note" style="display:none;font-size:11px;color:var(--text-light);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;">
+      👁️ Modo exploración — los cambios no se guardan. Contacta a Natalia o David para actualizar la versión oficial.
+    </div>
     <button class="btn-calc" id="btn-calc" onclick="calcularRanking()">⚡ Calcular Ranking Estratégico</button>
+    <button id="btn-publish" style="display:none;padding:12px 22px;background:var(--navy);border:none;border-radius:10px;color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;" onclick="saveToSupabase('manual').then(()=>publishToGitHub(_currentUser?.email||'admin'))">🌐 Guardar y publicar</button>
   </div>
 </div>
 
@@ -581,69 +593,6 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
   </div>
 </div>
 
-<!-- ═══════════ PAGE CONFIG ═══════════ -->
-<div id="page-config" class="page">
-  <div class="section-header mb-20">
-    <div><div class="section-title">Integración</div><div class="section-label">Configurar Supabase y GitHub</div></div>
-  </div>
-  <div class="cfg-panel">
-    <div class="cfg-title">⚙️ Configuración de persistencia y versionado</div>
-    <div class="cfg-sub">Estos valores se guardan en el navegador (localStorage del equipo). Solo necesitas configurarlos una vez por dispositivo. No se sincronizan entre dispositivos — cada persona que use el priorizador debe configurarlos.</div>
-
-    <div id="cfg-readonly-note" style="display:none;">
-      <div class="cfg-readonly-badge">🔒 Configuración ya guardada en este navegador</div>
-    </div>
-
-    <div class="cfg-section">
-      <div class="cfg-section-title">🗄️ Supabase — Base de datos</div>
-      <div class="cfg-inp-row">
-        <div class="cfg-inp-grp">
-          <label class="cfg-lbl">Project URL</label>
-          <input class="cfg-inp" id="cfg-supa-url" type="text" placeholder="https://xxxx.supabase.co">
-        </div>
-        <div class="cfg-inp-grp">
-          <label class="cfg-lbl">Anon Key (pública)</label>
-          <input class="cfg-inp" id="cfg-supa-key" type="text" placeholder="eyJhbGci...">
-        </div>
-      </div>
-      <div class="cfg-note">
-        <strong>Cómo obtenerlos:</strong> Supabase → tu proyecto → Settings → API → Project URL y anon/public key.<br>
-        La anon key es segura para usar en el navegador — las reglas de seguridad (RLS) se configuran en Supabase.
-      </div>
-    </div>
-
-    <div class="cfg-section">
-      <div class="cfg-section-title">📦 GitHub — Backup versionado (opcional)</div>
-      <div class="cfg-inp-row">
-        <div class="cfg-inp-grp">
-          <label class="cfg-lbl">Token Personal de Acceso (PAT)</label>
-          <input class="cfg-inp" id="cfg-gh-token" type="password" placeholder="ghp_xxxx...">
-        </div>
-        <div class="cfg-inp-grp">
-          <label class="cfg-lbl">Repositorio (usuario/repo)</label>
-          <input class="cfg-inp" id="cfg-gh-repo" type="text" placeholder="natalia-socovesa/priorizador-rrhh">
-        </div>
-      </div>
-      <div class="cfg-inp-row">
-        <div class="cfg-inp-grp">
-          <label class="cfg-lbl">Branch</label>
-          <input class="cfg-inp" id="cfg-gh-branch" type="text" placeholder="main" value="main">
-        </div>
-        <div class="cfg-inp-grp">
-          <label class="cfg-lbl">Carpeta en repositorio</label>
-          <input class="cfg-inp" id="cfg-gh-path" type="text" placeholder="backups/" value="backups/">
-        </div>
-      </div>
-      <div class="cfg-note">
-        <strong>Cómo crear un PAT:</strong> GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained → selecciona el repo → permiso <em>Contents: Read and Write</em>.<br>
-        El token solo se guarda en este navegador. Nunca sale a ningún servidor externo excepto api.github.com.
-      </div>
-    </div>
-
-    <button class="btn-cfg-save" onclick="saveConfig()">Guardar configuración</button>
-    <div class="cfg-status" id="cfg-status"></div>
-  </div>
-</div>
 </main>
 
 <footer>Priorizador Estratégico 3.0 &nbsp;·&nbsp; Gerencia de Personas &nbsp;·&nbsp; Empresas Socovesa S.A. &nbsp;·&nbsp; 2026–2027</footer>
@@ -675,11 +624,14 @@ let _supa = null;
 let _currentUser = null;
 let _saveDebounce = null;
 let _histItems = [];
+const ADMIN_EMAILS = ['dperry@eess.cl','nmillana@eess.cl'];
+function isAdmin(){ return _currentUser && ADMIN_EMAILS.includes(_currentUser.email); }
+function requireAdmin(action){ if(!isAdmin()){alert('Solo los administradores pueden '+action+'.\nContacta a Natalia Millán o David Perry.');return false;}return true; }
 
 function getSupaConfig(){
   return {
-    url: localStorage.getItem('supa_url')||'',
-    key: localStorage.getItem('supa_key')||''
+    url: 'https://kgherzkwsakfmuvxurhd.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnaGVyemt3c2FrZm11dnh1cmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MTgzOTgsImV4cCI6MjA5NjQ5NDM5OH0.wZEv3DafFCyh_-yWYQrBG5sCZ8eLvhCZBe6Pf0A96_w'
   };
 }
 
@@ -698,21 +650,20 @@ function initSupabase(){
 /* ══════════════ AUTH ════════════════════════════════════════════════════════ */
 async function checkSession(){
   const sb = initSupabase();
-  if(!sb){ showAuthOverlay(false); return; }
-  setSyncStatus('syncing','Verificando sesión…');
+  // Always load in read-only mode first — no login required to view
+  setSyncStatus('syncing','Cargando datos…');
   try {
-    const {data:{session}} = await sb.auth.getSession();
-    if(session){
-      _currentUser = session.user;
-      hideAuthOverlay();
-      updateUserBadge();
-      setSyncStatus('syncing','Cargando datos…');
-      await loadFromSupabase();
-    } else {
-      showAuthOverlay(true);
+    if(sb){
+      const {data:{session}} = await sb.auth.getSession();
+      if(session){
+        _currentUser = session.user;
+        updateUserBadge();
+      }
     }
+    await loadFromSupabase();
   } catch(e){
-    showAuthOverlay(false);
+    loadLocalFallback();
+    setSyncStatus('err','Sin conexión — modo local');
   }
 }
 
@@ -743,7 +694,7 @@ function skipAuth(){
 
 function goConfig(){
   hideAuthOverlay();
-  showPage('config');
+  showPage('proyectos');
 }
 
 async function doLogin(){
@@ -760,10 +711,10 @@ async function doLogin(){
     const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
     if(error) throw error;
     _currentUser = data.user;
-    hideAuthOverlay();
+    closeLoginOverlay();
     updateUserBadge();
-    setSyncStatus('syncing','Cargando datos…');
-    await loadFromSupabase();
+    setSyncStatus('ok','Sesión iniciada — modo edición activo');
+    renderAllAreas(); // re-render to remove readonly state
   } catch(e){
     document.getElementById('auth-err').textContent = e.message.includes('credentials')||e.message.includes('Invalid')
       ? 'Correo o contraseña incorrectos'
@@ -777,18 +728,11 @@ async function doLogout(){
   if(_supa){ await _supa.auth.signOut(); }
   _currentUser = null;
   document.getElementById('user-badge').style.display='none';
-  document.getElementById('auth-overlay').innerHTML = `
-    <div class="auth-box">
-      <div class="auth-logo">P</div>
-      <div class="auth-title">Priorizador Estratégico</div>
-      <div class="auth-sub">Gerencia de Personas · Empresas Socovesa<br>Acceso restringido — solo editores autorizados</div>
-      <input class="auth-inp" id="auth-email" type="email" placeholder="correo@socovesa.cl" autocomplete="email">
-      <input class="auth-inp" id="auth-pass" type="password" placeholder="Contraseña" autocomplete="current-password">
-      <button class="auth-btn" id="auth-btn" onclick="doLogin()">Ingresar</button>
-      <div class="auth-err" id="auth-err"></div>
-      <div class="auth-loading" id="auth-loading"></div>
-    </div>`;
-  document.getElementById('auth-overlay').classList.remove('hidden');
+  const loginBtn = document.getElementById('btn-admin-login');
+  if(loginBtn) loginBtn.style.display = '';
+  document.body.classList.add('readonly-mode');
+  closeLoginOverlay();
+  setSyncStatus('ok','Sesión cerrada — modo lectura');
 }
 
 function updateUserBadge(){
@@ -798,6 +742,31 @@ function updateUserBadge(){
   document.getElementById('user-av').textContent = initials;
   document.getElementById('user-name-lbl').textContent = email.split('@')[0];
   document.getElementById('user-badge').style.display='flex';
+  // Apply read-only mode for non-admins
+  if(!isAdmin()){
+    document.body.classList.add('readonly-mode');
+    const rn=document.getElementById('readonly-note'); if(rn)rn.style.display='flex';
+  } else {
+    document.body.classList.remove('readonly-mode');
+    const _pb=document.getElementById('btn-publish'); if(_pb)_pb.style.display='inline-flex';
+    const _hfa=document.getElementById('hist-footer-admin'); if(_hfa)_hfa.style.display='block';
+    const pbtn = document.getElementById('btn-publish');
+    if(pbtn) pbtn.style.display='inline-flex';
+    const hfa = document.getElementById('hist-footer-admin');
+    if(hfa) hfa.style.display='block';
+  }
+  // Hide login button, show user badge
+  const loginBtn = document.getElementById('btn-admin-login');
+  if(loginBtn) loginBtn.style.display = 'none';
+}
+
+function showLoginOverlay(){
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('auth-email').focus(), 100);
+}
+function closeLoginOverlay(){
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('auth-err').textContent='';
 }
 
 /* ══════════════ SYNC STATUS ════════════════════════════════════════════════ */
@@ -874,6 +843,7 @@ function loadLocalFallback(){
 
 async function saveToSupabase(trigger='auto'){
   if(!_supa||!_currentUser){ return; }
+  if(!isAdmin()){ setSyncStatus('err','Sin permisos de escritura'); return; }
   setSyncStatus('syncing','Guardando…');
   try {
     const userEmail = _currentUser.email||'unknown';
@@ -913,6 +883,7 @@ async function saveToSupabase(trigger='auto'){
 }
 
 function debouncedSave(trigger='edit'){
+  if(!isAdmin()) return; // non-admins explore locally only
   clearTimeout(_saveDebounce);
   _saveDebounce = setTimeout(()=>saveToSupabase(trigger), 2200);
 }
@@ -979,101 +950,44 @@ function toggleHist(){
   }
 }
 
-/* ══════════════ GITHUB BACKUP ══════════════════════════════════════════════ */
-async function pushToGitHub(){
-  const token  = localStorage.getItem('gh_token');
-  const repo   = localStorage.getItem('gh_repo');
-  const branch = localStorage.getItem('gh_branch')||'main';
-  const path   = localStorage.getItem('gh_path')||'backups/';
-  if(!token||!repo){ alert('Configura el token y repositorio de GitHub en ⚙️ Configurar'); return; }
-  const btn = document.getElementById('btn-gh-backup');
-  btn.disabled=true;
-  btn.innerHTML='<span>⏳</span> Subiendo…';
+
+/* ══════════════ GITHUB PUBLISH ════════════════════════════════════════════ */
+const GH_TOKEN  = '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';
+const GH_REPO   = 'nmillana/Priorizador-Estrat-gico-3.0';
+const GH_BRANCH = 'main';
+const GH_FILE   = 'index.html';
+
+async function publishToGitHub(label){
+  if(!isAdmin()) return;
+  setSyncStatus('syncing','Publicando en GitHub Pages…');
   try {
-    const now = new Date();
-    const ts = now.toISOString().replace(/[:.]/g,'-').slice(0,19);
-    const filename = `${path}portafolio_${ts}.json`;
-    const content = JSON.stringify({
-      exported_at: now.toISOString(),
-      exported_by: _currentUser?.email||'unknown',
-      projects,
-      pesos: pesosInt,
-      meta:{ total: projects.length, areas: AREAS.map(a=>a.key), version:'3.0' }
-    }, null, 2);
-    const b64 = btoa(unescape(encodeURIComponent(content)));
-
-    // Check if file already exists (to get SHA for update)
     let sha = undefined;
-    try {
-      const checkRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filename}`,{
-        headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github+json'}
-      });
-      if(checkRes.ok){ const checkData=await checkRes.json(); sha=checkData.sha; }
-    } catch(_){}
-
-    const body = {
-      message:`Snapshot priorizador RRHH ${ts.replace('T',' ').replace(/-/g,':')}`,
-      content: b64,
-      branch
-    };
+    const chk = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
+      {headers:{'Authorization':`token ${GH_TOKEN}`,'Accept':'application/vnd.github+json'}});
+    if(chk.ok){ const d=await chk.json(); sha=d.sha; }
+    const html = '<!DOCTYPE html>\n'+document.documentElement.outerHTML;
+    const b64  = btoa(unescape(encodeURIComponent(html)));
+    const now  = new Date().toLocaleString('es-CL',{timeZone:'America/Santiago'});
+    const body = {message:`Portafolio RRHH — ${label||''} — ${now}`,content:b64,branch:GH_BRANCH};
     if(sha) body.sha = sha;
-
-    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${filename}`,{
-      method:'PUT',
-      headers:{
-        'Authorization':`token ${token}`,
-        'Accept':'application/vnd.github+json',
-        'Content-Type':'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    if(!res.ok){ const e=await res.json(); throw new Error(e.message||res.statusText); }
-    btn.disabled=false;
-    btn.innerHTML='<span>✅</span> Backup subido correctamente';
-    setTimeout(()=>{ btn.innerHTML='<span>📦</span> Exportar snapshot a GitHub'; },3000);
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
+      {method:'PUT',headers:{'Authorization':`token ${GH_TOKEN}`,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.json();throw new Error(e.message||res.statusText);}
+    setSyncStatus('ok','Publicado en GitHub Pages ✓');
+    showGhToast('✅ Publicado — el equipo ya puede ver los cambios');
   } catch(e){
-    btn.disabled=false;
-    btn.innerHTML='<span>❌</span> Error: '+e.message.slice(0,40);
-    setTimeout(()=>{ btn.innerHTML='<span>📦</span> Exportar snapshot a GitHub'; },4000);
+    setSyncStatus('err','Error al publicar: '+e.message.slice(0,40));
+    showGhToast('❌ Error: '+e.message.slice(0,60));
   }
 }
 
-/* ══════════════ CONFIG PAGE ════════════════════════════════════════════════ */
-function loadConfigFields(){
-  const url  = localStorage.getItem('supa_url')||'';
-  const key  = localStorage.getItem('supa_key')||'';
-  const tok  = localStorage.getItem('gh_token')||'';
-  const repo = localStorage.getItem('gh_repo')||'';
-  const br   = localStorage.getItem('gh_branch')||'main';
-  const pt   = localStorage.getItem('gh_path')||'backups/';
-  document.getElementById('cfg-supa-url').value = url;
-  document.getElementById('cfg-supa-key').value = key;
-  document.getElementById('cfg-gh-token').value = tok;
-  document.getElementById('cfg-gh-repo').value  = repo;
-  document.getElementById('cfg-gh-branch').value= br;
-  document.getElementById('cfg-gh-path').value  = pt;
-  if(url&&key){
-    document.getElementById('cfg-readonly-note').style.display='block';
-  }
-}
-
-function saveConfig(){
-  const url  = document.getElementById('cfg-supa-url').value.trim();
-  const key  = document.getElementById('cfg-supa-key').value.trim();
-  const tok  = document.getElementById('cfg-gh-token').value.trim();
-  const repo = document.getElementById('cfg-gh-repo').value.trim();
-  const br   = document.getElementById('cfg-gh-branch').value.trim()||'main';
-  const pt   = document.getElementById('cfg-gh-path').value.trim()||'backups/';
-  if(!url||!key){ document.getElementById('cfg-status').textContent='⚠️ URL y Anon Key de Supabase son obligatorios'; document.getElementById('cfg-status').className='cfg-status cfg-err'; return; }
-  localStorage.setItem('supa_url',url);
-  localStorage.setItem('supa_key',key);
-  if(tok)  localStorage.setItem('gh_token',tok);
-  if(repo) localStorage.setItem('gh_repo',repo);
-  localStorage.setItem('gh_branch',br);
-  localStorage.setItem('gh_path',pt);
-  document.getElementById('cfg-status').textContent='✓ Configuración guardada. Recargando…';
-  document.getElementById('cfg-status').className='cfg-status';
-  setTimeout(()=>location.reload(),1200);
+function showGhToast(msg){
+  let t=document.getElementById('gh-toast');
+  if(!t){t=document.createElement('div');t.id='gh-toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--navy);color:white;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:opacity 0.4s;pointer-events:none;';
+    document.body.appendChild(t);}
+  t.textContent=msg; t.style.opacity='1';
+  setTimeout(()=>{t.style.opacity='0';},4500);
 }
 
 /* ══════════════ PESOS ══════════════════════════════════════════════════════ */
@@ -1247,6 +1161,7 @@ function toggleCard(id){
 
 /* ══════════════ ADD / REMOVE ══════════════════════════════════════════════ */
 function addProjectModal(){
+  if(!requireAdmin('agregar iniciativas')) return;
   const areaKey=prompt('¿A qué área pertenece? Opciones:\n'+AREAS.map((a,i)=>`${i+1}. ${a.label}`).join('\n')+'\n\nEscribe el número:');
   if(!areaKey)return;
   const idx=parseInt(areaKey)-1;
@@ -1254,6 +1169,7 @@ function addProjectModal(){
   addProject(null, AREAS[idx].key);
 }
 function addProject(data=null, areaKey='do'){
+  if(!requireAdmin('agregar iniciativas')) return;
   const id=gid();
   const p=data?{...data,id}:{
     id,nombre:'',tipo:'core',pilares:[],area:areaKey,
@@ -1267,6 +1183,7 @@ function addProject(data=null, areaKey='do'){
   debouncedSave('add');
 }
 function removeProject(id){
+  if(!requireAdmin('eliminar iniciativas')) return;
   const p=projects.find(x=>x.id===id);
   if(p&&p.nombre.trim()&&!confirm('¿Eliminar "'+p.nombre+'"?'))return;
   projects=projects.filter(x=>x.id!==id);
@@ -1492,7 +1409,7 @@ function renderM2x2(res){
         ${q[i].length===0?'<div style="font-size:11px;color:var(--text-light);font-style:italic;padding:6px 0">Sin proyectos</div>':''}
       </div>
     </div>`).join('')}
-    <div class="m2-xrow"><span>← Difícil</span><span style="opacity:0.6">Facilidad de Implementación →</span><span>Fácil →</span></div>
+    <div class="m2-xrow"><span>← Fácil</span><span style="opacity:0.6">Facilidad de Implementación →</span><span>Difícil →</span></div>
   </div></div>`;
 }
 
