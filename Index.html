@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Priorizador Estratégico 3.0 — Socovesa RRHH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#F5F5F7;--white:#FFFFFF;--border:#E0E0E0;--text:#1A1A2E;--text-light:#5A6070;
+  --royal:#0052CC;--sapphire:#003D99;--sky:#0099FF;--navy:#001A33;--turquoise:#00C9B7;
+  --cyan:#00D9FF;--baby-blue:#87CEEB;--indigo:#001F73;
+  --grad-header:linear-gradient(90deg,#0052CC,#00C9B7,#0099FF);
+  --shadow:0 2px 12px rgba(0,0,0,0.08);--shadow-lg:0 8px 32px rgba(0,82,204,0.12);--radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min-height:100vh;}
+
+/* ═══ AUTH OVERLAY ═══ */
+#auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#001A33 0%,#003D99 50%,#00C9B7 100%);z-index:9999;display:flex;align-items:center;justify-content:center;}
+#auth-overlay.hidden{display:none;}
+.auth-box{background:white;border-radius:20px;padding:40px 48px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,0.35);text-align:center;}
+.auth-logo{width:56px;height:56px;background:var(--grad-header);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;color:white;font-weight:700;margin:0 auto 20px;}
+.auth-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.auth-sub{font-size:12px;color:var(--text-light);margin-bottom:28px;}
+.auth-inp{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:12px;transition:border-color 0.2s;}
+.auth-inp:focus{border-color:var(--royal);}
+.auth-btn{width:100%;padding:14px;background:var(--grad-header);border:none;border-radius:10px;color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;transition:opacity 0.2s;}
+.auth-btn:hover{opacity:0.9;}
+.auth-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.auth-err{font-size:12px;color:#cc3333;margin-top:8px;min-height:18px;}
+.auth-loading{font-size:12px;color:var(--text-light);margin-top:8px;}
+
+/* ═══ SYNC STATUS BAR ═══ */
+#sync-bar{position:fixed;top:64px;right:0;left:0;z-index:100;display:flex;align-items:center;justify-content:flex-end;padding:0 32px;pointer-events:none;}
+.sync-pill{display:flex;align-items:center;gap:7px;background:white;border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--text-light);box-shadow:var(--shadow);pointer-events:all;transition:all 0.2s;margin-top:6px;}
+.sync-pill.syncing{border-color:var(--sky);color:var(--royal);}
+.sync-pill.ok{border-color:var(--turquoise);color:#0a6e5e;}
+.sync-pill.err{border-color:#ff8080;color:#cc3333;}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sync-pill.syncing .sync-dot{background:var(--sky);animation:pulse 1s infinite;}
+.sync-pill.ok .sync-dot{background:var(--turquoise);}
+.sync-pill.err .sync-dot{background:#ff4444;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ═══ HISTORY PANEL ═══ */
+#hist-panel{position:fixed;right:0;top:0;bottom:0;width:360px;background:white;box-shadow:-4px 0 24px rgba(0,0,0,0.12);z-index:500;transform:translateX(100%);transition:transform 0.3s ease;display:flex;flex-direction:column;}
+#hist-panel.open{transform:translateX(0);}
+.hist-hdr{background:var(--navy);color:white;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hist-hdr-title{font-size:14px;font-weight:700;}
+.hist-hdr-sub{font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px;}
+.hist-close{background:none;border:1.5px solid rgba(255,255,255,0.3);color:white;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;}
+.hist-list{flex:1;overflow-y:auto;padding:16px;}
+.hist-empty{text-align:center;color:var(--text-light);font-size:13px;padding:40px 20px;}
+.hist-item{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;transition:box-shadow 0.15s;}
+.hist-item:hover{box-shadow:var(--shadow);}
+.hist-item-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.hist-action{font-size:11px;font-weight:700;color:var(--royal);}
+.hist-ts{font-size:10px;color:var(--text-light);white-space:nowrap;}
+.hist-user{font-size:10px;color:var(--text-light);margin-bottom:5px;}
+.hist-detail{font-size:11px;color:var(--text);line-height:1.5;}
+.hist-restore{font-size:10px;background:none;border:1px solid var(--border);color:var(--text-light);border-radius:5px;padding:2px 8px;cursor:pointer;margin-top:6px;}
+.hist-restore:hover{border-color:var(--royal);color:var(--royal);}
+.hist-footer{padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0;}
+.btn-gh-backup{width:100%;padding:10px;background:var(--navy);border:none;border-radius:8px;color:white;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-gh-backup:hover{background:#002244;}
+.btn-gh-backup:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* ═══ USER BADGE (header) ═══ */
+.user-badge{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 12px 5px 5px;cursor:default;}
+.user-av{width:28px;height:28px;border-radius:50%;background:var(--grad-header);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;flex-shrink:0;}
+.user-name{font-size:11px;font-weight:600;color:var(--text);}
+.btn-logout{background:none;border:1px solid var(--border);color:var(--text-light);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;margin-left:4px;}
+.btn-logout:hover{border-color:#ff8080;color:#cc3333;}
+
+/* HEADER */
+.app-header{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.header-inner{max-width:1360px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.header-brand{display:flex;align-items:center;gap:12px;}
+.header-logo{width:36px;height:36px;background:var(--grad-header);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:white;font-weight:700;}
+.header-title{font-size:15px;font-weight:700;color:var(--text);}
+.header-sub{font-size:10px;font-weight:500;color:var(--royal);text-transform:uppercase;letter-spacing:1.5px;}
+.header-nav{display:flex;gap:4px;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.nav-btn{padding:8px 16px;border:none;background:transparent;color:var(--text-light);font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.nav-btn:hover{background:var(--bg);color:var(--text);}
+.nav-btn.active{background:var(--royal);color:white;}
+.btn-hist{padding:7px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--text-light);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px;}
+.btn-hist:hover{border-color:var(--royal);color:var(--royal);}
+
+/* MAIN */
+.main{max-width:1360px;margin:0 auto;padding:28px 32px 60px;}
+.page{display:none;}.page.active{display:block;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.section-title{font-size:11px;font-weight:700;color:var(--royal);text-transform:uppercase;letter-spacing:1.5px;}
+.section-label{font-size:20px;font-weight:700;color:var(--text);margin-top:2px;}
+.mb-20{margin-bottom:20px;}.mt-20{margin-top:20px;}
+
+/* ALERT */
+.alert-banner{background:linear-gradient(90deg,rgba(0,82,204,0.07),rgba(0,201,183,0.05));border:1px solid rgba(0,82,204,0.18);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--text-light);display:flex;align-items:flex-start;gap:10px;}
+.alert-banner strong{color:var(--royal);}
+
+/* PESOS PANEL */
+.pesos-panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;}
+.pesos-hdr-bar{background:linear-gradient(90deg,#001A33,#003D99);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;}
+.pesos-hdr-bar .ph-title{font-size:12px;font-weight:700;color:white;display:flex;align-items:center;gap:8px;}
+.pesos-hdr-bar .ph-badge{font-size:11px;color:rgba(255,255,255,0.7);}
+.pesos-body{padding:18px;}
+.pesos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.peso-card{background:var(--bg);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;border:2px solid transparent;transition:border-color 0.2s;}
+.peso-card:focus-within{border-color:var(--royal);}
+.peso-card-top{display:flex;align-items:center;justify-content:space-between;}
+.peso-card-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.3;}
+.peso-card-desc{font-size:9px;color:var(--text-light);margin-top:1px;}
+.peso-num-wrap{display:flex;align-items:center;gap:6px;}
+.peso-num{width:64px;padding:6px 8px;border:2px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;color:var(--royal);text-align:center;outline:none;background:var(--white);transition:border-color 0.2s;}
+.peso-num:focus{border-color:var(--royal);}
+.peso-num:invalid,.peso-num.invalid{border-color:#ff8080;color:#cc3333;}
+.peso-pct-sign{font-size:16px;font-weight:600;color:var(--text-light);}
+.peso-steppers{display:flex;flex-direction:column;gap:2px;}
+.peso-step{width:20px;height:16px;border:1.5px solid var(--border);background:var(--white);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text-light);line-height:1;transition:all 0.12s;}
+.peso-step:hover{background:var(--royal);border-color:var(--royal);color:white;}
+.peso-range{width:100%;-webkit-appearance:none;appearance:none;height:5px;border-radius:50px;outline:none;cursor:pointer;border:none;background:linear-gradient(90deg,var(--royal) var(--pct,30%),var(--border) var(--pct,30%));}
+.peso-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--royal);border:2.5px solid white;box-shadow:0 1px 5px rgba(0,82,204,0.35);cursor:pointer;}
+.dist-bar-wrap{margin-bottom:10px;}
+.dist-bar-label{font-size:10px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.dist-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;}
+.dist-seg{height:100%;transition:flex 0.3s ease;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;overflow:hidden;white-space:nowrap;}
+.sum-bar{padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:space-between;}
+.sum-bar.ok{background:#e8fff5;color:#0a6e5e;border:1px solid var(--turquoise);}
+.sum-bar.err{background:#fff5f5;color:#cc3333;border:1px solid #ffaaaa;}
+.btn-reset{background:none;border:1px solid var(--border);color:var(--text-light);border-radius:6px;padding:4px 12px;font-family:'Poppins',sans-serif;font-size:11px;cursor:pointer;transition:all 0.15s;}
+.btn-reset:hover{border-color:var(--royal);color:var(--royal);}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:10px;background:var(--white);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);margin-bottom:14px;}
+.search-inp{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;color:var(--text);outline:none;background:var(--bg);transition:border-color 0.2s;}
+.search-inp:focus{border-color:var(--royal);background:white;}
+.search-inp::placeholder{color:var(--text-light);}
+.tc{font-size:12px;color:var(--text-light);white-space:nowrap;font-weight:500;}
+.btn-sm{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--text-light);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.btn-sm:hover{border-color:var(--sky);color:var(--sky);}
+
+/* AREA GROUP */
+.area-group{margin-bottom:20px;}
+.area-group-header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--white);border-radius:10px 10px 0 0;border-bottom:2px solid;margin-bottom:0;cursor:pointer;user-select:none;}
+.area-group-header:hover{filter:brightness(0.97);}
+.area-group-icon{font-size:16px;}
+.area-group-name{font-size:13px;font-weight:700;color:var(--text);}
+.area-group-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;color:white;margin-left:auto;}
+.area-group-chevron{font-size:14px;color:var(--text-light);transition:transform 0.2s;margin-left:4px;}
+.area-group-chevron.rot{transform:rotate(-90deg);}
+.area-group-body{display:flex;flex-direction:column;gap:10px;padding:12px;background:var(--white);border-radius:0 0 10px 10px;box-shadow:var(--shadow);}
+.area-group-body.collapsed{display:none;}
+
+/* PROJECT CARD */
+.project-form{background:#FAFBFD;border-radius:var(--radius);border-left:4px solid var(--royal);overflow:visible;transition:box-shadow 0.2s;border:1px solid var(--border);border-left-width:4px;}
+.project-form:hover{box-shadow:var(--shadow-lg);}
+.project-form.hidden{display:none;}
+.pf-hdr{background:#F4F6FB;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;border-radius:calc(var(--radius) - 4px) var(--radius) 0 0;}
+.pf-hdr:hover{background:#EAEEf8;}
+.pf-hdr.is-col{border-bottom:none;border-radius:calc(var(--radius) - 4px) var(--radius) var(--radius) var(--radius);}
+.pf-num{width:24px;height:24px;background:var(--grad-header);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;flex-shrink:0;}
+.pf-info{flex:1;margin:0 10px;min-width:0;}
+.pf-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pf-meta{font-size:10px;color:var(--text-light);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.pf-actions{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.btn-ca{background:none;border:1.5px solid var(--border);color:var(--text-light);border-radius:6px;padding:2px 7px;font-size:13px;cursor:pointer;transition:transform 0.2s,border-color 0.15s;line-height:1;}
+.btn-ca:hover{border-color:var(--sky);color:var(--sky);}
+.btn-ca.rot{transform:rotate(-90deg);}
+.btn-rm{background:none;border:1.5px solid var(--border);color:var(--text-light);border-radius:6px;padding:2px 8px;font-size:14px;line-height:1;cursor:pointer;transition:all 0.2s;}
+.btn-rm:hover{background:#ffefef;border-color:#ff8080;color:#cc3333;}
+.pf-body{padding:14px;}
+.pf-body.col{display:none;}
+
+/* FORM */
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.f-grp{display:flex;flex-direction:column;gap:5px;}
+.f-lbl{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:5px;}
+.htip{position:relative;}
+.ti{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--bg);border:1px solid var(--border);border-radius:50%;font-size:9px;color:var(--sky);font-weight:700;cursor:help;}
+.tb{display:none;position:absolute;bottom:calc(100% + 8px);left:0;width:240px;background:var(--navy);color:white;font-size:11px;font-weight:400;padding:9px 12px;border-radius:8px;z-index:500;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,0.25);pointer-events:none;text-transform:none;letter-spacing:0;}
+.tb::after{content:'';position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:var(--navy);}
+.htip:hover .tb{display:block;}
+.name-inp{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:var(--text);outline:none;transition:border-color 0.2s;background:var(--white);}
+.name-inp:focus{border-color:var(--royal);}
+.name-inp::placeholder{color:var(--text-light);font-weight:400;}
+.dup-w{display:none;font-size:11px;color:#cc6600;margin-top:3px;padding:3px 8px;background:#fff8e8;border-radius:5px;border:1px solid #ffcc66;}
+select{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);font-family:'Poppins',sans-serif;font-size:12px;color:var(--text);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A6070' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;transition:border-color 0.2s;}
+select:focus{border-color:var(--royal);}
+.pil-btns{display:flex;flex-wrap:wrap;gap:4px;}
+.pil-btn{padding:4px 10px;border:1.5px solid var(--border);border-radius:20px;background:var(--white);font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--text-light);cursor:pointer;transition:all 0.15s;position:relative;}
+.pil-btn:hover{border-color:var(--sky);color:var(--sky);}
+.pil-btn.act{background:var(--royal);border-color:var(--royal);color:white;}
+.pil-btn .pt{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--navy);color:white;white-space:nowrap;font-size:10px;font-weight:500;padding:4px 9px;border-radius:6px;z-index:300;pointer-events:none;}
+.pil-btn .pt::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--navy);}
+.pil-btn:hover .pt{display:block;}
+.sc-btns{display:flex;gap:5px;}
+.sc-btn{flex:1;padding:7px 4px;border:1.5px solid var(--border);background:var(--white);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:var(--text-light);cursor:pointer;transition:all 0.12s;text-align:center;}
+.sc-btn:hover{border-color:var(--sky);color:var(--sky);}
+.sc-btn.a1{background:#e8f4ff;border-color:var(--baby-blue);color:var(--sapphire);}
+.sc-btn.a2{background:#cce8ff;border-color:var(--sky);color:var(--sapphire);}
+.sc-btn.a3{background:#b3d9ff;border-color:var(--sky);color:var(--royal);}
+.sc-btn.a4{background:var(--royal);border-color:var(--royal);color:white;}
+.sc-btn.a5{background:var(--sapphire);border-color:var(--sapphire);color:white;}
+.sc-hints{display:flex;justify-content:space-between;margin-top:3px;}
+.sc-hint{font-size:9px;color:var(--text-light);font-style:italic;}
+
+.btn-add-area{width:100%;padding:11px;border:2px dashed var(--border);border-radius:var(--radius);background:transparent;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--text-light);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-add-area:hover{border-color:var(--royal);color:var(--royal);background:rgba(0,82,204,0.03);}
+.btn-calc{padding:13px 36px;background:var(--grad-header);border:none;border-radius:10px;color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(0,82,204,0.3);}
+.btn-calc:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,82,204,0.4);}
+.btn-calc:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.calc-actions{display:flex;align-items:center;justify-content:center;gap:16px;padding:20px 0;border-top:1px solid var(--border);margin-top:4px;}
+.btn-save-now{padding:12px 28px;background:var(--turquoise);border:none;border-radius:10px;color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-save-now:hover{background:#00b5a5;transform:translateY(-1px);}
+
+/* RESULTADOS */
+.ins-panel{background:linear-gradient(135deg,#001A33,#003D99);border-radius:var(--radius);padding:20px;margin-bottom:20px;color:white;}
+.ins-panel h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--cyan);margin-bottom:14px;}
+.ins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ins-item{background:rgba(255,255,255,0.08);border-radius:8px;padding:12px;text-align:center;}
+.ins-val{font-size:22px;font-weight:700;color:var(--cyan);}
+.ins-lbl{font-size:10px;color:rgba(255,255,255,0.65);margin-top:3px;}
+.pu-row{margin-top:10px;font-size:10px;color:rgba(255,255,255,0.45);}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.kpi-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;text-align:center;border-top:4px solid;}
+.kpi-card.kh{border-top-color:var(--sapphire);}
+.kpi-card.kc{border-top-color:var(--sky);}
+.kpi-card.kt{border-top-color:var(--turquoise);}
+.kpi-card.kb{border-top-color:#ff8080;}
+.kpi-n{font-size:30px;font-weight:700;color:var(--royal);}
+.kpi-l{font-size:11px;color:var(--text-light);margin-top:4px;}
+.res-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:10px;border-left:5px solid var(--royal);animation:sIn 0.3s ease both;}
+@keyframes sIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.res-card.habilitante{border-left-color:var(--sapphire);}
+.res-card.core{border-left-color:var(--sky);}
+.res-card.transformacional{border-left-color:var(--turquoise);}
+.res-hdr{padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.res-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;}
+.rk1{background:linear-gradient(135deg,#003D99,#00D9FF);}
+.rk2{background:linear-gradient(135deg,#0052CC,#0099FF);}
+.rk3{background:linear-gradient(135deg,#0099FF,#87CEEB);}
+.rkn{background:var(--bg);color:var(--text-light);border:2px solid var(--border);}
+.res-name{font-size:13px;font-weight:700;color:var(--text);}
+.res-meta{font-size:10px;color:var(--text-light);margin-top:2px;}
+.res-lbl{margin-left:auto;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.lp{background:#fff3cd;color:#856404;border:1px solid #ffc107;}
+.lf{background:#e8f0ff;color:var(--sapphire);border:1px solid var(--sky);}
+.lq{background:#e8fff9;color:#0a6e5e;border:1px solid var(--turquoise);}
+.lb{background:#fff5f5;color:#cc3333;border:1px solid #ffaaaa;}
+.le{background:#edf3ff;color:var(--royal);border:1px solid var(--baby-blue);}
+.ld{background:#f5f5f7;color:var(--text-light);border:1px solid var(--border);}
+.res-body{padding:0 16px 14px;}
+.res-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.sc-big{font-size:26px;font-weight:700;color:var(--royal);line-height:1;}
+.sc-lbl2{font-size:10px;color:var(--text-light);text-transform:uppercase;letter-spacing:0.7px;margin-top:2px;}
+.bar-wr{flex:1;min-width:120px;}
+.bar-tr{height:8px;background:var(--bg);border-radius:50px;overflow:hidden;}
+.bar-fl{height:100%;border-radius:50px;transition:width 0.5s ease;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.chip{padding:2px 9px;border-radius:12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;}
+.ch{background:#e8f0ff;color:var(--sapphire);}
+.cc{background:#e8f4ff;color:var(--royal);}
+.ct{background:#e8fff9;color:#0a6e5e;}
+.cp{background:var(--bg);color:var(--text-light);border:1px solid var(--border);}
+.bkd{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.bd-i{text-align:center;}
+.bd-v{font-size:15px;font-weight:700;color:var(--text);}
+.bd-n{font-size:9px;color:var(--text-light);margin-top:2px;line-height:1.3;text-transform:uppercase;}
+.bd-w{font-size:9px;color:var(--sky);margin-top:1px;}
+
+/* MATRIZ 2x2 */
+.m2-wrap{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:20px;}
+.m2-title{font-size:11px;font-weight:700;color:var(--royal);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+.m2-body{display:grid;grid-template-columns:28px 1fr 1fr;grid-template-rows:auto auto auto;gap:10px;}
+.m2-ylab{grid-column:1;grid-row:1/3;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:1px;padding:0 4px;}
+.m2-xrow{grid-column:2/4;grid-row:3;display:flex;align-items:center;justify-content:space-between;padding:6px 4px 0;font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.8px;}
+.mq{border-radius:10px;padding:14px;}
+.mq-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.mq-count{font-size:11px;font-weight:700;color:white;border-radius:10px;padding:1px 7px;margin-left:auto;}
+.mq1{background:linear-gradient(135deg,rgba(0,61,153,0.07),rgba(0,217,255,0.06));border:1.5px solid rgba(0,82,204,0.2);}
+.mq2{background:linear-gradient(135deg,rgba(0,82,204,0.05),rgba(0,153,255,0.05));border:1.5px solid rgba(0,153,255,0.2);}
+.mq3{background:linear-gradient(135deg,rgba(0,201,183,0.05),rgba(0,229,208,0.05));border:1.5px solid rgba(0,201,183,0.2);}
+.mq4{background:rgba(0,0,0,0.015);border:1.5px dashed var(--border);}
+.mq-list{display:flex;flex-direction:column;gap:5px;max-height:340px;overflow-y:auto;}
+.mq-list::-webkit-scrollbar{width:4px;}
+.mq-list::-webkit-scrollbar-track{background:transparent;}
+.mq-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.mq-itm{background:rgba(255,255,255,0.85);border-radius:7px;padding:7px 10px;border-left:3px solid var(--border);transition:background 0.15s;}
+.mq-itm:hover{background:white;}
+.mq1 .mq-itm{border-left-color:#0052CC;}
+.mq2 .mq-itm{border-left-color:#003D99;}
+.mq3 .mq-itm{border-left-color:#00C9B7;}
+.mq4 .mq-itm{border-left-color:var(--border);}
+.mq-itm-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;word-break:break-word;}
+.mq-itm-meta{font-size:10px;color:var(--text-light);margin-top:3px;display:flex;align-items:center;gap:4px;}
+.mq-score{font-weight:700;color:var(--royal);}
+
+/* TABLA AREA x PILAR */
+.pt-wrap{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden;}
+.pt-hdr{background:linear-gradient(90deg,#001A33,#003D99);padding:14px 18px;}
+.pt-hdr h3{font-size:13px;font-weight:700;color:white;}
+.pt-hdr p{font-size:11px;color:rgba(255,255,255,0.65);margin-top:3px;}
+.tbl-sc{overflow-x:auto;}
+.ptbl{width:100%;border-collapse:collapse;}
+.ptbl th{padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:white;}
+.ptbl th.corner{background:#F0F2F7;color:var(--text-light);font-size:10px;text-align:left;padding-left:14px;min-width:150px;font-weight:600;border-right:2px solid var(--border);}
+.ptbl th.ph1{background:#0052CC;}.ptbl th.ph2{background:#003D99;}.ptbl th.ph3{background:#1B6CA8;}
+.ptbl th.ph4{background:#001A33;}.ptbl th.ph5{background:#7B2D8B;}.ptbl th.ph6{background:#0A3D62;}
+.ph-sub{font-size:9px;font-weight:400;opacity:0.8;display:block;margin-top:2px;}
+.ptbl td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);vertical-align:middle;min-width:96px;}
+.ptbl td.ac{text-align:left;padding:10px 14px;font-size:12px;font-weight:600;color:var(--text);background:#F8F9FB;border-right:2px solid var(--border);white-space:nowrap;}
+.ptbl tr:last-child td{border-bottom:none;}
+.ptbl tr:hover td{background:rgba(0,82,204,0.02);}
+.ptbl tr:hover td.ac{background:#EEF2FA;}
+.pbub{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-size:15px;font-weight:700;color:white;cursor:pointer;transition:transform 0.15s;box-shadow:0 2px 8px rgba(0,0,0,0.15);position:relative;}
+.pbub:hover{transform:scale(1.1);}
+.pbub .bsub{font-size:8px;font-weight:400;opacity:0.85;margin-top:1px;}
+.pb0{background:var(--bg);color:var(--text-light);box-shadow:none;cursor:default;}
+.pbl{background:linear-gradient(135deg,#87CEEB,#0099FF);}
+.pbm{background:linear-gradient(135deg,#0052CC,#0099FF);}
+.pbh{background:linear-gradient(135deg,#003D99,#00C9B7);}
+.bub-tip{display:none;position:fixed;background:var(--navy);color:white;font-size:11px;font-weight:400;padding:10px 14px;border-radius:9px;z-index:9999;min-width:180px;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,0.3);pointer-events:none;letter-spacing:0;text-transform:none;line-height:1.6;}
+.bub-tip.visible{display:block;}
+.bub-tip strong{color:var(--cyan);font-size:11px;display:block;margin-bottom:5px;}
+.bub-tip li{list-style:none;padding:1px 0;font-size:11px;}
+.bub-tip li::before{content:"• ";color:var(--cyan);}
+.pt-footer{padding:10px 16px;background:#F8F9FB;border-top:1px solid var(--border);font-size:11px;color:var(--text-light);}
+
+/* GUIA */
+.crit-guide{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;}
+.crit-hdr{padding:12px 16px;font-size:13px;font-weight:700;color:white;}
+.crit-body{padding:16px;}
+.crit-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.clvl{padding:10px 12px;border-radius:8px;border:1px solid var(--border);}
+.clvl .ln{font-size:20px;font-weight:700;margin-bottom:4px;}
+.clvl .ld{font-size:11px;color:var(--text-light);line-height:1.5;}
+.clvl.low{border-color:var(--baby-blue);background:#f0f8ff;}.clvl.low .ln{color:var(--sapphire);}
+.clvl.mid{border-color:var(--sky);background:#e8f4ff;}.clvl.mid .ln{color:var(--royal);}
+.clvl.high{border-color:var(--sapphire);background:#e0eaff;}.clvl.high .ln{color:var(--indigo);}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.card-hdr{padding:12px 16px;font-size:12px;font-weight:700;color:white;}
+.card-body{padding:18px;}
+.empty-s{text-align:center;padding:50px 20px;color:var(--text-light);}
+.empty-s .ei{font-size:44px;margin-bottom:14px;opacity:0.45;}
+.empty-s h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.empty-s p{font-size:13px;}
+footer{background:var(--white);border-top:1px solid var(--border);text-align:center;padding:14px;font-size:11px;color:var(--text-light);margin-top:40px;}
+
+/* CONFIG PANEL */
+.cfg-panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;max-width:680px;margin:0 auto;}
+.cfg-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.cfg-sub{font-size:12px;color:var(--text-light);margin-bottom:24px;line-height:1.6;}
+.cfg-section{margin-bottom:24px;}
+.cfg-section-title{font-size:10px;font-weight:700;color:var(--royal);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.cfg-inp-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.cfg-inp-grp{display:flex;flex-direction:column;gap:5px;}
+.cfg-lbl{font-size:11px;font-weight:600;color:var(--text-light);}
+.cfg-inp{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s;}
+.cfg-inp:focus{border-color:var(--royal);}
+.cfg-note{font-size:11px;color:var(--text-light);background:var(--bg);border-radius:8px;padding:12px;line-height:1.6;margin-top:8px;}
+.cfg-note strong{color:var(--text);}
+.btn-cfg-save{padding:12px 28px;background:var(--grad-header);border:none;border-radius:10px;color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.cfg-status{font-size:12px;color:#0a6e5e;margin-top:10px;min-height:18px;}
+.cfg-err{color:#cc3333;}
+.cfg-readonly-badge{display:inline-flex;align-items:center;gap:4px;background:#FFF9E8;border:1px solid #FFD44D;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:#856404;margin-bottom:16px;}
+
+@media(max-width:960px){
+  .main{padding:16px;}
+  .f-row,.kpi-row{grid-template-columns:1fr 1fr;}
+  .ins-grid,.pesos-grid{grid-template-columns:1fr 1fr;}
+  .bkd{grid-template-columns:repeat(2,1fr);}
+  #hist-panel{width:100%;}
+  .cfg-inp-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ AUTH OVERLAY ═══ -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">P</div>
+    <div class="auth-title">Priorizador Estratégico</div>
+    <div class="auth-sub">Gerencia de Personas · Empresas Socovesa<br>Acceso restringido — solo editores autorizados</div>
+    <input class="auth-inp" id="auth-email" type="email" placeholder="correo@socovesa.cl" autocomplete="email">
+    <input class="auth-inp" id="auth-pass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="auth-btn" id="auth-btn" onclick="doLogin()">Ingresar</button>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-loading" id="auth-loading"></div>
+  </div>
+</div>
+
+<!-- ═══ SYNC STATUS ═══ -->
+<div id="sync-bar">
+  <div class="sync-pill" id="sync-pill">
+    <span class="sync-dot"></span>
+    <span id="sync-txt">Conectando…</span>
+  </div>
+</div>
+
+<!-- ═══ HISTORY PANEL ═══ -->
+<div id="hist-panel">
+  <div class="hist-hdr">
+    <div>
+      <div class="hist-hdr-title">📋 Historial de Cambios</div>
+      <div class="hist-hdr-sub">Registro de todas las modificaciones con autor y fecha</div>
+    </div>
+    <button class="hist-close" onclick="toggleHist()">✕</button>
+  </div>
+  <div class="hist-list" id="hist-list"><div class="hist-empty">Cargando historial…</div></div>
+  <div class="hist-footer">
+    <button class="btn-gh-backup" id="btn-gh-backup" onclick="pushToGitHub()">
+      <span>📦</span> Exportar snapshot a GitHub
+    </button>
+    <div style="font-size:10px;color:var(--text-light);margin-top:8px;text-align:center;">Guarda una copia versionada del portafolio completo en tu repositorio</div>
+  </div>
+</div>
+
+<!-- Tooltip flotante único para burbujas -->
+<div class="bub-tip" id="bub-tip"></div>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-logo">P</div>
+      <div>
+        <div class="header-title">Priorizador Estratégico 3.0</div>
+        <div class="header-sub">Gerencia de Personas · Socovesa 2026–2027</div>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <button class="nav-btn active" onclick="showPage('proyectos')">📋 Proyectos</button>
+      <button class="nav-btn" onclick="showPage('resultados')">🏆 Ranking</button>
+      <button class="nav-btn" onclick="showPage('guia')">📖 Guía</button>
+      <button class="nav-btn" onclick="showPage('config')">⚙️ Configurar</button>
+    </nav>
+    <div class="header-right">
+      <button class="btn-hist" onclick="toggleHist()">🕐 Historial <span id="hist-count-badge" style="display:none;background:var(--royal);color:white;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:2px;"></span></button>
+      <div class="user-badge" id="user-badge" style="display:none;">
+        <div class="user-av" id="user-av">?</div>
+        <div class="user-name" id="user-name-lbl">–</div>
+        <button class="btn-logout" onclick="doLogout()">Salir</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<datalist id="dl-init">
+  <option value="Modelo de Competencias"><option value="Sistema de Desempeño Ágil">
+  <option value="Arquitectura de Habilidades"><option value="Programa Lidera tus Procesos">
+  <option value="Automatizar Procesos RRHH"><option value="Liderazgo en la Era IA — Programa Lidera">
+  <option value="Apoyo Metodológico a Cultura"><option value="Plataforma MOOC (LMS + Videos)">
+  <option value="Cursos Estratégicos y Multicompetencias"><option value="Cursos de Onboarding por Cargo">
+  <option value="Capacitación Obra — Oficios"><option value="Certificación Progresiva Chilevalora — Obra">
+  <option value="Medición de Transferencia"><option value="Gestión del Cambio desde Capacitación">
+  <option value="Modelo Mensual Control de Gestión RRHH"><option value="Workflows de Compensaciones en Sistema 1">
+  <option value="Estandarización Base y Herramienta Diagnóstico Salarial">
+  <option value="Gestión Integral de Cargos, Estructura y Valorización">
+  <option value="Atracción y Evaluación de Talento"><option value="Proceso de Onboarding">
+  <option value="Potenciar Herramientas Sistema Uno"><option value="Proceso de Offboarding">
+  <option value="Revisión y Actualización de Contratos">
+  <option value="Programa Trabajo Cultura"><option value="Gestión del Cambio Organizacional">
+  <option value="Reconocimiento y Feedback Continuo"><option value="Comunicaciones Internas">
+  <option value="Diversidad e Inclusión"><option value="Medición Continua Salud Cultural">
+  <option value="Calidad de Vida — Indicadores y Programas"><option value="Factores Psicosociales">
+</datalist>
+
+<main class="main">
+<!-- ═══════════ PAGE PROYECTOS ═══════════ -->
+<div id="page-proyectos" class="page active">
+  <div class="section-header mb-20">
+    <div><div class="section-title">Paso 1</div><div class="section-label">Define y evalúa tus proyectos</div></div>
+    <button class="btn-calc" onclick="addProjectModal()">+ Nuevo Proyecto</button>
+  </div>
+  <div class="alert-banner">
+    <span style="font-size:16px;flex-shrink:0">💡</span>
+    <div><strong>Lógica de portafolio activa.</strong> Habilitantes ×1.3 · Transformacionales ×1.1 · Proyectos bloqueados penalizados −30%. Las iniciativas están organizadas por área.</div>
+  </div>
+
+  <!-- PESOS EDITABLES -->
+  <div class="pesos-panel">
+    <div class="pesos-hdr-bar">
+      <div class="ph-title">⚖️ Ponderación de Criterios <span class="ph-badge">— ajusta el peso de cada criterio y presiona Calcular</span></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="pesos-lbl" style="font-size:12px;font-weight:700;color:white;">Suma: 100%</span>
+        <button class="btn-reset" style="color:rgba(255,255,255,0.8);border-color:rgba(255,255,255,0.3);" onclick="resetPesos()">↺ Restablecer</button>
+      </div>
+    </div>
+    <div class="pesos-body">
+      <div class="dist-bar-wrap">
+        <div class="dist-bar-label">Distribución del peso total</div>
+        <div class="dist-bar" id="dist-bar"></div>
+      </div>
+      <div class="pesos-grid" id="pesos-grid"></div>
+      <div class="sum-bar ok" id="sum-bar">
+        <span id="sum-txt">✓ Suma total: 100% — modelo listo para calcular</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <input class="search-inp" id="srch" type="text" placeholder="🔍 Buscar iniciativa..." oninput="filterProjects(this.value)">
+    <span class="tc" id="tc">31 iniciativas</span>
+    <button class="btn-sm" onclick="collapseAll(false)">▾ Expandir</button>
+    <button class="btn-sm" onclick="collapseAll(true)">▸ Colapsar</button>
+  </div>
+
+  <!-- CONTENEDOR POR ÁREA -->
+  <div id="areas-container"></div>
+
+  <div class="calc-actions">
+    <button class="btn-save-now" onclick="saveToSupabase('manual')">💾 Guardar ahora</button>
+    <button class="btn-calc" id="btn-calc" onclick="calcularRanking()">⚡ Calcular Ranking Estratégico</button>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE RESULTADOS ═══════════ -->
+<div id="page-resultados" class="page">
+  <div class="section-header mb-20">
+    <div><div class="section-title">Resultado</div><div class="section-label">Ranking Estratégico del Portafolio</div></div>
+    <button class="btn-calc" onclick="showPage('proyectos')">← Editar proyectos</button>
+  </div>
+  <div id="res-cont"><div class="empty-s"><div class="ei">📊</div><h3>Sin resultados aún</h3><p>Calcula el ranking desde la pestaña Proyectos</p></div></div>
+</div>
+
+<!-- ═══════════ PAGE GUIA ═══════════ -->
+<div id="page-guia" class="page">
+  <div class="section-header mb-20">
+    <div><div class="section-title">Referencia</div><div class="section-label">Guía de criterios y escala</div></div>
+  </div>
+  <div class="alert-banner"><span style="font-size:16px;flex-shrink:0">ℹ️</span>
+    <div><strong>Fórmula:</strong> Score Final = Score Base (ponderado) × Multiplicador Tipo × Factor Dependencias. Los pesos de cada criterio son configurables desde el panel en la pestaña Proyectos.</div>
+  </div>
+  <div class="crit-guide"><div class="crit-hdr" style="background:linear-gradient(90deg,#003D99,#0099FF)">Criterio 1 — Impacto en el Negocio <span style="opacity:0.7;font-weight:400"> · 30% por defecto</span></div>
+    <div class="crit-body"><p style="font-size:12px;color:var(--text-light);margin-bottom:12px">¿Qué tan directamente mejora productividad, rotación, compliance o rentabilidad?</p>
+    <div class="crit-row">
+      <div class="clvl low"><div class="ln">1–2</div><div class="ld">Impacto marginal. Mejoras internas sin consecuencia visible.</div></div>
+      <div class="clvl mid"><div class="ln">3</div><div class="ld">Impacto moderado. Relevante pero no crítico.</div></div>
+      <div class="clvl high"><div class="ln">4–5</div><div class="ld">Impacto directo. Resuelve algo que cuesta dinero, tiempo o retención.</div></div>
+    </div></div>
+  </div>
+  <div class="crit-guide"><div class="crit-hdr" style="background:linear-gradient(90deg,#0052CC,#00C9B7)">Criterio 2 — Urgencia / Criticidad <span style="opacity:0.7;font-weight:400"> · 25%</span></div>
+    <div class="crit-body"><p style="font-size:12px;color:var(--text-light);margin-bottom:12px">¿Qué pasa si no se hace en 2026?</p>
+    <div class="crit-row">
+      <div class="clvl low"><div class="ln">1–2</div><div class="ld">Puede esperar. Sin fecha límite ni urgencia.</div></div>
+      <div class="clvl mid"><div class="ln">3</div><div class="ld">Cierta presión, no crítico este año.</div></div>
+      <div class="clvl high"><div class="ln">4–5</div><div class="ld">Mandato externo, riesgo legal o bloqueo inminente.</div></div>
+    </div></div>
+  </div>
+  <div class="crit-guide"><div class="crit-hdr" style="background:linear-gradient(90deg,#001F73,#00D9FF)">Criterio 3 — Facilidad de Implementación <span style="opacity:0.7;font-weight:400"> · 15% · Invertido</span></div>
+    <div class="crit-body"><p style="font-size:12px;color:var(--text-light);margin-bottom:12px"><strong>Invertido:</strong> 5 = muy fácil (favorece quick wins).</p>
+    <div class="crit-row">
+      <div class="clvl low"><div class="ln">1–2</div><div class="ld">Alta complejidad. Meses, múltiples actores.</div></div>
+      <div class="clvl mid"><div class="ln">3</div><div class="ld">Esfuerzo moderado.</div></div>
+      <div class="clvl high"><div class="ln">4–5</div><div class="ld">Bajo esfuerzo. Semanas con recursos existentes.</div></div>
+    </div></div>
+  </div>
+  <div class="crit-guide"><div class="crit-hdr" style="background:linear-gradient(90deg,#001A33,#003366)">Criterio 4 — Alineación Estratégica <span style="opacity:0.7;font-weight:400"> · 30%</span></div>
+    <div class="crit-body"><p style="font-size:12px;color:var(--text-light);margin-bottom:12px">¿Contribuye directamente a los pilares P1–P6?</p>
+    <div class="crit-row">
+      <div class="clvl low"><div class="ln">1–2</div><div class="ld">Contribución marginal. Operativo sin aporte estratégico.</div></div>
+      <div class="clvl mid"><div class="ln">3</div><div class="ld">Contribuye tangencialmente.</div></div>
+      <div class="clvl high"><div class="ln">4–5</div><div class="ld">Núcleo de la estrategia. Contribución directa a 2+ pilares.</div></div>
+    </div></div>
+  </div>
+  <div class="card mt-20"><div class="card-hdr" style="background:var(--grad-header)">⚙️ Fórmula del modelo</div>
+    <div class="card-body">
+      <div style="background:var(--bg);border-radius:8px;padding:16px;font-size:12px;color:var(--text);font-family:monospace;line-height:2">
+        Score Base = Σ (Criterio × Peso configurable)<br>
+        Mult. Tipo: Habilitante ×1.3 | Core ×1.0 | Transformacional ×1.1<br>
+        Factor Deps: sin deps = 1.0 | deps resueltas (top 40%) = 1.0 | deps no resueltas = 0.7<br>
+        Habilitante con ≥2 dependientes → bonus +0.15 (máx ×1.5)<br>
+        <strong>Score Final = Score Base × Mult.Tipo × Factor.Deps</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PAGE CONFIG ═══════════ -->
+<div id="page-config" class="page">
+  <div class="section-header mb-20">
+    <div><div class="section-title">Integración</div><div class="section-label">Configurar Supabase y GitHub</div></div>
+  </div>
+  <div class="cfg-panel">
+    <div class="cfg-title">⚙️ Configuración de persistencia y versionado</div>
+    <div class="cfg-sub">Estos valores se guardan en el navegador (localStorage del equipo). Solo necesitas configurarlos una vez por dispositivo. No se sincronizan entre dispositivos — cada persona que use el priorizador debe configurarlos.</div>
+
+    <div id="cfg-readonly-note" style="display:none;">
+      <div class="cfg-readonly-badge">🔒 Configuración ya guardada en este navegador</div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-section-title">🗄️ Supabase — Base de datos</div>
+      <div class="cfg-inp-row">
+        <div class="cfg-inp-grp">
+          <label class="cfg-lbl">Project URL</label>
+          <input class="cfg-inp" id="cfg-supa-url" type="text" placeholder="https://xxxx.supabase.co">
+        </div>
+        <div class="cfg-inp-grp">
+          <label class="cfg-lbl">Anon Key (pública)</label>
+          <input class="cfg-inp" id="cfg-supa-key" type="text" placeholder="eyJhbGci...">
+        </div>
+      </div>
+      <div class="cfg-note">
+        <strong>Cómo obtenerlos:</strong> Supabase → tu proyecto → Settings → API → Project URL y anon/public key.<br>
+        La anon key es segura para usar en el navegador — las reglas de seguridad (RLS) se configuran en Supabase.
+      </div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-section-title">📦 GitHub — Backup versionado (opcional)</div>
+      <div class="cfg-inp-row">
+        <div class="cfg-inp-grp">
+          <label class="cfg-lbl">Token Personal de Acceso (PAT)</label>
+          <input class="cfg-inp" id="cfg-gh-token" type="password" placeholder="ghp_xxxx...">
+        </div>
+        <div class="cfg-inp-grp">
+          <label class="cfg-lbl">Repositorio (usuario/repo)</label>
+          <input class="cfg-inp" id="cfg-gh-repo" type="text" placeholder="natalia-socovesa/priorizador-rrhh">
+        </div>
+      </div>
+      <div class="cfg-inp-row">
+        <div class="cfg-inp-grp">
+          <label class="cfg-lbl">Branch</label>
+          <input class="cfg-inp" id="cfg-gh-branch" type="text" placeholder="main" value="main">
+        </div>
+        <div class="cfg-inp-grp">
+          <label class="cfg-lbl">Carpeta en repositorio</label>
+          <input class="cfg-inp" id="cfg-gh-path" type="text" placeholder="backups/" value="backups/">
+        </div>
+      </div>
+      <div class="cfg-note">
+        <strong>Cómo crear un PAT:</strong> GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained → selecciona el repo → permiso <em>Contents: Read and Write</em>.<br>
+        El token solo se guarda en este navegador. Nunca sale a ningún servidor externo excepto api.github.com.
+      </div>
+    </div>
+
+    <button class="btn-cfg-save" onclick="saveConfig()">Guardar configuración</button>
+    <div class="cfg-status" id="cfg-status"></div>
+  </div>
+</div>
+</main>
+
+<footer>Priorizador Estratégico 3.0 &nbsp;·&nbsp; Gerencia de Personas &nbsp;·&nbsp; Empresas Socovesa S.A. &nbsp;·&nbsp; 2026–2027</footer>
+
+<script>
+/* ══════════════ CONSTANTES ══════════════════════════════════════════════════ */
+const PILARES=['P1','P2','P3','P4','P5','P6'];
+const PILAR_N={P1:'Capacidad Adaptativa',P2:'Arquitectura de Habilidades',P3:'Cultura como Infraestructura',P4:'Liderazgo en la Era IA',P5:'PVE Diferenciada',P6:'Procesos como Cimientos'};
+const PILAR_TH={P1:'ph1',P2:'ph2',P3:'ph3',P4:'ph4',P5:'ph5',P6:'ph6'};
+const MULT_TIPO={habilitante:1.3,core:1.0,transformacional:1.1};
+const CRIT=[
+  {key:'impacto',   label:'Impacto Negocio',    tip:'¿Qué tan directamente mejora productividad, rotación o compliance? 1=marginal · 3=moderado · 5=crítico'},
+  {key:'urgencia',  label:'Urgencia',            tip:'¿Qué pasa si no se hace en 2026? 1=puede esperar · 3=algo urgente · 5=mandato o riesgo crítico'},
+  {key:'facilidad', label:'Facilidad (↑=fácil)', tip:'INVERTIDO: 5=bajo esfuerzo. 1=complejo · 5=rápido con recursos actuales'},
+  {key:'alineacion',label:'Alineación P1–P6',    tip:'Contribución a pilares. 1=operativo sin aporte · 3=tangencial · 5=núcleo de estrategia'}
+];
+const AREAS=[
+  {key:'do',   label:'Desarrollo Organizacional', icon:'📊', color:'#0052CC'},
+  {key:'cap',  label:'Capacitación',              icon:'🎓', color:'#003D99'},
+  {key:'comp', label:'Compensaciones',            icon:'💰', color:'#001F73'},
+  {key:'rs',   label:'R&S',                       icon:'🎯', color:'#003366'},
+  {key:'rem',  label:'Remuneraciones y RL',        icon:'📋', color:'#001A33'},
+  {key:'cult', label:'Cultura y Gestión del Cambio',icon:'🌱',color:'#7B2D8B'},
+  {key:'cv',   label:'Calidad de Vida',            icon:'💙', color:'#0A6E5E'}
+];
+
+/* ══════════════ SUPABASE CLIENT ════════════════════════════════════════════ */
+let _supa = null;
+let _currentUser = null;
+let _saveDebounce = null;
+let _histItems = [];
+
+function getSupaConfig(){
+  return {
+    url: localStorage.getItem('supa_url')||'',
+    key: localStorage.getItem('supa_key')||''
+  };
+}
+
+function initSupabase(){
+  const {url,key} = getSupaConfig();
+  if(!url||!key){ setSyncStatus('cfg','Sin configurar'); return null; }
+  try {
+    _supa = supabase.createClient(url, key);
+    return _supa;
+  } catch(e){
+    setSyncStatus('err','Error cliente Supabase');
+    return null;
+  }
+}
+
+/* ══════════════ AUTH ════════════════════════════════════════════════════════ */
+async function checkSession(){
+  const sb = initSupabase();
+  if(!sb){ showAuthOverlay(false); return; }
+  setSyncStatus('syncing','Verificando sesión…');
+  try {
+    const {data:{session}} = await sb.auth.getSession();
+    if(session){
+      _currentUser = session.user;
+      hideAuthOverlay();
+      updateUserBadge();
+      setSyncStatus('syncing','Cargando datos…');
+      await loadFromSupabase();
+    } else {
+      showAuthOverlay(true);
+    }
+  } catch(e){
+    showAuthOverlay(false);
+  }
+}
+
+function showAuthOverlay(showForm){
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  if(!showForm){
+    // no config yet — redirect to config
+    document.getElementById('auth-overlay').innerHTML = `
+      <div class="auth-box">
+        <div class="auth-logo">⚙️</div>
+        <div class="auth-title">Configuración requerida</div>
+        <div class="auth-sub">Para usar el priorizador con persistencia, primero configura las credenciales de Supabase.</div>
+        <button class="auth-btn" onclick="skipAuth()">Usar sin persistencia (modo local)</button>
+        <button class="auth-btn" style="margin-top:8px;background:var(--navy);" onclick="goConfig()">Ir a Configuración</button>
+      </div>`;
+  }
+}
+
+function hideAuthOverlay(){
+  document.getElementById('auth-overlay').classList.add('hidden');
+}
+
+function skipAuth(){
+  hideAuthOverlay();
+  setSyncStatus('err','Sin persistencia — modo local');
+  loadLocalFallback();
+}
+
+function goConfig(){
+  hideAuthOverlay();
+  showPage('config');
+}
+
+async function doLogin(){
+  const sb = initSupabase();
+  if(!sb){ document.getElementById('auth-err').textContent='Primero configura Supabase en ⚙️ Configurar'; return; }
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-pass').value;
+  if(!email||!pass){ document.getElementById('auth-err').textContent='Completa correo y contraseña'; return; }
+  const btn = document.getElementById('auth-btn');
+  btn.disabled=true;
+  document.getElementById('auth-loading').textContent='Verificando…';
+  document.getElementById('auth-err').textContent='';
+  try {
+    const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
+    if(error) throw error;
+    _currentUser = data.user;
+    hideAuthOverlay();
+    updateUserBadge();
+    setSyncStatus('syncing','Cargando datos…');
+    await loadFromSupabase();
+  } catch(e){
+    document.getElementById('auth-err').textContent = e.message.includes('credentials')||e.message.includes('Invalid')
+      ? 'Correo o contraseña incorrectos'
+      : e.message;
+    document.getElementById('auth-loading').textContent='';
+    btn.disabled=false;
+  }
+}
+
+async function doLogout(){
+  if(_supa){ await _supa.auth.signOut(); }
+  _currentUser = null;
+  document.getElementById('user-badge').style.display='none';
+  document.getElementById('auth-overlay').innerHTML = `
+    <div class="auth-box">
+      <div class="auth-logo">P</div>
+      <div class="auth-title">Priorizador Estratégico</div>
+      <div class="auth-sub">Gerencia de Personas · Empresas Socovesa<br>Acceso restringido — solo editores autorizados</div>
+      <input class="auth-inp" id="auth-email" type="email" placeholder="correo@socovesa.cl" autocomplete="email">
+      <input class="auth-inp" id="auth-pass" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <button class="auth-btn" id="auth-btn" onclick="doLogin()">Ingresar</button>
+      <div class="auth-err" id="auth-err"></div>
+      <div class="auth-loading" id="auth-loading"></div>
+    </div>`;
+  document.getElementById('auth-overlay').classList.remove('hidden');
+}
+
+function updateUserBadge(){
+  if(!_currentUser) return;
+  const email = _currentUser.email||'';
+  const initials = email.split('@')[0].slice(0,2).toUpperCase();
+  document.getElementById('user-av').textContent = initials;
+  document.getElementById('user-name-lbl').textContent = email.split('@')[0];
+  document.getElementById('user-badge').style.display='flex';
+}
+
+/* ══════════════ SYNC STATUS ════════════════════════════════════════════════ */
+function setSyncStatus(state, text){
+  const pill = document.getElementById('sync-pill');
+  const txt  = document.getElementById('sync-txt');
+  pill.className = 'sync-pill ' + state;
+  txt.textContent = text;
+}
+
+/* ══════════════ SUPABASE LOAD / SAVE ═══════════════════════════════════════ */
+// Table schema (SQL to run once in Supabase):
+// CREATE TABLE priorizador_state (
+//   id TEXT PRIMARY KEY DEFAULT 'main',
+//   projects JSONB,
+//   pesos JSONB,
+//   updated_at TIMESTAMPTZ DEFAULT NOW(),
+//   updated_by TEXT
+// );
+// CREATE TABLE priorizador_history (
+//   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+//   action TEXT,
+//   detail TEXT,
+//   snapshot JSONB,
+//   created_at TIMESTAMPTZ DEFAULT NOW(),
+//   created_by TEXT
+// );
+// ALTER TABLE priorizador_state ENABLE ROW LEVEL SECURITY;
+// ALTER TABLE priorizador_history ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "auth users only" ON priorizador_state FOR ALL USING (auth.uid() IS NOT NULL);
+// CREATE POLICY "auth users only" ON priorizador_history FOR ALL USING (auth.uid() IS NOT NULL);
+
+async function loadFromSupabase(){
+  if(!_supa){ loadLocalFallback(); return; }
+  setSyncStatus('syncing','Cargando…');
+  try {
+    const {data,error} = await _supa
+      .from('priorizador_state')
+      .select('*')
+      .eq('id','main')
+      .single();
+    if(error && error.code!=='PGRST116'){ throw error; }
+    if(data){
+      projects = (data.projects||[]).map((p,_i)=>({...p,id:p.id||gid(),collapsed:true}));
+      if(data.pesos) pesosInt={...data.pesos};
+      nextId = projects.length>0 ? Math.max(...projects.map(p=>p.id))+1 : 1;
+    } else {
+      loadLocalFallback();
+    }
+    renderPesosGrid();
+    updatePesosSum();
+    renderAllAreas();
+    setSyncStatus('ok','Sincronizado');
+    await loadHistoryFromSupabase();
+  } catch(e){
+    console.error('Load error',e);
+    setSyncStatus('err','Error al cargar');
+    loadLocalFallback();
+  }
+}
+
+function loadLocalFallback(){
+  // Load the default 31 initiatives if nothing in DB
+  if(projects.length===0){
+    INIT_DATA.forEach(d=>{
+      const id=gid();
+      projects.push({...d,id,deps:[],collapsed:true});
+    });
+  }
+  renderPesosGrid();
+  updatePesosSum();
+  renderAllAreas();
+}
+
+async function saveToSupabase(trigger='auto'){
+  if(!_supa||!_currentUser){ return; }
+  setSyncStatus('syncing','Guardando…');
+  try {
+    const userEmail = _currentUser.email||'unknown';
+    const snapshot = {projects:[...projects],pesos:{...pesosInt}};
+    const {error} = await _supa
+      .from('priorizador_state')
+      .upsert({
+        id:'main',
+        projects: projects,
+        pesos: pesosInt,
+        updated_at: new Date().toISOString(),
+        updated_by: userEmail
+      });
+    if(error) throw error;
+
+    // Log to history
+    const actionLabel = trigger==='manual'?'Guardado manual'
+      :trigger==='add'?'Nueva iniciativa'
+      :trigger==='remove'?'Iniciativa eliminada'
+      :trigger==='edit'?'Iniciativa editada'
+      :trigger==='pesos'?'Pesos actualizados'
+      :'Cambio automático';
+
+    await _supa.from('priorizador_history').insert({
+      action: actionLabel,
+      detail: `${projects.length} iniciativas · Pesos: I${pesosInt.impacto}% U${pesosInt.urgencia}% F${pesosInt.facilidad}% A${pesosInt.alineacion}%`,
+      snapshot: snapshot,
+      created_by: userEmail
+    });
+
+    setSyncStatus('ok',`Guardado · ${new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})}`);
+    await loadHistoryFromSupabase();
+  } catch(e){
+    console.error('Save error',e);
+    setSyncStatus('err','Error al guardar');
+  }
+}
+
+function debouncedSave(trigger='edit'){
+  clearTimeout(_saveDebounce);
+  _saveDebounce = setTimeout(()=>saveToSupabase(trigger), 2200);
+}
+
+/* ══════════════ HISTORY ════════════════════════════════════════════════════ */
+async function loadHistoryFromSupabase(){
+  if(!_supa) return;
+  try {
+    const {data,error} = await _supa
+      .from('priorizador_history')
+      .select('*')
+      .order('created_at',{ascending:false})
+      .limit(50);
+    if(error) throw error;
+    _histItems = data||[];
+    renderHistoryPanel();
+    const badge = document.getElementById('hist-count-badge');
+    if(_histItems.length>0){
+      badge.textContent=_histItems.length;
+      badge.style.display='inline';
+    }
+  } catch(e){ console.error('History load error',e); }
+}
+
+function renderHistoryPanel(){
+  const list = document.getElementById('hist-list');
+  if(!_histItems.length){ list.innerHTML='<div class="hist-empty">Sin cambios registrados aún.</div>'; return; }
+  list.innerHTML = _histItems.map(h=>{
+    const dt = new Date(h.created_at);
+    const dateStr = dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
+    const timeStr = dt.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+    const user = (h.created_by||'').split('@')[0];
+    return `<div class="hist-item">
+      <div class="hist-item-hdr">
+        <span class="hist-action">${h.action||'Cambio'}</span>
+        <span class="hist-ts">${dateStr} ${timeStr}</span>
+      </div>
+      <div class="hist-user">👤 ${user}</div>
+      <div class="hist-detail">${esc(h.detail||'')}</div>
+      <button class="hist-restore" onclick="restoreSnapshot('${h.id}')">↩ Restaurar este estado</button>
+    </div>`;
+  }).join('');
+}
+
+async function restoreSnapshot(histId){
+  if(!confirm('¿Restaurar el portafolio a este estado? Se perderán los cambios no guardados.')) return;
+  const item = _histItems.find(h=>h.id===histId);
+  if(!item||!item.snapshot) return;
+  const snap = item.snapshot;
+  projects = (snap.projects||[]).map(p=>({...p,collapsed:true}));
+  if(snap.pesos) pesosInt={...snap.pesos};
+  nextId = projects.length>0 ? Math.max(...projects.map(p=>p.id))+1 : 1;
+  renderPesosGrid();
+  updatePesosSum();
+  renderAllAreas();
+  await saveToSupabase('manual');
+  alert('✓ Estado restaurado correctamente.');
+}
+
+function toggleHist(){
+  document.getElementById('hist-panel').classList.toggle('open');
+  if(document.getElementById('hist-panel').classList.contains('open')){
+    loadHistoryFromSupabase();
+  }
+}
+
+/* ══════════════ GITHUB BACKUP ══════════════════════════════════════════════ */
+async function pushToGitHub(){
+  const token  = localStorage.getItem('gh_token');
+  const repo   = localStorage.getItem('gh_repo');
+  const branch = localStorage.getItem('gh_branch')||'main';
+  const path   = localStorage.getItem('gh_path')||'backups/';
+  if(!token||!repo){ alert('Configura el token y repositorio de GitHub en ⚙️ Configurar'); return; }
+  const btn = document.getElementById('btn-gh-backup');
+  btn.disabled=true;
+  btn.innerHTML='<span>⏳</span> Subiendo…';
+  try {
+    const now = new Date();
+    const ts = now.toISOString().replace(/[:.]/g,'-').slice(0,19);
+    const filename = `${path}portafolio_${ts}.json`;
+    const content = JSON.stringify({
+      exported_at: now.toISOString(),
+      exported_by: _currentUser?.email||'unknown',
+      projects,
+      pesos: pesosInt,
+      meta:{ total: projects.length, areas: AREAS.map(a=>a.key), version:'3.0' }
+    }, null, 2);
+    const b64 = btoa(unescape(encodeURIComponent(content)));
+
+    // Check if file already exists (to get SHA for update)
+    let sha = undefined;
+    try {
+      const checkRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filename}`,{
+        headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github+json'}
+      });
+      if(checkRes.ok){ const checkData=await checkRes.json(); sha=checkData.sha; }
+    } catch(_){}
+
+    const body = {
+      message:`Snapshot priorizador RRHH ${ts.replace('T',' ').replace(/-/g,':')}`,
+      content: b64,
+      branch
+    };
+    if(sha) body.sha = sha;
+
+    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${filename}`,{
+      method:'PUT',
+      headers:{
+        'Authorization':`token ${token}`,
+        'Accept':'application/vnd.github+json',
+        'Content-Type':'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok){ const e=await res.json(); throw new Error(e.message||res.statusText); }
+    btn.disabled=false;
+    btn.innerHTML='<span>✅</span> Backup subido correctamente';
+    setTimeout(()=>{ btn.innerHTML='<span>📦</span> Exportar snapshot a GitHub'; },3000);
+  } catch(e){
+    btn.disabled=false;
+    btn.innerHTML='<span>❌</span> Error: '+e.message.slice(0,40);
+    setTimeout(()=>{ btn.innerHTML='<span>📦</span> Exportar snapshot a GitHub'; },4000);
+  }
+}
+
+/* ══════════════ CONFIG PAGE ════════════════════════════════════════════════ */
+function loadConfigFields(){
+  const url  = localStorage.getItem('supa_url')||'';
+  const key  = localStorage.getItem('supa_key')||'';
+  const tok  = localStorage.getItem('gh_token')||'';
+  const repo = localStorage.getItem('gh_repo')||'';
+  const br   = localStorage.getItem('gh_branch')||'main';
+  const pt   = localStorage.getItem('gh_path')||'backups/';
+  document.getElementById('cfg-supa-url').value = url;
+  document.getElementById('cfg-supa-key').value = key;
+  document.getElementById('cfg-gh-token').value = tok;
+  document.getElementById('cfg-gh-repo').value  = repo;
+  document.getElementById('cfg-gh-branch').value= br;
+  document.getElementById('cfg-gh-path').value  = pt;
+  if(url&&key){
+    document.getElementById('cfg-readonly-note').style.display='block';
+  }
+}
+
+function saveConfig(){
+  const url  = document.getElementById('cfg-supa-url').value.trim();
+  const key  = document.getElementById('cfg-supa-key').value.trim();
+  const tok  = document.getElementById('cfg-gh-token').value.trim();
+  const repo = document.getElementById('cfg-gh-repo').value.trim();
+  const br   = document.getElementById('cfg-gh-branch').value.trim()||'main';
+  const pt   = document.getElementById('cfg-gh-path').value.trim()||'backups/';
+  if(!url||!key){ document.getElementById('cfg-status').textContent='⚠️ URL y Anon Key de Supabase son obligatorios'; document.getElementById('cfg-status').className='cfg-status cfg-err'; return; }
+  localStorage.setItem('supa_url',url);
+  localStorage.setItem('supa_key',key);
+  if(tok)  localStorage.setItem('gh_token',tok);
+  if(repo) localStorage.setItem('gh_repo',repo);
+  localStorage.setItem('gh_branch',br);
+  localStorage.setItem('gh_path',pt);
+  document.getElementById('cfg-status').textContent='✓ Configuración guardada. Recargando…';
+  document.getElementById('cfg-status').className='cfg-status';
+  setTimeout(()=>location.reload(),1200);
+}
+
+/* ══════════════ PESOS ══════════════════════════════════════════════════════ */
+const DEF_P={impacto:30,urgencia:25,facilidad:15,alineacion:30};
+let pesosInt={...DEF_P};
+const CRIT_COLORS=['#0052CC','#003D99','#001F73','#003366'];
+
+function getPesos(){
+  return{impacto:pesosInt.impacto/100,urgencia:pesosInt.urgencia/100,facilidad:pesosInt.facilidad/100,alineacion:pesosInt.alineacion/100};
+}
+function resetPesos(){
+  pesosInt={...DEF_P};
+  renderPesosGrid();
+  updatePesosSum();
+  debouncedSave('pesos');
+}
+function togglePesos(){}
+
+function renderPesosGrid(){
+  const grid=document.getElementById('pesos-grid');
+  if(!grid)return;
+  grid.innerHTML=CRIT.map((c,i)=>{
+    const v=pesosInt[c.key];
+    const col=CRIT_COLORS[i];
+    return `<div class="peso-card" id="pc-${c.key}">
+      <div class="peso-card-top">
+        <div>
+          <div class="peso-card-name" style="color:${col}">${c.label}</div>
+          <div class="peso-card-desc">${c.key==='facilidad'?'Invertido: 5 = más fácil':c.key==='impacto'?'Impacto directo en negocio':c.key==='urgencia'?'Urgencia / Criticidad 2026':'Alineación a P1–P6'}</div>
+        </div>
+        <div class="peso-num-wrap">
+          <div class="peso-steppers">
+            <button class="peso-step" onclick="stepPeso('${c.key}',5)" title="+5">▲</button>
+            <button class="peso-step" onclick="stepPeso('${c.key}',-5)" title="-5">▼</button>
+          </div>
+          <input class="peso-num" type="number" id="pnum-${c.key}"
+                 min="0" max="100" step="5" value="${v}"
+                 oninput="onPesoInput('${c.key}',this.value)"
+                 onblur="onPesoBlur('${c.key}',this)">
+          <span class="peso-pct-sign">%</span>
+        </div>
+      </div>
+      <input type="range" class="peso-range" min="0" max="100" step="5" value="${v}"
+             style="--pct:${v}%" id="prange-${c.key}"
+             oninput="onPesoRange('${c.key}',this.value)">
+    </div>`;
+  }).join('');
+  updateDistBar();
+}
+
+function stepPeso(key,delta){
+  const newVal=Math.min(100,Math.max(0,pesosInt[key]+delta));
+  pesosInt[key]=newVal;
+  syncPesoUI(key);
+  updatePesosSum();
+  debouncedSave('pesos');
+}
+function onPesoInput(key,val){
+  const n=parseInt(val);
+  if(!isNaN(n)&&n>=0&&n<=100){
+    pesosInt[key]=n;
+    const r=document.getElementById('prange-'+key);
+    if(r){r.value=n;r.style.setProperty('--pct',n+'%');}
+    updatePesosSum();
+  }
+}
+function onPesoBlur(key,inp){
+  const n=parseInt(inp.value);
+  if(isNaN(n)||n<0||n>100){inp.value=pesosInt[key];}
+  else{pesosInt[key]=n;}
+  syncPesoUI(key);
+  updatePesosSum();
+  debouncedSave('pesos');
+}
+function onPesoRange(key,val){
+  pesosInt[key]=parseInt(val);
+  syncPesoUI(key);
+  updatePesosSum();
+  debouncedSave('pesos');
+}
+function syncPesoUI(key){
+  const inp=document.getElementById('pnum-'+key);
+  const rng=document.getElementById('prange-'+key);
+  if(inp)inp.value=pesosInt[key];
+  if(rng){rng.value=pesosInt[key];rng.style.setProperty('--pct',pesosInt[key]+'%');}
+  updateDistBar();
+}
+function updateDistBar(){
+  const bar=document.getElementById('dist-bar');
+  if(!bar)return;
+  const total=Object.values(pesosInt).reduce((a,b)=>a+b,0)||1;
+  bar.innerHTML=CRIT.map((c,i)=>{
+    const v=pesosInt[c.key];
+    const pct=(v/total*100).toFixed(1);
+    const col=CRIT_COLORS[i];
+    return `<div class="dist-seg" style="flex:${v};background:${col};" title="${c.label}: ${v}%">
+      ${v>=8?v+'%':''}
+    </div>`;
+  }).join('');
+}
+function updatePesosSum(){
+  const s=Object.values(pesosInt).reduce((a,b)=>a+b,0);
+  const bar=document.getElementById('sum-bar');
+  const txt=document.getElementById('sum-txt');
+  const lbl=document.getElementById('pesos-lbl');
+  const btn=document.getElementById('btn-calc');
+  lbl.textContent='Suma: '+s+'%';
+  if(s===100){
+    if(bar)bar.className='sum-bar ok';
+    if(txt)txt.textContent='✓ Suma total: 100% — modelo listo para calcular';
+    if(btn)btn.disabled=false;
+    CRIT.forEach(c=>{const el=document.getElementById('pnum-'+c.key);if(el)el.classList.remove('invalid');});
+  } else {
+    if(bar)bar.className='sum-bar err';
+    if(txt){const diff=100-s;txt.textContent=`⚠️ Suma: ${s}% — ${diff>0?'faltan '+diff+'% para llegar a 100%':'sobran '+(s-100)+'%, reduce algún criterio'}`;}
+    if(btn)btn.disabled=true;
+  }
+  updateDistBar();
+}
+
+/* ══════════════ STATE ═══════════════════════════════════════════════════════ */
+let projects=[];
+let nextId=1;
+function gid(){return nextId++;}
+
+/* ══════════════ NAVEGACIÓN ════════════════════════════════════════════════ */
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(n))b.classList.add('active');});
+  if(n==='config') loadConfigFields();
+}
+
+/* ══════════════ COLLAPSE / FILTER ════════════════════════════════════════ */
+function collapseAll(c){
+  projects.forEach(p=>p.collapsed=c);
+  renderAllAreas();
+}
+function filterProjects(q){
+  const ql=q.trim().toLowerCase();
+  document.querySelectorAll('.project-form').forEach(el=>{
+    const p=projects.find(x=>x.id===parseInt(el.dataset.id));
+    el.classList.toggle('hidden',!!ql&&!!p&&!p.nombre.toLowerCase().includes(ql));
+  });
+  const v=document.querySelectorAll('.project-form:not(.hidden)').length;
+  setTC(v);
+}
+function setTC(v){
+  const el=document.getElementById('tc');if(!el)return;
+  const t=projects.length;
+  el.textContent=v!==undefined&&v<t?v+' de '+t+' iniciativas':t+' iniciativa'+(t!==1?'s':'');
+}
+function toggleAreaGroup(key){
+  const body=document.getElementById('ag-body-'+key);
+  const chev=document.getElementById('ag-chev-'+key);
+  if(!body||!chev)return;
+  const col=body.classList.contains('collapsed');
+  body.classList.toggle('collapsed',!col);
+  chev.classList.toggle('rot',!col);
+}
+function toggleCard(id){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  p.collapsed=!p.collapsed;
+  const body=document.getElementById('pfb-'+id);
+  const hdr=document.getElementById('pfh-'+id);
+  const arr=document.getElementById('pfa-'+id);
+  if(p.collapsed){body.classList.add('col');hdr.classList.add('is-col');arr.classList.add('rot');}
+  else{body.classList.remove('col');hdr.classList.remove('is-col');arr.classList.remove('rot');}
+}
+
+/* ══════════════ ADD / REMOVE ══════════════════════════════════════════════ */
+function addProjectModal(){
+  const areaKey=prompt('¿A qué área pertenece? Opciones:\n'+AREAS.map((a,i)=>`${i+1}. ${a.label}`).join('\n')+'\n\nEscribe el número:');
+  if(!areaKey)return;
+  const idx=parseInt(areaKey)-1;
+  if(isNaN(idx)||idx<0||idx>=AREAS.length){alert('Área no válida');return;}
+  addProject(null, AREAS[idx].key);
+}
+function addProject(data=null, areaKey='do'){
+  const id=gid();
+  const p=data?{...data,id}:{
+    id,nombre:'',tipo:'core',pilares:[],area:areaKey,
+    scores:{impacto:0,urgencia:0,facilidad:0,alineacion:0},
+    collapsed:false
+  };
+  if(data&&p.collapsed===undefined)p.collapsed=false;
+  projects.push(p);
+  renderAllAreas();
+  setTimeout(()=>{const ag=document.getElementById('ag-'+p.area);if(ag)ag.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
+  debouncedSave('add');
+}
+function removeProject(id){
+  const p=projects.find(x=>x.id===id);
+  if(p&&p.nombre.trim()&&!confirm('¿Eliminar "'+p.nombre+'"?'))return;
+  projects=projects.filter(x=>x.id!==id);
+  renderAllAreas();
+  debouncedSave('remove');
+}
+
+/* ══════════════ UPDATE ════════════════════════════════════════════════════ */
+function setNombre(id,val){
+  const p=projects.find(x=>x.id===id);if(!p)return;p.nombre=val;
+  const nd=document.getElementById('pf-nd-'+id);if(nd)nd.textContent=val||'Sin nombre';
+  const dw=document.getElementById('pf-dw-'+id);
+  if(dw){const dup=projects.find(x=>x.id!==id&&x.nombre.trim().toLowerCase()===val.trim().toLowerCase()&&val.trim()!=='');dw.style.display=dup?'block':'none';}
+  debouncedSave('edit');
+}
+function setTipo(id,val){
+  const p=projects.find(x=>x.id===id);if(!p)return;p.tipo=val;
+  const el=document.getElementById('pf-'+id);if(el)el.style.borderLeftColor=tAcc(val);
+  const tb=document.getElementById('pf-tb-'+id);if(tb)tb.textContent=tLbl(val);
+  debouncedSave('edit');
+}
+function setScore(id,key,val,btn){
+  const p=projects.find(x=>x.id===id);if(!p)return;p.scores[key]=val;
+  btn.closest('.sc-btns').querySelectorAll('.sc-btn').forEach((b,i)=>{b.className='sc-btn';if(i<val)b.classList.add('a'+(i+1));});
+  const sc=Object.values(p.scores).filter(v=>v>0).length;
+  const mm=document.getElementById('pf-sc-'+id);if(mm){mm.textContent=sc+'/'+CRIT.length+' criterios';mm.style.color=sc===CRIT.length?'#0a6e5e':'#cc8800';}
+  debouncedSave('edit');
+}
+function togglePilar(id,pilar,btn){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  if(p.pilares.includes(pilar)){p.pilares=p.pilares.filter(x=>x!==pilar);btn.classList.remove('act');}
+  else{p.pilares.push(pilar);btn.classList.add('act');}
+  const pm=document.getElementById('pf-pm-'+id);if(pm)pm.textContent=p.pilares.length>0?p.pilares.join(' · '):'Sin pilares';
+  debouncedSave('edit');
+}
+function tAcc(t){return t==='habilitante'?'#003D99':t==='transformacional'?'#7B2D8B':'#0052CC';}
+function tLbl(t){return{habilitante:'🧱 Habilitante',core:'⚙️ Core',transformacional:'✨ Transformacional'}[t]||t;}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ══════════════ RENDER ════════════════════════════════════════════════════ */
+function renderAllAreas(){
+  const container=document.getElementById('areas-container');
+  setTC();
+  if(projects.length===0){container.innerHTML='<div class="empty-s"><div class="ei">📋</div><h3>No hay proyectos</h3><p>Haz clic en "+ Nuevo Proyecto"</p></div>';return;}
+  let html='';
+  AREAS.forEach(area=>{
+    const areaProjects=projects.filter(p=>p.area===area.key);
+    if(areaProjects.length===0)return;
+    html+=`<div class="area-group" id="ag-${area.key}">
+      <div class="area-group-header" style="border-bottom-color:${area.color}" onclick="toggleAreaGroup('${area.key}')">
+        <span class="area-group-icon">${area.icon}</span>
+        <span class="area-group-name">${area.label}</span>
+        <span class="area-group-count" style="background:${area.color}">${areaProjects.length}</span>
+        <span class="area-group-chevron" id="ag-chev-${area.key}">▾</span>
+      </div>
+      <div class="area-group-body" id="ag-body-${area.key}">
+        ${areaProjects.map((p,idx)=>renderCard(p,idx)).join('')}
+        <button class="btn-add-area" onclick="addProject(null,'${area.key}')">
+          <span style="font-size:16px">+</span> Agregar iniciativa en ${area.label}
+        </button>
+      </div>
+    </div>`;
+  });
+  container.innerHTML=html;
+}
+
+function renderCard(p,idx){
+  const sc=Object.values(p.scores).filter(v=>v>0).length;
+  const col=p.collapsed||false;
+  return `<div class="project-form" id="pf-${p.id}" data-id="${p.id}" style="border-left-color:${tAcc(p.tipo)}">
+  <div class="pf-hdr ${col?'is-col':''}" id="pfh-${p.id}" onclick="toggleCard(${p.id})">
+    <div class="pf-num">${idx+1}</div>
+    <div class="pf-info">
+      <div class="pf-name" id="pf-nd-${p.id}">${esc(p.nombre)||'Sin nombre'}</div>
+      <div class="pf-meta">
+        <span id="pf-tb-${p.id}">${tLbl(p.tipo)}</span>&nbsp;·&nbsp;
+        <span id="pf-pm-${p.id}">${p.pilares.length>0?p.pilares.join(' · '):'Sin pilares'}</span>&nbsp;·&nbsp;
+        <span id="pf-sc-${p.id}" style="color:${sc===CRIT.length?'#0a6e5e':'#cc8800'}">${sc}/${CRIT.length} criterios</span>
+      </div>
+    </div>
+    <div class="pf-actions" onclick="event.stopPropagation()">
+      <button class="btn-ca ${col?'rot':''}" id="pfa-${p.id}" onclick="toggleCard(${p.id})" title="${col?'Expandir':'Colapsar'}">▾</button>
+      <button class="btn-rm" onclick="removeProject(${p.id})" title="Eliminar">×</button>
+    </div>
+  </div>
+  <div class="pf-body ${col?'col':''}" id="pfb-${p.id}">
+    <div class="f-grp" style="margin-bottom:12px">
+      <label class="f-lbl htip">NOMBRE / INICIATIVA <span class="ti">?<span class="tb">Escribe o selecciona del autocomplete.</span></span></label>
+      <input class="name-inp" type="text" list="dl-init" placeholder="Escribe o selecciona..." value="${esc(p.nombre)}" oninput="setNombre(${p.id},this.value)">
+      <div class="dup-w" id="pf-dw-${p.id}">⚠️ Ya existe un proyecto con este nombre.</div>
+    </div>
+    <div class="f-row">
+      <div class="f-grp">
+        <label class="f-lbl htip">TIPO <span class="ti">?<span class="tb">Habilitante: fundacional. Core: impacto directo. Transformacional: cambio cultural.</span></span></label>
+        <select onchange="setTipo(${p.id},this.value)">
+          <option value="core" ${p.tipo==='core'?'selected':''}>⚙️ Core — Impacto directo</option>
+          <option value="habilitante" ${p.tipo==='habilitante'?'selected':''}>🧱 Habilitante — Fundacional</option>
+          <option value="transformacional" ${p.tipo==='transformacional'?'selected':''}>✨ Transformacional — Cultural</option>
+        </select>
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl">PILARES ESTRATÉGICOS</label>
+        <div class="pil-btns">
+          ${PILARES.map(pl=>`<button class="pil-btn ${p.pilares.includes(pl)?'act':''}" onclick="togglePilar(${p.id},'${pl}',this)">${pl}<span class="pt">${pl}: ${PILAR_N[pl]}</span></button>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${CRIT.map(c=>`<div class="f-grp" style="margin-bottom:11px">
+      <label class="f-lbl htip">${c.label} <span class="ti">?<span class="tb">${c.tip}</span></span></label>
+      <div class="sc-btns">${[1,2,3,4,5].map(n=>`<button class="sc-btn ${p.scores[c.key]===n?'a'+n:''}" onclick="setScore(${p.id},'${c.key}',${n},this)">${n}</button>`).join('')}</div>
+      <div class="sc-hints"><span class="sc-hint">${c.key==='facilidad'?'1 = muy difícil':'1 = ninguno'}</span><span class="sc-hint">${c.key==='facilidad'?'5 = fácil':'5 = máximo'}</span></div>
+    </div>`).join('')}
+  </div>
+</div>`;
+}
+
+/* ══════════════ CÁLCULO ═══════════════════════════════════════════════════ */
+function calcularRanking(){
+  const s=Object.values(pesosInt).reduce((a,b)=>a+b,0);
+  if(s!==100){alert('Los pesos suman '+s+'%, deben ser exactamente 100%.');return;}
+  if(projects.length===0){alert('No hay proyectos.');return;}
+  if(projects.filter(p=>!p.nombre.trim()).length>0){alert('Todas las iniciativas necesitan nombre.');return;}
+  const sinS=projects.filter(p=>Object.values(p.scores).some(v=>v===0));
+  if(sinS.length>0&&!confirm('Sin puntuar completamente: '+sinS.map(p=>p.nombre).join(', ')+'. ¿Continuar?'))return;
+  const P=getPesos();
+  const res=projects.map(p=>({...p,sBase:sBase(p,P),sAj:0,pu:{...pesosInt}}));
+  const tIds=[...res].sort((a,b)=>b.sBase-a.sBase).slice(0,Math.ceil(res.length*0.4)).map(p=>p.id);
+  const dc={};res.forEach(p=>(p.deps||[]).forEach(d=>{dc[d]=(dc[d]||0)+1;}));
+  res.forEach(p=>{
+    let mt=MULT_TIPO[p.tipo]||1;let fd=1;
+    const bl=[],rs=[];
+    (p.deps||[]).forEach(d=>{tIds.includes(d)?rs.push(d):bl.push(d);});
+    if(bl.length>0)fd=0.7;
+    if(p.tipo==='habilitante'&&(dc[p.id]||0)>=2)mt=Math.min(mt+0.15,1.5);
+    p.sAj=p.sBase*mt*fd;p.mt=mt;p.fd=fd;p.bl=bl;p.rs=rs;p.dc=dc[p.id]||0;
+  });
+  res.sort((a,b)=>b.sAj-a.sAj);
+  res.forEach((p,i)=>{p.lbl=mkLbl(p,i,res.length);});
+  renderResultados(res);showPage('resultados');
+}
+function sBase(p,P){return p.scores.impacto*P.impacto+p.scores.urgencia*P.urgencia+p.scores.facilidad*P.facilidad+p.scores.alineacion*P.alineacion;}
+function mkLbl(p,i,t){
+  const s=p.scores;
+  if((p.bl||[]).length>0)return{e:'⚠️',x:'Bloqueado',c:'lb'};
+  if(p.sAj>=4.5)return{e:'🔥',x:'Prioridad Inmediata',c:'lp'};
+  if(p.tipo==='habilitante'&&p.sBase>=3.0)return{e:'🧱',x:'Fundacional',c:'lf'};
+  if(s.impacto>=4&&s.facilidad>=4)return{e:'⚡',x:'Quick Win',c:'lq'};
+  if(s.alineacion===5)return{e:'🎯',x:'Alta Alineación',c:'le'};
+  if(p.sAj<2.5||i>=t-Math.ceil(t*0.25))return{e:'⏳',x:'Diferir',c:'ld'};
+  return{e:'📌',x:'En agenda',c:'le'};
+}
+
+/* ══════════════ RENDER RESULTADOS ═════════════════════════════════════════ */
+function renderResultados(res){
+  const cont=document.getElementById('res-cont');
+  const hc=res.filter(p=>p.tipo==='habilitante').length;
+  const cc=res.filter(p=>p.tipo==='core').length;
+  const tc=res.filter(p=>p.tipo==='transformacional').length;
+  const bc=res.filter(p=>(p.bl||[]).length>0).length;
+  const ms=Math.max(...res.map(p=>p.sAj));
+  const avg=res.reduce((s,p)=>s+p.sAj,0)/res.length;
+  const pri=res.filter(p=>p.lbl.c==='lp'||p.lbl.c==='lf').length;
+  const pu=res[0]?.pu||pesosInt;
+  const ps=CRIT.map(c=>c.label+' '+pu[c.key]+'%').join(' · ');
+  let html=`<div class="ins-panel"><h3>📊 Diagnóstico del Portafolio</h3>
+  <div class="ins-grid">
+    <div class="ins-item"><div class="ins-val">${res.length}</div><div class="ins-lbl">Proyectos</div></div>
+    <div class="ins-item"><div class="ins-val">${pri}</div><div class="ins-lbl">Prioridad inmediata</div></div>
+    <div class="ins-item"><div class="ins-val">${bc}</div><div class="ins-lbl">Bloqueados</div></div>
+    <div class="ins-item"><div class="ins-val">${avg.toFixed(1)}</div><div class="ins-lbl">Score promedio</div></div>
+    <div class="ins-item"><div class="ins-val">${hc}</div><div class="ins-lbl">Habilitantes</div></div>
+    <div class="ins-item"><div class="ins-val">${ms.toFixed(1)}</div><div class="ins-lbl">Score máximo</div></div>
+  </div><div class="pu-row">Pesos: ${ps}</div></div>
+  <div class="kpi-row">
+    <div class="kpi-card kh"><div class="kpi-n">${hc}</div><div class="kpi-l">🧱 Habilitantes</div></div>
+    <div class="kpi-card kc"><div class="kpi-n">${cc}</div><div class="kpi-l">⚙️ Core</div></div>
+    <div class="kpi-card kt"><div class="kpi-n">${tc}</div><div class="kpi-l">✨ Transformacionales</div></div>
+    <div class="kpi-card kb"><div class="kpi-n">${bc}</div><div class="kpi-l">⚠️ Con dependencias</div></div>
+  </div>`;
+  html+=renderM2x2(res);
+  html+=renderPTable(res);
+  html+=renderRank(res,ms,pu);
+  cont.innerHTML=html;
+  attachBubbleTooltips();
+}
+
+/* ── Matriz 2×2 ── */
+function renderM2x2(res){
+  const q=[[],[],[],[]];
+  res.forEach(p=>{
+    const imp=p.scores.impacto, fac=p.scores.facilidad;
+    if(imp>=3&&fac>=3) q[0].push(p);
+    else if(imp>=3)    q[1].push(p);
+    else if(fac>=3)    q[2].push(p);
+    else               q[3].push(p);
+  });
+  const qd=[
+    {cls:'mq1',l:'⚡ Quick Wins',     s:'alto × fácil',   c:'#003D99', border:'rgba(0,61,153,0.3)'},
+    {cls:'mq2',l:'🔥 Grandes Apuestas',s:'alto × difícil', c:'#0052CC', border:'rgba(0,82,204,0.3)'},
+    {cls:'mq3',l:'🌱 Relleno útil',   s:'bajo × fácil',   c:'#00897B', border:'rgba(0,137,123,0.3)'},
+    {cls:'mq4',l:'⏳ Diferir',         s:'bajo × difícil', c:'#5A6070', border:'rgba(90,96,112,0.2)'}
+  ];
+  function renderItem(p){
+    const areaInfo=AREAS.find(a=>a.key===p.area);
+    const aIcon=areaInfo?areaInfo.icon:'';
+    return `<div class="mq-itm">
+      <div class="mq-itm-name">${esc(p.nombre)}</div>
+      <div class="mq-itm-meta">${aIcon} <span class="mq-score">${p.sAj.toFixed(2)}</span> · ${p.lbl.e} ${p.lbl.x}</div>
+    </div>`;
+  }
+  return `<div class="m2-wrap mb-20">
+  <div class="m2-title">Mapa Estratégico: Impacto × Facilidad de Implementación</div>
+  <div class="m2-body">
+    <div class="m2-ylab">IMPACTO</div>
+    ${qd.map((d,i)=>`
+    <div class="${d.cls} mq">
+      <div class="mq-hdr" style="color:${d.c}">
+        ${d.l} <small style="font-weight:400;text-transform:none;font-size:9px;opacity:0.8">(${d.s})</small>
+        <span class="mq-count" style="background:${d.c}">${q[i].length}</span>
+      </div>
+      <div class="mq-list">
+        ${q[i].map(p=>renderItem(p)).join('')}
+        ${q[i].length===0?'<div style="font-size:11px;color:var(--text-light);font-style:italic;padding:6px 0">Sin proyectos</div>':''}
+      </div>
+    </div>`).join('')}
+    <div class="m2-xrow"><span>← Difícil</span><span style="opacity:0.6">Facilidad de Implementación →</span><span>Fácil →</span></div>
+  </div></div>`;
+}
+
+/* ── Tabla Área × Pilar ── */
+function renderPTable(res){
+  const cm={};
+  AREAS.forEach(a=>{cm[a.key]={};PILARES.forEach(p=>{cm[a.key][p]=[];});});
+  res.forEach(proj=>{
+    const ak=proj.area||null;
+    if(!ak||!cm[ak])return;
+    proj.pilares.forEach(pl=>{if(cm[ak]&&cm[ak][pl])cm[ak][pl].push(proj);});
+  });
+  function bc(n){if(n===0)return'pb0';if(n<=2)return'pbl';if(n<=4)return'pbm';return'pbh';}
+  const rows=AREAS.map(area=>{
+    const aProj=res.filter(p=>p.area===area.key);
+    if(aProj.length===0)return'';
+    const cells=PILARES.map(pl=>{
+      const items=cm[area.key][pl];const n=items.length;
+      if(n===0)return'<td></td>';
+      const names=items.map(p=>p.nombre+'||'+p.sAj.toFixed(1)+'||'+p.lbl.e).join(';;');
+      return`<td><div class="pbub ${bc(n)}" data-tip="${esc(area.label)}" data-pilar="${pl}" data-items="${esc(names)}"
+        onmouseenter="showBubTip(event,this)" onmouseleave="hideBubTip()">
+        ${n}<span class="bsub">${n===1?'inic.':'inic.'}</span></div></td>`;
+    }).join('');
+    return`<tr><td class="ac"><span style="margin-right:6px">${area.icon}</span>${area.label}</td>${cells}</tr>`;
+  }).filter(Boolean).join('');
+  return`<div class="pt-wrap mb-20">
+  <div class="pt-hdr"><h3>📌 Distribución del Portafolio: Área × Pilar</h3><p>Burbuja = N° iniciativas. Pasa el cursor para ver el detalle.</p></div>
+  <div class="tbl-sc"><table class="ptbl">
+    <thead><tr><th class="corner">ÁREA \\ PILAR</th>${PILARES.map(p=>`<th class="${PILAR_TH[p]}">${p}<span class="ph-sub">${PILAR_N[p]}</span></th>`).join('')}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>
+  <div class="pt-footer">💡 <strong>Lectura:</strong> Celdas vacías = ausencia de cobertura. Azul claro (1–2) · Azul medio (3–4) · Azul intenso (5+)</div>
+  </div>`;
+}
+
+/* ── Ranking ── */
+function renderRank(res,ms,pu){
+  let html='<div><div class="section-title" style="margin-bottom:12px">Ranking Detallado</div>';
+  res.forEach((p,idx)=>{
+    const pct=ms>0?(p.sAj/ms*100):0;
+    const rk=idx===0?'rk1':idx===1?'rk2':idx===2?'rk3':'rkn';
+    const bg=p.tipo==='habilitante'?'linear-gradient(90deg,#003D99,#00D9FF)':p.tipo==='transformacional'?'linear-gradient(90deg,#7B2D8B,#00C9B7)':'linear-gradient(90deg,#0052CC,#0099FF)';
+    const areaInfo=AREAS.find(a=>a.key===p.area);
+    html+=`<div class="res-card ${p.tipo}" style="animation-delay:${idx*0.04}s">
+  <div class="res-hdr">
+    <div class="res-rank ${rk}">${idx+1}</div>
+    <div style="flex:1;min-width:0">
+      <div class="res-name">${esc(p.nombre)}</div>
+      <div class="res-meta">
+        ${areaInfo?`<span>${areaInfo.icon} ${areaInfo.label}</span>&nbsp;·&nbsp;`:''}
+        ${p.pilares.length>0?p.pilares.map(pl=>`<span title="${PILAR_N[pl]}">${pl}</span>`).join(' · ')+'&nbsp;·&nbsp;':''}
+        Base: ${p.sBase.toFixed(2)} → <strong>${p.sAj.toFixed(2)}</strong>
+        ${p.mt>1?`<span style="color:#0052cc"> (×${p.mt.toFixed(2)})</span>`:''}
+      </div>
+    </div>
+    <div class="res-lbl ${p.lbl.c}">${p.lbl.e} ${p.lbl.x}</div>
+  </div>
+  <div class="res-body">
+    <div class="res-row">
+      <div style="text-align:center;flex-shrink:0"><div class="sc-big">${p.sAj.toFixed(2)}</div><div class="sc-lbl2">Score Final</div></div>
+      <div class="bar-wr"><div class="bar-tr"><div class="bar-fl" style="width:${pct}%;background:${bg}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:var(--text-light)"><span>0</span><span>5</span></div></div>
+    </div>
+    <div class="chips">
+      <span class="chip ${p.tipo==='habilitante'?'ch':p.tipo==='transformacional'?'ct':'cc'}">${tLbl(p.tipo)}</span>
+      ${p.pilares.map(pl=>`<span class="chip cp" title="${PILAR_N[pl]}">${pl}</span>`).join('')}
+    </div>
+    <div class="bkd">${CRIT.map(c=>`<div class="bd-i"><div class="bd-v">${p.scores[c.key]||0}</div><div class="bd-n">${c.label}</div><div class="bd-w">×${pu[c.key]}%</div></div>`).join('')}</div>
+  </div>
+</div>`;
+  });
+  html+='</div>';return html;
+}
+
+/* ── Tooltip burbujas ── */
+function showBubTip(e,el){
+  const tip=document.getElementById('bub-tip');
+  const area=el.getAttribute('data-tip');
+  const pilar=el.getAttribute('data-pilar');
+  const raw=el.getAttribute('data-items');
+  if(!raw)return;
+  const items=raw.split(';;').map(x=>{const p=x.split('||');return{n:p[0],s:p[1],e:p[2]};});
+  let html=`<strong>${area} × ${pilar}: ${PILAR_N[pilar]}</strong><ul>`;
+  items.forEach(i=>{html+=`<li>${i.e} ${i.n} <span style="color:var(--cyan);font-size:10px">(${i.s})</span></li>`;});
+  html+='</ul>';
+  tip.innerHTML=html;
+  tip.classList.add('visible');
+  moveTip(e);
+  el.addEventListener('mousemove',moveTip);
+}
+function moveTip(e){
+  const tip=document.getElementById('bub-tip');
+  if(!tip.classList.contains('visible'))return;
+  const x=e.clientX+14,y=e.clientY-10;
+  const w=tip.offsetWidth||220,h=tip.offsetHeight||80;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  tip.style.left=(x+w>vw-10?x-w-28:x)+'px';
+  tip.style.top=(y+h>vh-10?y-h-10:y)+'px';
+}
+function hideBubTip(){
+  const tip=document.getElementById('bub-tip');
+  tip.classList.remove('visible');
+}
+function attachBubbleTooltips(){}
+
+/* ══════════════ INIT DATA ══════════════════════════════════════════════════ */
+const INIT_DATA=[
+  // DESARROLLO ORGANIZACIONAL
+  {nombre:'Modelo de Competencias',tipo:'habilitante',area:'do',pilares:['P2','P3','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:5}},
+  {nombre:'Sistema de Desempeño Ágil',tipo:'core',area:'do',pilares:['P1','P4','P6'],scores:{impacto:5,urgencia:4,facilidad:2,alineacion:5}},
+  {nombre:'Arquitectura de Habilidades',tipo:'transformacional',area:'do',pilares:['P1','P2'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  {nombre:'Programa Lidera tus Procesos',tipo:'transformacional',area:'do',pilares:['P4','P1'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  {nombre:'Automatizar Procesos RRHH',tipo:'habilitante',area:'do',pilares:['P1','P6'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
+  {nombre:'Liderazgo en la Era IA — Programa Lidera',tipo:'transformacional',area:'do',pilares:['P4','P1','P3'],scores:{impacto:5,urgencia:3,facilidad:2,alineacion:5}},
+  {nombre:'Apoyo Metodológico a Cultura',tipo:'core',area:'do',pilares:['P3','P5'],scores:{impacto:3,urgencia:3,facilidad:3,alineacion:3}},
+  // CAPACITACIÓN
+  {nombre:'Plataforma MOOC (LMS + Videos)',tipo:'habilitante',area:'cap',pilares:['P1','P2'],scores:{impacto:4,urgencia:4,facilidad:2,alineacion:4}},
+  {nombre:'Cursos Estratégicos y Multicompetencias',tipo:'core',area:'cap',pilares:['P2','P1'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
+  {nombre:'Cursos de Onboarding por Cargo',tipo:'core',area:'cap',pilares:['P1','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:3}},
+  {nombre:'Capacitación Obra — Oficios',tipo:'core',area:'cap',pilares:['P1','P2'],scores:{impacto:5,urgencia:5,facilidad:3,alineacion:4}},
+  {nombre:'Certificación Progresiva Chilevalora — Obra',tipo:'transformacional',area:'cap',pilares:['P2','P5'],scores:{impacto:4,urgencia:4,facilidad:2,alineacion:4}},
+  {nombre:'Medición de Transferencia',tipo:'core',area:'cap',pilares:['P1','P6'],scores:{impacto:3,urgencia:3,facilidad:3,alineacion:3}},
+  {nombre:'Gestión del Cambio desde Capacitación',tipo:'transformacional',area:'cap',pilares:['P1','P3'],scores:{impacto:3,urgencia:3,facilidad:4,alineacion:3}},
+  // COMPENSACIONES
+  {nombre:'Modelo Mensual Control de Gestión RRHH',tipo:'habilitante',area:'comp',pilares:['P6'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  {nombre:'Workflows de Compensaciones en Sistema 1',tipo:'habilitante',area:'comp',pilares:['P6'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:3}},
+  {nombre:'Estandarización Base y Herramienta Diagnóstico Salarial',tipo:'habilitante',area:'comp',pilares:['P2','P5','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:5}},
+  {nombre:'Gestión Integral de Cargos, Estructura y Valorización',tipo:'core',area:'comp',pilares:['P6','P2'],scores:{impacto:4,urgencia:4,facilidad:2,alineacion:4}},
+  // R&S
+  {nombre:'Atracción y Evaluación de Talento',tipo:'core',area:'rs',pilares:['P2','P5','P6'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:3}},
+  {nombre:'Proceso de Onboarding',tipo:'core',area:'rs',pilares:['P1','P5','P6'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  // REMUNERACIONES Y RL
+  {nombre:'Potenciar Herramientas Sistema Uno',tipo:'habilitante',area:'rem',pilares:['P6','P1'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  {nombre:'Proceso de Offboarding',tipo:'core',area:'rem',pilares:['P6','P5'],scores:{impacto:3,urgencia:3,facilidad:4,alineacion:3}},
+  {nombre:'Revisión y Actualización de Contratos',tipo:'core',area:'rem',pilares:['P6','P5'],scores:{impacto:4,urgencia:4,facilidad:2,alineacion:3}},
+  // CULTURA
+  {nombre:'Programa Trabajo Cultura',tipo:'transformacional',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  {nombre:'Gestión del Cambio Organizacional',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  {nombre:'Reconocimiento y Feedback Continuo',tipo:'transformacional',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
+  {nombre:'Comunicaciones Internas',tipo:'core',area:'cult',pilares:['P3','P5'],scores:{impacto:3,urgencia:3,facilidad:4,alineacion:3}},
+  {nombre:'Diversidad e Inclusión',tipo:'core',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:5,facilidad:3,alineacion:4}},
+  {nombre:'Medición Continua Salud Cultural',tipo:'core',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  // CALIDAD DE VIDA
+  {nombre:'Calidad de Vida — Indicadores y Programas',tipo:'core',area:'cv',pilares:['P5','P3','P6'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:3}},
+  {nombre:'Factores Psicosociales',tipo:'core',area:'cv',pilares:['P5','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:4}}
+];
+
+/* ══════════════ BOOTSTRAP ══════════════════════════════════════════════════ */
+renderPesosGrid();
+updatePesosSum();
+// Auth check kicks off the full load chain
+checkSession();
+</script>
+</body>
+</html>
