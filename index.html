@@ -359,7 +359,7 @@ select:focus{border-color:var(--royal);}
 .readonly-mode .btn-save-now{display:none;}
 .readonly-badge{display:none;background:#FFF9E8;border:1px solid #FFD44D;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:#856404;margin-bottom:12px;text-align:center;}
 .readonly-mode .readonly-badge{display:block;}
-footer{background:var(--white);border-top:1px solid var(--border);text-align:center;padding:14px;font-size:11px;color:var(--text-light);margin-top:40px;}
+footer{background:transparent;border-top:1px solid var(--border);text-align:center;padding:12px;font-size:10px;color:var(--text-light);margin-top:20px;letter-spacing:.3px;}
 
 /* CONFIG PANEL */
 .cfg-panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;max-width:680px;margin:0 auto;}
@@ -413,7 +413,7 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-.flujo-wrap {
+.flujo-wrap {}
 
 /* ─── HEADER ─── */
 .header {
@@ -436,7 +436,7 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
 .p-legend .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
 /* ─── MAIN LAYOUT ─── */
-.main { display: flex; height: calc(100vh - 96px); }
+.flujo-wrap .main { display: flex; height: calc(100vh - 96px); }
 
 /* ─── SIDEBAR ─── */
 .sidebar {
@@ -672,12 +672,12 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--royal); }
 
-@media (max-width: 900px) { .sidebar { width: 200px; } .detail-panel { width: 100%; } }
-@media (max-width: 640px) { .sidebar { display: none; } .main { height: auto; flex-direction: column; } .canvas { padding: 14px; } }
+@media (max-width: 900px) { .flujo-wrap .sidebar { width: 200px; } .flujo-wrap .detail-panel { width: 100%; } }
+@media (max-width: 640px) { .flujo-wrap .sidebar { display: none; } .flujo-wrap .main { height: auto; flex-direction: column; } .flujo-wrap .canvas { padding: 14px; } }
 
 
 /* ══════════════════════════════════════════
-   SEGUIMIENTO — v4.4 Dashboard Redesign
+   SEGUIMIENTO — v4.5 Inactivación + Bloques B+C + Dashboard + Prioridad auto
 ══════════════════════════════════════════ */
 
 /* ── Grupo de área ── */
@@ -952,15 +952,6 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
 .seg-inp.tipo-decision:focus { box-shadow: 0 0 0 4px rgba(0,82,204,0.09), 0 4px 16px rgba(0,82,204,0.06); }
 .seg-inp.tipo-hito:focus     { box-shadow: 0 0 0 4px rgba(123,45,139,0.09), 0 4px 16px rgba(123,45,139,0.06); }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
-  .seg-card-hdr { padding: 14px 16px; gap: 10px; }
-  .seg-composer { padding: 16px; }
-  .seg-hist { padding: 16px; }
-  .seg-tipo-chip { padding: 7px 12px; font-size: 11px; }
-  .seg-send-btn { padding: 10px 20px; font-size: 12px; }
-  .seg-area-stats { display: none; }
-}
 </style>
 </head>
 <body class="readonly-mode">
@@ -1206,7 +1197,7 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
     <div class="sidebar-title">Áreas RRHH</div>
     <div class="area-btn" data-action="area" data-area="all">
       <div class="icon">🏢</div>
-      <div class="info"><div class="name">Todas las áreas</div><div class="count">31 iniciativas</div></div>
+      <div class="info"><div class="name">Todas las áreas</div><div class="count" id="sb-count-all">31 iniciativas</div></div>
     </div>
 
     <div class="sidebar-section">Estrategia</div>
@@ -1219,43 +1210,43 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
     <div class="sidebar-section">Diseño Organizacional</div>
     <div class="area-btn" data-action="area" data-area="do">
       <div class="icon">🏗️</div>
-      <div class="info"><div class="name">Desarrollo Organizacional</div><div class="count">7 iniciativas</div></div>
+      <div class="info"><div class="name">Desarrollo Organizacional</div><div class="count" id="sb-count-do">7 iniciativas</div></div>
       <div class="arrow">›</div>
     </div>
     <div class="area-btn" data-action="area" data-area="cap">
       <div class="icon">📚</div>
-      <div class="info"><div class="name">Capacitación</div><div class="count">7 iniciativas</div></div>
+      <div class="info"><div class="name">Capacitación</div><div class="count" id="sb-count-cap">7 iniciativas</div></div>
       <div class="arrow">›</div>
     </div>
 
     <div class="sidebar-section">Gestión de Personas</div>
     <div class="area-btn" data-action="area" data-area="rs">
       <div class="icon">🔍</div>
-      <div class="info"><div class="name">Reclutamiento & Selección</div><div class="count">2 iniciativas</div></div>
+      <div class="info"><div class="name">Reclutamiento & Selección</div><div class="count" id="sb-count-rs">2 iniciativas</div></div>
       <div class="arrow">›</div>
     </div>
     <div class="area-btn" data-action="area" data-area="rem">
       <div class="icon">📋</div>
-      <div class="info"><div class="name">Remuneraciones / RL</div><div class="count">3 iniciativas</div></div>
+      <div class="info"><div class="name">Remuneraciones / RL</div><div class="count" id="sb-count-rem">3 iniciativas</div></div>
       <div class="arrow">›</div>
     </div>
 
     <div class="sidebar-section">Compensaciones</div>
     <div class="area-btn" data-action="area" data-area="comp">
       <div class="icon">⚖️</div>
-      <div class="info"><div class="name">Compensaciones</div><div class="count">4 iniciativas</div></div>
+      <div class="info"><div class="name">Compensaciones</div><div class="count" id="sb-count-comp">4 iniciativas</div></div>
       <div class="arrow">›</div>
     </div>
 
     <div class="sidebar-section">Cultura y Bienestar</div>
     <div class="area-btn" data-action="area" data-area="cultura">
       <div class="icon">🌱</div>
-      <div class="info"><div class="name">Cultura y Gestión del Cambio</div><div class="count">4 iniciativas</div></div>
+      <div class="info"><div class="name">Cultura y Gestión del Cambio</div><div class="count" id="sb-count-cult">4 iniciativas</div></div>
       <div class="arrow">›</div>
     </div>
     <div class="area-btn" data-action="area" data-area="cv">
       <div class="icon">💚</div>
-      <div class="info"><div class="name">Calidad de Vida</div><div class="count">4 iniciativas</div></div>
+      <div class="info"><div class="name">Calidad de Vida</div><div class="count" id="sb-count-cv">4 iniciativas</div></div>
       <div class="arrow">›</div>
     </div>
   </div>
@@ -2299,6 +2290,9 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
     <div><strong>Inicia sesión</strong> para ver y agregar comentarios de seguimiento.</div>
   </div>
 
+  <!-- DASHBOARD EJECUTIVO -->
+  <div id="seg-dashboard-wrap"></div>
+
   <!-- FILTROS -->
   <div class="toolbar" style="margin-bottom:20px;gap:10px;">
     <select id="seg-filter-area" onchange="renderSeguimiento()" style="width:200px;padding:8px 12px;border-radius:10px;border:1.5px solid #E4EAF4;font-size:12px;font-weight:600;color:var(--text);background:white;cursor:pointer;">
@@ -2328,7 +2322,9 @@ footer{background:var(--white);border-top:1px solid var(--border);text-align:cen
 
 </main>
 
-<footer>Priorizador Estratégico 3.0 &nbsp;·&nbsp; Gerencia de Personas &nbsp;·&nbsp; Empresas Socovesa S.A. &nbsp;·&nbsp; 2026–2027</footer>
+<div style="max-width:1360px;margin:0 auto;padding:0 32px;">
+  <footer>Priorizador Estratégico 3.0 &nbsp;·&nbsp; Gerencia de Personas &nbsp;·&nbsp; Empresas Socovesa S.A. &nbsp;·&nbsp; 2026–2027</footer>
+</div>
 
 <script>
 /* ══════════════ CONSTANTES ══════════════════════════════════════════════════ */
@@ -2543,7 +2539,7 @@ async function loadFromSupabase(){
       .single();
     if(error && error.code!=='PGRST116'){ throw error; }
     if(data){
-      projects = (data.projects||[]).map((p,_i)=>({...p,id:p.id||gid(),collapsed:true}));
+      projects = (data.projects||[]).map((p,_i)=>({...p,id:p.id||gid(),collapsed:true,inactiva:p.inactiva===true}));
       if(data.pesos) pesosInt={...data.pesos};
       nextId = projects.length>0 ? Math.max(...projects.map(p=>p.id))+1 : 1;
     } else {
@@ -2552,6 +2548,8 @@ async function loadFromSupabase(){
     renderPesosGrid();
     updatePesosSum();
     renderAllAreas();
+    computeRankingSilent();
+    setTimeout(()=>{ applyInactivasToFlujo(); applyInactivasToGuia(); }, 100);
     setSyncStatus('ok','Sincronizado');
     await loadHistoryFromSupabase();
   } catch(e){
@@ -2566,12 +2564,14 @@ function loadLocalFallback(){
   if(projects.length===0){
     INIT_DATA.forEach(d=>{
       const id=gid();
-      projects.push({...d,id,deps:[],collapsed:true});
+      projects.push({...d,id,deps:[],collapsed:true,inactiva:false});
     });
   }
   renderPesosGrid();
   updatePesosSum();
   renderAllAreas();
+  computeRankingSilent();
+  setTimeout(()=>{ applyInactivasToFlujo(); applyInactivasToGuia(); }, 100);
 }
 
 async function saveToSupabase(trigger='auto'){
@@ -2666,7 +2666,7 @@ async function restoreSnapshot(histId){
   const item = _histItems.find(h=>h.id===histId);
   if(!item||!item.snapshot) return;
   const snap = item.snapshot;
-  projects = (snap.projects||[]).map(p=>({...p,collapsed:true}));
+  projects = (snap.projects||[]).map(p=>({...p,collapsed:true,inactiva:p.inactiva===true}));
   if(snap.pesos) pesosInt={...snap.pesos};
   nextId = projects.length>0 ? Math.max(...projects.map(p=>p.id))+1 : 1;
   renderPesosGrid();
@@ -2853,7 +2853,8 @@ function showPage(n){
   document.getElementById('page-'+n).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(n))b.classList.add('active');});
   if(n==='seguimiento') loadSeguimiento();
-  if(n==='flujo') setTimeout(flujoInit, 50);
+  if(n==='flujo')   setTimeout(()=>{ flujoInit(); applyInactivasToFlujo(); }, 50);
+  if(n==='tabla')   setTimeout(applyInactivasToGuia, 50);
 }
 
 /* ══════════════ COLLAPSE / FILTER ════════════════════════════════════════ */
@@ -2872,8 +2873,13 @@ function filterProjects(q){
 }
 function setTC(v){
   const el=document.getElementById('tc');if(!el)return;
-  const t=projects.length;
-  el.textContent=v!==undefined&&v<t?v+' de '+t+' iniciativas':t+' iniciativa'+(t!==1?'s':'');
+  const activas = projects.filter(p=>!p.inactiva);
+  const t=activas.length;
+  const tAll=projects.length;
+  const inactivasN = tAll-t;
+  let txt = (v!==undefined&&v<t)?(v+' de '+t+' iniciativas'):(t+' iniciativa'+(t!==1?'s':''));
+  if(inactivasN>0) txt += ` · ${inactivasN} pospuesta${inactivasN!==1?'s':''}`;
+  el.textContent=txt;
 }
 function toggleAreaGroup(key){
   const body=document.getElementById('ag-body-'+key);
@@ -2917,12 +2923,58 @@ function addProject(data=null, areaKey='do'){
   debouncedSave('add');
 }
 function removeProject(id){
-  if(!requireAdmin('eliminar iniciativas')) return;
+  // Compatibilidad: redirige a togglePosponer
+  return togglePosponer(id);
+}
+function togglePosponer(id){
+  if(!requireAdmin('posponer iniciativas')) return;
   const p=projects.find(x=>x.id===id);
-  if(p&&p.nombre.trim()&&!confirm('¿Eliminar "'+p.nombre+'"?'))return;
-  projects=projects.filter(x=>x.id!==id);
+  if(!p) return;
+  if(!p.inactiva){
+    // Posponer
+    if(p.nombre.trim() && !confirm('¿Posponer "'+p.nombre+'" para 2027?\n\nDejará de aparecer en Ranking, Guía, Flujo y Seguimiento. Podrás reactivarla en cualquier momento desde esta misma pestaña.'))return;
+    p.inactiva = true;
+    p.collapsed = true;
+  } else {
+    // Reactivar
+    p.inactiva = false;
+  }
   renderAllAreas();
-  debouncedSave('remove');
+  renderSidebarCounts();
+  applyInactivasToFlujo();
+  applyInactivasToGuia();
+  computeRankingSilent();
+  if(typeof renderSeguimiento === 'function') renderSeguimiento();
+  debouncedSave(p.inactiva?'inactivar':'reactivar');
+}
+
+/* ── Aplicar inactivación visual a Flujo (nodos estáticos) ── */
+function applyInactivasToFlujo(){
+  if(typeof DETAILS === 'undefined') return;
+  const inactivasNames = new Set(
+    projects.filter(p=>p.inactiva).map(p=>(p.nombre||'').trim().toLowerCase())
+  );
+  document.querySelectorAll('#page-flujo [data-id]').forEach(el=>{
+    const detailId = el.getAttribute('data-id');
+    if(!detailId) return;
+    const det = DETAILS[detailId];
+    if(!det || !det.title) { el.classList.remove('flujo-is-inactiva'); return; }
+    const isIna = inactivasNames.has(det.title.trim().toLowerCase());
+    el.classList.toggle('flujo-is-inactiva', isIna);
+  });
+}
+
+/* ── Aplicar inactivación visual a Guía (tabla estática) ── */
+function applyInactivasToGuia(){
+  const inactivasNames = new Set(
+    projects.filter(p=>p.inactiva).map(p=>(p.nombre||'').trim().toLowerCase())
+  );
+  document.querySelectorAll('.tbl-obj-title').forEach(el=>{
+    const name = (el.textContent||'').trim().toLowerCase();
+    const tr = el.closest('tr');
+    if(!tr) return;
+    tr.classList.toggle('guia-is-inactiva', inactivasNames.has(name));
+  });
 }
 
 /* ══════════════ UPDATE ════════════════════════════════════════════════════ */
@@ -2978,32 +3030,59 @@ function renderAllAreas(){
   AREAS.forEach(area=>{
     const areaProjects=projects.filter(p=>p.area===area.key);
     if(areaProjects.length===0)return;
+    // Separar activas e inactivas
+    const activas   = areaProjects.filter(p=>!p.inactiva);
+    const inactivas = areaProjects.filter(p=> p.inactiva);
+    const totalActivas = activas.length;
     html+=`<div class="area-group" id="ag-${area.key}">
       <div class="area-group-header" style="border-bottom-color:${area.color}" onclick="toggleAreaGroup('${area.key}')">
         <span class="area-group-icon">${area.icon}</span>
         <span class="area-group-name">${area.label}</span>
-        <span class="area-group-count" style="background:${area.color}">${areaProjects.length}</span>
+        <span class="area-group-count" style="background:${area.color}">${totalActivas}${inactivas.length>0?` <span style="opacity:0.7;font-size:9px;">/${areaProjects.length}</span>`:''}</span>
         <span class="area-group-chevron" id="ag-chev-${area.key}">▾</span>
       </div>
       <div class="area-group-body" id="ag-body-${area.key}">
-        ${areaProjects.map((p,idx)=>renderCard(p,idx)).join('')}
+        ${activas.map((p,idx)=>renderCard(p,idx)).join('')}
         <button class="btn-add-area" onclick="addProject(null,'${area.key}')">
           <span style="font-size:16px">+</span> Agregar iniciativa en ${area.label}
         </button>
+        ${inactivas.length>0?`<div class="inactivas-divider">⏸ Pospuestas para 2027 · ${inactivas.length}</div>
+        ${inactivas.map((p,idx)=>renderCard(p,activas.length+idx)).join('')}`:''}
       </div>
     </div>`;
   });
   container.innerHTML=html;
+  renderSidebarCounts();
+}
+
+function renderSidebarCounts(){
+  // Contar solo iniciativas activas (no pospuestas)
+  const activas = projects.filter(p=>!p.inactiva);
+  const total = activas.length;
+  const totalAll = projects.length;
+  const elAll = document.getElementById('sb-count-all');
+  if(elAll) elAll.innerHTML = `${total} iniciativa${total!==1?'s':''}${total!==totalAll?` <span style="opacity:0.65;">· ${totalAll-total} pospuesta${(totalAll-total)!==1?'s':''}</span>`:''}`;
+  AREAS.forEach(area=>{
+    const el = document.getElementById('sb-count-'+area.key);
+    if(!el) return;
+    const nA = activas.filter(p=>p.area===area.key).length;
+    const nT = projects.filter(p=>p.area===area.key).length;
+    el.innerHTML = `${nA} iniciativa${nA!==1?'s':''}${nA!==nT?` <span style="opacity:0.65;">· ${nT-nA} pospuesta${(nT-nA)!==1?'s':''}</span>`:''}`;
+  });
 }
 
 function renderCard(p,idx){
   const sc=Object.values(p.scores).filter(v=>v>0).length;
   const col=p.collapsed||false;
-  return `<div class="project-form" id="pf-${p.id}" data-id="${p.id}" style="border-left-color:${tAcc(p.tipo)}">
+  const ina=p.inactiva===true;
+  const btnAction = ina
+    ? `<button class="btn-reactivar" onclick="togglePosponer(${p.id})" title="Reactivar para 2026">↻ Reactivar</button>`
+    : `<button class="btn-posponer" onclick="togglePosponer(${p.id})" title="Posponer para 2027">⏸ Posponer</button>`;
+  return `<div class="project-form${ina?' is-inactiva':''}" id="pf-${p.id}" data-id="${p.id}" style="border-left-color:${ina?'#9AA5BC':tAcc(p.tipo)}">
   <div class="pf-hdr ${col?'is-col':''}" id="pfh-${p.id}" onclick="toggleCard(${p.id})">
     <div class="pf-num">${idx+1}</div>
     <div class="pf-info">
-      <div class="pf-name" id="pf-nd-${p.id}">${esc(p.nombre)||'Sin nombre'}</div>
+      <div class="pf-name" id="pf-nd-${p.id}">${esc(p.nombre)||'Sin nombre'}${ina?' <span class="badge-inactiva">⏸ Pospuesta 2027</span>':''}</div>
       <div class="pf-meta">
         <span id="pf-tb-${p.id}">${tLbl(p.tipo)}</span>&nbsp;·&nbsp;
         <span id="pf-pm-${p.id}">${p.pilares.length>0?p.pilares.join(' · '):'Sin pilares'}</span>&nbsp;·&nbsp;
@@ -3012,7 +3091,7 @@ function renderCard(p,idx){
     </div>
     <div class="pf-actions" onclick="event.stopPropagation()">
       <button class="btn-ca ${col?'rot':''}" id="pfa-${p.id}" onclick="toggleCard(${p.id})" title="${col?'Expandir':'Colapsar'}">▾</button>
-      <button class="btn-rm" onclick="removeProject(${p.id})" title="Eliminar">×</button>
+      ${btnAction}
     </div>
   </div>
   <div class="pf-body ${col?'col':''}" id="pfb-${p.id}">
@@ -3065,12 +3144,14 @@ function renderCard(p,idx){
 function calcularRanking(){
   const s=Object.values(pesosInt).reduce((a,b)=>a+b,0);
   if(s!==100){alert('Los pesos suman '+s+'%, deben ser exactamente 100%.');return;}
-  if(projects.length===0){alert('No hay proyectos.');return;}
-  if(projects.filter(p=>!p.nombre.trim()).length>0){alert('Todas las iniciativas necesitan nombre.');return;}
-  const sinS=projects.filter(p=>Object.values(p.scores).some(v=>v===0));
+  // Solo iniciativas activas entran al ranking
+  const activas = projects.filter(p=>!p.inactiva);
+  if(activas.length===0){alert('No hay iniciativas activas para rankear.');return;}
+  if(activas.filter(p=>!p.nombre.trim()).length>0){alert('Todas las iniciativas activas necesitan nombre.');return;}
+  const sinS=activas.filter(p=>Object.values(p.scores).some(v=>v===0));
   if(sinS.length>0&&!confirm('Sin puntuar completamente: '+sinS.map(p=>p.nombre).join(', ')+'. ¿Continuar?'))return;
   const P=getPesos();
-  const res=projects.map(p=>({...p,sBase:sBase(p,P),sAj:0,pu:{...pesosInt}}));
+  const res=activas.map(p=>({...p,sBase:sBase(p,P),sAj:0,pu:{...pesosInt}}));
   const tIds=[...res].sort((a,b)=>b.sBase-a.sBase).slice(0,Math.ceil(res.length*0.4)).map(p=>p.id);
   const dc={};res.forEach(p=>(p.deps||[]).forEach(d=>{dc[d]=(dc[d]||0)+1;}));
   res.forEach(p=>{
@@ -3083,6 +3164,8 @@ function calcularRanking(){
   });
   res.sort((a,b)=>b.sAj-a.sAj);
   res.forEach((p,i)=>{p.lbl=mkLbl(p,i,res.length);});
+  // Guardar ranking para uso en prioridad automática
+  _lastRanking = res.map((p,i)=>({id:p.id, sAj:p.sAj, rank:i, total:res.length}));
   renderResultados(res);showPage('resultados');
 }
 function sBase(p,P){return p.scores.impacto*P.impacto+p.scores.urgencia*P.urgencia+p.scores.facilidad*P.facilidad+p.scores.alineacion*P.alineacion;}
@@ -3360,22 +3443,63 @@ const TIPO_OPTS = [
 
 let _segEstados    = {};  // {project_id: estado}
 let _segComents    = {};  // {project_id: [comentarios]}
+let _segHitos      = {};  // {project_id: [hitos]}
 let _segLoaded     = false;
+let _lastRanking   = [];  // [{id, sAj, rank, total}] — auto-computed for prioridad
+
+/* ── Cálculo silencioso del ranking para prioridad automática ── */
+function computeRankingSilent(){
+  const activas = projects.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
+  if(activas.length===0){ _lastRanking=[]; return; }
+  const P=getPesos();
+  const res=activas.map(p=>({id:p.id,sBase:sBase(p,P),tipo:p.tipo,scores:p.scores,deps:p.deps||[]}));
+  const tIds=[...res].sort((a,b)=>b.sBase-a.sBase).slice(0,Math.ceil(res.length*0.4)).map(p=>p.id);
+  const dc={};res.forEach(p=>p.deps.forEach(d=>{dc[d]=(dc[d]||0)+1;}));
+  res.forEach(p=>{
+    let mt=MULT_TIPO[p.tipo]||1;let fd=1;
+    const bl=p.deps.filter(d=>!tIds.includes(d));
+    if(bl.length>0)fd=0.7;
+    if(p.tipo==='habilitante'&&(dc[p.id]||0)>=2)mt=Math.min(mt+0.15,1.5);
+    p.sAj=p.sBase*mt*fd;
+  });
+  res.sort((a,b)=>b.sAj-a.sAj);
+  _lastRanking = res.map((p,i)=>({id:p.id, sAj:p.sAj, rank:i, total:res.length}));
+}
+
+/* ── Prioridad automática derivada del ranking ── */
+function getPrioridadAuto(projectId){
+  const r = _lastRanking.find(x=>x.id===projectId);
+  if(!r) return null;
+  const pct = r.rank / Math.max(1, r.total-1); // 0 = top, 1 = bottom
+  if(pct <= 0.25) return {v:'critica',  l:'Crítica',  bg:'#FFE8E8', bc:'#FF6B6B', tc:'#CC3333'};
+  if(pct <= 0.50) return {v:'alta',     l:'Alta',     bg:'#FFF4E5', bc:'#FF9800', tc:'#B26A00'};
+  if(pct <= 0.75) return {v:'media',    l:'Media',    bg:'#E8F4FF', bc:'#0099FF', tc:'#003D99'};
+  return                  {v:'baja',     l:'Baja',     bg:'#F0F2F5', bc:'#8B95A5', tc:'#5A6070'};
+}
 
 async function loadSeguimiento(){
   if(!_supa||!_currentUser){ renderSeguimiento(); return; }
   try {
-    const [eRes, cRes] = await Promise.all([
+    const [eRes, cRes, hRes] = await Promise.all([
       _supa.from('seg_estados').select('*'),
-      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false})
+      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false}),
+      _supa.from('seg_hitos').select('*').order('orden',{ascending:true})
     ]);
+    _segEstados = {};
+    _segComents = {};
+    _segHitos   = {};
     if(eRes.data) eRes.data.forEach(r=>{ _segEstados[r.project_id]=r; });
     if(cRes.data) cRes.data.forEach(r=>{
       if(!_segComents[r.project_id]) _segComents[r.project_id]=[];
       _segComents[r.project_id].push(r);
     });
+    if(hRes.data) hRes.data.forEach(r=>{
+      if(!_segHitos[r.project_id]) _segHitos[r.project_id]=[];
+      _segHitos[r.project_id].push(r);
+    });
     _segLoaded = true;
   } catch(e){ console.error('Seguimiento load error',e); }
+  computeRankingSilent();
   renderSeguimiento();
 }
 
@@ -3393,6 +3517,138 @@ async function setEstado(projectId, estado){
     }
     renderSeguimiento();
   } catch(e){ console.error('setEstado error',e); }
+}
+
+/* ── Update generic field on seg_estados ── */
+async function setSegField(projectId, fieldName, value){
+  if(!_supa||!_currentUser) return;
+  if(!isAdmin()){ alert('Solo admins pueden editar este campo.'); return; }
+  const existing = _segEstados[projectId];
+  const userEmail = _currentUser.email||'unknown';
+  const upd = {updated_at:new Date().toISOString(), updated_by:userEmail};
+  upd[fieldName] = value;
+  try {
+    if(existing){
+      await _supa.from('seg_estados').update(upd).eq('id',existing.id);
+      _segEstados[projectId] = {...existing, ...upd};
+    } else {
+      const ins = {project_id:projectId, estado:'pendiente', updated_by:userEmail};
+      ins[fieldName] = value;
+      const {data} = await _supa.from('seg_estados').insert(ins).select().single();
+      if(data) _segEstados[projectId] = data;
+    }
+    setSyncStatus('ok','Campo guardado');
+  } catch(e){
+    console.error('setSegField error',e);
+    setSyncStatus('err','Error al guardar');
+  }
+}
+
+/* ── Hitos CRUD ── */
+async function addHito(projectId){
+  if(!isAdmin()){ alert('Solo admins pueden agregar hitos.'); return; }
+  const nombre = (prompt('Nombre del hito:','')||'').trim();
+  if(!nombre) return;
+  const fechaStr = prompt('Fecha objetivo (AAAA-MM-DD), opcional:','');
+  const fecha = (fechaStr && /^\d{4}-\d{2}-\d{2}$/.test(fechaStr.trim())) ? fechaStr.trim() : null;
+  const userEmail = _currentUser.email||'unknown';
+  const orden = (_segHitos[projectId]||[]).length;
+  try {
+    const {data,error} = await _supa.from('seg_hitos')
+      .insert({project_id:projectId, nombre, fecha_objetivo:fecha, orden, created_by:userEmail})
+      .select().single();
+    if(error) throw error;
+    if(!_segHitos[projectId]) _segHitos[projectId]=[];
+    _segHitos[projectId].push(data);
+    setSyncStatus('ok','Hito agregado');
+    _segRerenderCard(projectId);
+  } catch(e){
+    console.error('addHito error',e);
+    setSyncStatus('err','Error al agregar hito');
+  }
+}
+
+async function deleteHito(projectId, hitoId){
+  if(!isAdmin()){ alert('Solo admins pueden eliminar hitos.'); return; }
+  if(!confirm('¿Eliminar este hito?')) return;
+  try {
+    await _supa.from('seg_hitos').delete().eq('id',hitoId);
+    if(_segHitos[projectId]) _segHitos[projectId] = _segHitos[projectId].filter(h=>h.id!==hitoId);
+    setSyncStatus('ok','Hito eliminado');
+    _segRerenderCard(projectId);
+  } catch(e){
+    console.error('deleteHito error',e);
+    setSyncStatus('err','Error al eliminar hito');
+  }
+}
+
+async function toggleHitoComplete(projectId, hitoId){
+  if(!isAdmin()){ alert('Solo admins pueden marcar hitos.'); return; }
+  const h = (_segHitos[projectId]||[]).find(x=>x.id===hitoId);
+  if(!h) return;
+  const userEmail = _currentUser.email||'unknown';
+  const newCompletado = h.completado_at ? null : new Date().toISOString();
+  try {
+    await _supa.from('seg_hitos').update({
+      completado_at: newCompletado,
+      completado_by: newCompletado ? userEmail : null
+    }).eq('id',hitoId);
+    h.completado_at = newCompletado;
+    h.completado_by = newCompletado ? userEmail : null;
+    setSyncStatus('ok',newCompletado?'Hito completado':'Hito reabierto');
+    _segRerenderCard(projectId);
+  } catch(e){
+    console.error('toggleHitoComplete error',e);
+    setSyncStatus('err','Error al marcar hito');
+  }
+}
+
+/* ── Re-render single card without collapsing siblings ── */
+function _segRerenderCard(projectId){
+  const card = document.getElementById('seg-card-'+projectId);
+  if(!card) { renderSeguimiento(); return; }
+  const wasOpen = card.classList.contains('seg-card-open');
+  const p = projects.find(x=>x.id===projectId);
+  if(!p) return;
+  const newHtml = _segRenderCard(p);
+  const tmp = document.createElement('div');
+  tmp.innerHTML = newHtml;
+  const newCard = tmp.firstElementChild;
+  if(wasOpen){
+    newCard.classList.add('seg-card-open');
+    const body = newCard.querySelector('.seg-card-body');
+    const tog  = newCard.querySelector('.seg-card-toggle');
+    if(body) body.classList.add('open');
+    if(tog)  tog.classList.add('open');
+  }
+  card.replaceWith(newCard);
+}
+
+/* ── Progress derived from hitos (D2 = b) ── */
+function calcProgreso(projectId){
+  const hitos = _segHitos[projectId]||[];
+  if(hitos.length===0) return 0;
+  const done = hitos.filter(h=>h.completado_at).length;
+  return Math.round(done * 100 / hitos.length);
+}
+
+/* ── Format date helpers ── */
+function fmtFecha(d){
+  if(!d) return '—';
+  const dt = new Date(d+'T00:00:00');
+  if(isNaN(dt)) return '—';
+  return dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'2-digit'});
+}
+function daysBetween(a, b){
+  if(!a||!b) return null;
+  const da = new Date(a+'T00:00:00');
+  const db = new Date(b+'T00:00:00');
+  if(isNaN(da)||isNaN(db)) return null;
+  return Math.round((db-da)/(1000*60*60*24));
+}
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
 async function addComentario(projectId){
@@ -3487,99 +3743,270 @@ function _segSetTipo(projectId, tipoVal){
   if(btn) btn.dataset.tipoSel = tipoVal;
 }
 
-/* ── Card renderer — v4.4 Dashboard ── */
+/* ════════════════════════════════════════════════════════════════════
+   SEGUIMIENTO v4.5 — Renders reescritos desde cero
+════════════════════════════════════════════════════════════════════ */
+
+/* ── Helpers de fecha ── */
+function fmtFecha(d){
+  if(!d) return '—';
+  const dt = new Date(d+'T00:00:00');
+  if(isNaN(dt)) return '—';
+  return dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'2-digit'});
+}
+function daysBetween(a,b){
+  if(!a||!b) return null;
+  const da=new Date(a+'T00:00:00'), db=new Date(b+'T00:00:00');
+  if(isNaN(da)||isNaN(db)) return null;
+  return Math.round((db-da)/(1000*60*60*24));
+}
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function calcProgreso(projectId){
+  const hitos=_segHitos[projectId]||[];
+  if(!hitos.length) return 0;
+  return Math.round(hitos.filter(h=>h.completado_at).length*100/hitos.length);
+}
+
+/* ── Prioridad automática desde ranking ── */
+function getPrioridadAuto(projectId){
+  const r=_lastRanking.find(x=>x.id===projectId);
+  if(!r) return null;
+  const pct=r.rank/Math.max(1,r.total-1);
+  if(pct<=0.25) return {v:'critica', l:'Crítica',  bg:'#FFE8E8',bc:'#FF6B6B',tc:'#CC3333'};
+  if(pct<=0.50) return {v:'alta',    l:'Alta',     bg:'#FFF4E5',bc:'#FF9800',tc:'#B26A00'};
+  if(pct<=0.75) return {v:'media',   l:'Media',    bg:'#E8F4FF',bc:'#0099FF',tc:'#003D99'};
+  return              {v:'baja',     l:'Baja',      bg:'#F0F2F5',bc:'#8B95A5',tc:'#5A6070'};
+}
+
+/* ── Mini-Gantt SVG por iniciativa ── */
+function _segRenderMiniGantt(projectId, fi, ff, hitos){
+  const di=new Date(fi+'T00:00:00'), df=new Date(ff+'T00:00:00'), dh=new Date(todayStr()+'T00:00:00');
+  if(isNaN(di)||isNaN(df)||df<=di) return '';
+  const total=(df-di)/(1000*60*60*24);
+  let pHoy=((dh-di)/(1000*60*60*24))/total;
+  pHoy=Math.max(0,Math.min(1,pHoy));
+  const W=200, H=24, C=70, R=12;
+  const hitoPts=(hitos||[]).filter(h=>h.fecha_objetivo).map(h=>{
+    const d=new Date(h.fecha_objetivo+'T00:00:00'); if(isNaN(d)) return null;
+    const pct=((d-di)/(1000*60*60*24))/total; if(pct<0||pct>1) return null;
+    const done=!!h.completado_at, venc=!done&&h.fecha_objetivo<todayStr();
+    return {pct,done,venc,nm:h.nombre,dt:h.fecha_objetivo};
+  }).filter(Boolean);
+  const barColor = _segEstados[projectId]?.estado==='completado'?'#00C9B7':'#0052CC';
+  return `<div class="seg-gantt-box">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="seg-gantt-svg" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="9" width="${W}" height="6" rx="3" fill="#E4EAF4"/>
+      ${pHoy>0?`<rect x="0" y="9" width="${pHoy*W}" height="6" rx="3" fill="${barColor}" opacity="0.65"/>`:''}
+      <line x1="${pHoy*W}" y1="2" x2="${pHoy*W}" y2="22" stroke="#1A2340" stroke-width="0.6" stroke-dasharray="1.5,1.5"/>
+      ${hitoPts.map(h=>{
+        const cx=h.pct*W;
+        const fill=h.done?'#00C9B7':h.venc?'#FF6B6B':'#fff';
+        const stroke=h.done?'#00C9B7':h.venc?'#CC3333':'#8B95A5';
+        return `<circle cx="${cx}" cy="12" r="3" fill="${fill}" stroke="${stroke}" stroke-width="1.2"><title>${esc(h.nm)} · ${fmtFecha(h.dt)}</title></circle>`;
+      }).join('')}
+    </svg>
+    <div class="seg-gantt-dates">
+      <span>${fmtFecha(fi)}</span>
+      <span class="seg-gantt-today-lbl">hoy</span>
+      <span>${fmtFecha(ff)}</span>
+    </div>
+  </div>`;
+}
+
+/* ── Card principal ── */
 function _segRenderCard(p){
-  const estadoRec  = _segEstados[p.id];
-  const estadoVal  = estadoRec?.estado||'pendiente';
-  const estadoInfo = ESTADO_OPTS.find(e=>e.v===estadoVal)||ESTADO_OPTS[0];
-  const coments    = (_segComents[p.id]||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-  const canEdit    = !!_currentUser;
-  const canAdmin   = isAdmin();
-  const nComents   = coments.length;
+  const rec       = _segEstados[p.id]||{};
+  const estadoVal = rec.estado||'pendiente';
+  const eInfo     = ESTADO_OPTS.find(e=>e.v===estadoVal)||ESTADO_OPTS[0];
+  const coments   = (_segComents[p.id]||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const hitos     = (_segHitos[p.id]||[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+  const admin     = isAdmin();
+  const loggedIn  = !!_currentUser;
+  const nC        = coments.length;
+  const prio      = getPrioridadAuto(p.id);
+  const progreso  = calcProgreso(p.id);
+  const fi        = rec.fecha_inicio||'';
+  const ff        = rec.fecha_fin_objetivo||'';
+  const fo        = rec.fecha_origen||'';
+  const resp      = rec.responsable||'';
+  const hoy       = todayStr();
 
-  /* Estado control */
-  const estadoControl = canAdmin
-    ? `<select class="seg-estado-sel"
-        style="background:${estadoInfo.bg};border-color:${estadoInfo.bc};color:${estadoInfo.tc};"
+  /* ── Estado control ── */
+  const estadoEl = admin
+    ? `<select class="seg-estado-sel" style="background:${eInfo.bg};border-color:${eInfo.bc};color:${eInfo.tc};"
         onchange="setEstado(${p.id},this.value)" onclick="event.stopPropagation()">
-        ${ESTADO_OPTS.map(e=>`<option value="${e.v}" ${e.v===estadoVal?'selected':''}>${e.e} ${e.l}</option>`).join('')}
-      </select>`
-    : `<span class="seg-estado-badge" style="background:${estadoInfo.bg};border-color:${estadoInfo.bc};color:${estadoInfo.tc};">${estadoInfo.e} ${estadoInfo.l}</span>`;
+        ${ESTADO_OPTS.map(e=>`<option value="${e.v}"${e.v===estadoVal?' selected':''}>${e.e} ${e.l}</option>`).join('')}
+       </select>`
+    : `<span class="seg-estado-badge" style="background:${eInfo.bg};border-color:${eInfo.bc};color:${eInfo.tc};">${eInfo.e} ${eInfo.l}</span>`;
 
-  /* Meta */
-  const tipoLabel = {habilitante:'🧱 Habilitante',core:'⚙️ Core',transformacional:'✨ Transformacional'}[p.tipo]||p.tipo;
-  const pilarChips = p.pilares.map(pl=>`<span class="seg-meta-pilar">${pl}</span>`).join('');
+  /* ── Badge prioridad ── */
+  const prioBadge = prio
+    ? `<span class="seg-prio-badge" style="background:${prio.bg};border-color:${prio.bc};color:${prio.tc};">${prio.l}</span>`
+    : '';
 
-  /* Historial */
-  const cmtsHtml = coments.length===0
-    ? '<div class="seg-no-comments"><span class="seg-no-comments-icon">📝</span>Sin registros aún. Documenta el primer avance arriba.</div>'
+  /* ── Meta (tipo + pilares) ── */
+  const tipoLbl = {habilitante:'🧱 Habilitante',core:'⚙️ Core',transformacional:'✨ Transformacional'}[p.tipo]||p.tipo;
+  const pilarChips = (p.pilares||[]).map(pl=>`<span class="seg-meta-pilar">${pl}</span>`).join('');
+
+  /* ── Bloque B: Avance ── */
+  let tempBadge = '';
+  if(ff && estadoVal!=='completado'){
+    const diff = daysBetween(hoy,ff);
+    if(diff===null){}
+    else if(diff<0) tempBadge=`<span class="seg-temporal-badge late">${Math.abs(diff)}d de atraso</span>`;
+    else if(diff<=14) tempBadge=`<span class="seg-temporal-badge soon">${diff}d restantes</span>`;
+    else tempBadge=`<span class="seg-temporal-badge ok">${diff}d restantes</span>`;
+  } else if(estadoVal==='completado'){
+    tempBadge=`<span class="seg-temporal-badge done">Completado</span>`;
+  }
+
+  const barColor = progreso>=100?'#00C9B7':progreso>=66?'#0099FF':progreso>=33?'#FFB84D':'#D0D8E8';
+  const ganttOrEmpty = (fi&&ff) ? _segRenderMiniGantt(p.id,fi,ff,hitos) : `<div class="seg-gantt-no-dates">📍 Sin fechas definidas${admin?' — completa en el editor debajo':''}</div>`;
+
+  const bloqueB = `<div class="seg-bloque-b">
+    <div class="seg-b-fila">
+      <span class="seg-b-campo">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
+        ${resp ? esc(resp.split('@')[0]) : '<span class="seg-b-empty">Sin responsable</span>'}
+      </span>
+      <span class="seg-b-campo">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        ${fmtFecha(fi)} → ${fmtFecha(ff)}
+      </span>
+      ${tempBadge}
+      ${fo?`<span class="seg-origen-tag">${esc(fo)}</span>`:''}
+    </div>
+    <div class="seg-b-progress">
+      <div class="seg-b-progress-bar"><div class="seg-b-progress-fill" style="width:${progreso}%;background:${barColor};"></div></div>
+      <span class="seg-b-progress-pct">${progreso}%</span>
+    </div>
+    ${ganttOrEmpty}
+  </div>`;
+
+  /* ── Bloque C: Hitos ── */
+  const hitosHtml = hitos.length===0
+    ? `<span class="seg-hito-empty">Sin hitos${admin?' — agrega el primero':''}</span>`
+    : hitos.map(h=>{
+        const done=!!h.completado_at, venc=!done&&h.fecha_objetivo&&h.fecha_objetivo<hoy;
+        const cls=done?'h-done':venc?'h-late':'h-pend';
+        const ico=done?'✓':venc?'!':'○';
+        return `<span class="seg-hito ${cls}"${admin?` onclick="event.stopPropagation();toggleHitoComplete(${p.id},'${h.id}')" title="${done?'Reabrir':'Completar'}"`:''}>
+          <span class="seg-hito-ico">${ico}</span>
+          <span class="seg-hito-nm">${esc(h.nombre)}</span>
+          ${h.fecha_objetivo?`<span class="seg-hito-dt">${fmtFecha(h.fecha_objetivo)}</span>`:''}
+          ${admin?`<span class="seg-hito-del" onclick="event.stopPropagation();deleteHito(${p.id},'${h.id}')">×</span>`:''}
+        </span>`;
+      }).join('');
+
+  const bloqueC = `<div class="seg-bloque-c">
+    <div class="seg-bloque-lbl">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Hitos · ${hitos.length}
+    </div>
+    <div class="seg-hitos-wrap">
+      ${hitosHtml}
+      ${admin?`<button class="seg-hito-add" onclick="event.stopPropagation();addHito(${p.id})">+ Hito</button>`:''}
+    </div>
+  </div>`;
+
+  /* ── Editor admin ── */
+  const editorAdmin = admin ? `<div class="seg-editor">
+    <div class="seg-editor-hdr">⚙ Editar · solo admins</div>
+    <div class="seg-editor-grid">
+      <div class="seg-field">
+        <label>Responsable</label>
+        <input type="text" value="${esc(resp)}" placeholder="email o nombre"
+          onchange="setSegField(${p.id},'responsable',this.value)" onclick="event.stopPropagation()">
+      </div>
+      <div class="seg-field">
+        <label>Fecha inicio</label>
+        <input type="date" value="${fi}" onchange="setSegField(${p.id},'fecha_inicio',this.value||null)" onclick="event.stopPropagation()">
+      </div>
+      <div class="seg-field">
+        <label>Fecha fin objetivo</label>
+        <input type="date" value="${ff}" onchange="setSegField(${p.id},'fecha_fin_objetivo',this.value||null)" onclick="event.stopPropagation()">
+      </div>
+      <div class="seg-field">
+        <label>Origen del compromiso</label>
+        <select onchange="setSegField(${p.id},'fecha_origen',this.value||null)" onclick="event.stopPropagation()">
+          <option value=""${!fo?' selected':''}>—</option>
+          <option value="Compromiso con GG"${fo==='Compromiso con GG'?' selected':''}>Compromiso con GG</option>
+          <option value="Estimación interna"${fo==='Estimación interna'?' selected':''}>Estimación interna</option>
+          <option value="Tentativa"${fo==='Tentativa'?' selected':''}>Tentativa</option>
+        </select>
+      </div>
+    </div>
+  </div>` : '';
+
+  /* ── Compositor ── */
+  const compositor = loggedIn ? `<div class="seg-composer">
+    <div class="seg-composer-label">Registrar avance</div>
+    <div class="seg-composer-tipo-row">
+      ${TIPO_OPTS.map((t,i)=>`<button class="seg-tipo-chip${i===0?' active-avance':''}"
+        data-seg-tipo="${t.v}" data-seg-tipo-card="${p.id}"
+        onclick="event.stopPropagation();_segSetTipo(${p.id},'${t.v}')">${t.l}</button>`).join('')}
+    </div>
+    <textarea id="seg-inp-${p.id}" class="seg-inp tipo-avance"
+      placeholder="Escribe el avance, riesgo o decisión de esta iniciativa…"
+      onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();addComentario(${p.id});}"></textarea>
+    <div class="seg-composer-footer">
+      <span class="seg-inp-hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> para registrar</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="seg-send-ok" id="seg-ok-${p.id}">✓ Registrado</span>
+        <button class="seg-send-btn" id="seg-send-${p.id}" data-tipo-sel="avance" onclick="addComentario(${p.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9Z"/></svg>
+          Registrar
+        </button>
+      </div>
+    </div>
+  </div>` : `<div style="padding:14px 18px;font-size:12px;color:#8B95A5;background:#FAFBFE;border-top:1px solid #F0F3FA;">🔒 Inicia sesión para registrar.</div>`;
+
+  /* ── Historial ── */
+  const cmtsHtml = nC===0
+    ? '<div class="seg-no-comments"><span class="seg-no-comments-icon">📝</span>Sin registros aún.</div>'
     : coments.map(cm=>{
-        const tipoV    = cm.tipo||'avance';
-        const tipoInfo = TIPO_OPTS.find(t=>t.v===tipoV)||TIPO_OPTS[0];
-        const dt       = new Date(cm.created_at);
-        const dtStr    = dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'})
-                         +' · '+dt.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
-        return `<div class="seg-comment tipo-${tipoV}">
+        const tv=cm.tipo||'avance', ti=TIPO_OPTS.find(t=>t.v===tv)||TIPO_OPTS[0];
+        const dt=new Date(cm.created_at);
+        const ds=dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'})+' · '+dt.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+        return `<div class="seg-comment tipo-${tv}">
           <div class="seg-comment-hdr">
-            <span class="seg-comment-tipo tipo-${tipoV}">${tipoInfo.l}</span>
+            <span class="seg-comment-tipo tipo-${tv}">${ti.l}</span>
             <span class="seg-comment-user">👤 ${esc((cm.created_by||'').split('@')[0])}</span>
-            <span class="seg-comment-ts">${dtStr}</span>
+            <span class="seg-comment-ts">${ds}</span>
           </div>
           <div class="seg-comment-txt">${esc(cm.texto)}</div>
         </div>`;
       }).join('');
 
-  /* Compositor */
-  const composerHtml = canEdit
-    ? `<div class="seg-composer">
-        <div class="seg-composer-label">Registrar avance</div>
-        <div class="seg-composer-tipo-row">
-          ${TIPO_OPTS.map((t,i)=>`<button
-            class="seg-tipo-chip${i===0?' active-avance':''}"
-            data-seg-tipo="${t.v}"
-            data-seg-tipo-card="${p.id}"
-            onclick="event.stopPropagation();_segSetTipo(${p.id},'${t.v}')"
-          >${t.l}</button>`).join('')}
-        </div>
-        <textarea id="seg-inp-${p.id}" class="seg-inp tipo-avance"
-          placeholder="Escribe aquí el avance, riesgo o decisión de esta iniciativa...&#10;&#10;Sé específico: ¿qué pasó? ¿qué se decidió? ¿qué bloquea?"
-          onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();addComentario(${p.id});}"></textarea>
-        <div class="seg-composer-footer">
-          <span class="seg-inp-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> para registrar</span>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="seg-send-ok" id="seg-ok-${p.id}">✓ Registrado</span>
-            <button class="seg-send-btn" id="seg-send-${p.id}" data-tipo-sel="avance"
-              onclick="addComentario(${p.id})">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
-              Registrar</button>
-          </div>
-        </div>
-      </div>`
-    : `<div style="padding:16px 24px;font-size:12px;color:var(--text-light);border-top:1px solid #E4EAF4;background:#FAFBFE;">🔒 Inicia sesión para registrar comentarios.</div>`;
-
-  /* Historial section — collapsible */
-  const histCollapsed = nComents === 0 ? '' : '';
-
-  return `<div class="seg-card" id="seg-card-${p.id}" style="border-left-color:${estadoInfo.bc}">
+  return `<div class="seg-card" id="seg-card-${p.id}" style="border-left-color:${eInfo.bc};">
     <div class="seg-card-hdr" onclick="toggleSegCard(${p.id})">
       <div class="seg-card-left">
         <div class="seg-card-name">${esc(p.nombre)}</div>
         <div class="seg-card-meta">
-          <span>${tipoLabel}</span>
+          <span>${tipoLbl}</span>
           ${pilarChips?`<span class="seg-meta-sep">·</span>${pilarChips}`:''}
         </div>
       </div>
       <div class="seg-card-right" onclick="event.stopPropagation()">
-        ${nComents>0?`<span class="seg-reg-count"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${nComents}</span>`:''}
-        ${estadoControl}
+        ${prioBadge}
+        ${nC>0?`<span class="seg-reg-count">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${nC}
+        </span>`:''}
+        ${estadoEl}
       </div>
       <span class="seg-card-toggle" id="seg-tog-${p.id}">▾</span>
     </div>
+    ${bloqueB}
+    ${bloqueC}
     <div class="seg-card-body" id="seg-body-${p.id}">
-      ${composerHtml}
+      ${editorAdmin}
+      ${compositor}
       <div class="seg-hist">
         <div class="seg-hist-toggle" onclick="event.stopPropagation();_segToggleHist(${p.id})">
-          Historial · ${nComents} registro${nComents!==1?'s':''}
+          Historial · ${nC} registro${nC!==1?'s':''}
           <span class="seg-hist-chev" id="seg-hist-chev-${p.id}">▾</span>
         </div>
         <div class="seg-comments-wrap" id="seg-cmts-wrap-${p.id}">
@@ -3590,41 +4017,175 @@ function _segRenderCard(p){
   </div>`;
 }
 
-function toggleSegAreaGroup(areaKey){
-  const body = document.getElementById('seg-ag-body-'+areaKey);
-  const chev = document.getElementById('seg-ag-chev-'+areaKey);
-  if(!body||!chev) return;
-  const isCol = body.classList.contains('collapsed');
-  body.classList.toggle('collapsed',!isCol);
-  chev.classList.toggle('rot',!isCol);
+/* ── Dashboard ejecutivo ── */
+function _segRenderDashboard(activas){
+  const wrap = document.getElementById('seg-dashboard-wrap');
+  if(!wrap) return;
+  const total = activas.length;
+  if(!total){ wrap.innerHTML=''; return; }
+
+  const hoy = todayStr();
+  let nCurso=0, nDone=0, nAtras=0, nBloq=0, nPend=0, nPaus=0, nCriti=0, nSinFecha=0, nPlazo=0;
+  const porArea = {};
+  AREAS.forEach(a=>{ porArea[a.key]={curso:0,done:0,atras:0,pend:0,block:0,total:0,label:a.label,icon:a.icon}; });
+
+  activas.forEach(p=>{
+    const r   = _segEstados[p.id]||{};
+    const est = r.estado||'pendiente';
+    const ff  = r.fecha_fin_objetivo;
+    const late= ff && ff<hoy && est!=='completado';
+    if(!ff && est!=='completado') nSinFecha++;
+    if(ff && ff>=hoy && est!=='completado') nPlazo++;
+    const prio = getPrioridadAuto(p.id);
+    if(prio&&prio.v==='critica') nCriti++;
+    let cat='pend';
+    if(est==='completado'){ nDone++; cat='done'; }
+    else if(est==='bloqueado'){ nBloq++; cat='block'; }
+    else if(late){ nAtras++; cat='atras'; }
+    else if(est==='en_curso'){ nCurso++; cat='curso'; }
+    else if(est==='pausado'){ nPaus++; cat='block'; }
+    else { nPend++; cat='pend'; }
+    if(porArea[p.area]) { porArea[p.area].total++; porArea[p.area][cat]++; }
+  });
+
+  const pctPlazo = total ? Math.round((nDone+nPlazo)*100/total) : 0;
+  const pctAtras = total ? Math.round(nAtras*100/total) : 0;
+
+  /* Donut SVG */
+  const donutData=[
+    {l:'Completado',n:nDone,       c:'#00C9B7'},
+    {l:'En curso',  n:nCurso,      c:'#0099FF'},
+    {l:'Atrasado',  n:nAtras+nBloq,c:'#FF6B6B'},
+    {l:'Pendiente', n:nPend+nPaus, c:'#FFB84D'}
+  ].filter(d=>d.n>0);
+  const CX=70,R=50,ri=30; let acc=0;
+  const ttl = donutData.reduce((s,d)=>s+d.n,0)||1;
+  const arcs = donutData.map(d=>{
+    const frac=d.n/ttl;
+    const a0=acc*2*Math.PI-Math.PI/2, a1=(acc+frac)*2*Math.PI-Math.PI/2;
+    acc+=frac;
+    if(frac>=0.999) return `<circle cx="${CX}" cy="${CX}" r="${(R+ri)/2}" fill="none" stroke="${d.c}" stroke-width="${R-ri}"/>`;
+    const x1=CX+R*Math.cos(a0),y1=CX+R*Math.sin(a0),x2=CX+R*Math.cos(a1),y2=CX+R*Math.sin(a1);
+    const xi1=CX+ri*Math.cos(a1),yi1=CX+ri*Math.sin(a1),xi2=CX+ri*Math.cos(a0),yi2=CX+ri*Math.sin(a0);
+    const lg=frac>0.5?1:0;
+    return `<path d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xi1} ${yi1} A${ri} ${ri} 0 ${lg} 0 ${xi2} ${yi2}Z" fill="${d.c}"/>`;
+  }).join('');
+
+  const areasConProy = AREAS.filter(a=>porArea[a.key].total>0);
+
+  wrap.innerHTML=`<div class="seg-dashboard">
+    <div class="seg-dash-title">📊 Resumen del portafolio · ${total} iniciativas activas</div>
+    <div class="seg-kpi-row">
+      <div class="seg-kpi k-total">
+        <div class="seg-kpi-n">${total}</div>
+        <div class="seg-kpi-l">Total activas</div>
+        <div class="seg-kpi-sub">${nSinFecha?`${nSinFecha} sin fecha`:'Todas con plan'}</div>
+      </div>
+      <div class="seg-kpi k-curso">
+        <div class="seg-kpi-n">${nCurso}</div>
+        <div class="seg-kpi-l">En curso</div>
+        <div class="seg-kpi-sub">${total?Math.round(nCurso*100/total):0}% del portafolio</div>
+      </div>
+      <div class="seg-kpi k-plazo">
+        <div class="seg-kpi-n">${pctPlazo}%</div>
+        <div class="seg-kpi-l">En plazo</div>
+        <div class="seg-kpi-sub">${nDone} completadas · ${nPlazo} con holgura</div>
+      </div>
+      <div class="seg-kpi k-atras">
+        <div class="seg-kpi-n">${nAtras}</div>
+        <div class="seg-kpi-l">Atrasadas</div>
+        <div class="seg-kpi-sub">${pctAtras}% del portafolio${nBloq?` · +${nBloq} bloq.`:''}</div>
+      </div>
+      <div class="seg-kpi k-criti">
+        <div class="seg-kpi-n">${nCriti}</div>
+        <div class="seg-kpi-l">Críticas</div>
+        <div class="seg-kpi-sub">Top 25% del ranking</div>
+      </div>
+    </div>
+    <div class="seg-dash-charts">
+      <div class="seg-donut-col">
+        <div class="seg-donut-container">
+          <svg viewBox="0 0 140 140" class="seg-donut-svg" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="${CX}" cy="${CX}" r="${(R+ri)/2}" fill="none" stroke="#F0F3FA" stroke-width="${R-ri}"/>
+            ${arcs}
+          </svg>
+          <div class="seg-donut-center-label">
+            <div class="seg-donut-center-n">${total}</div>
+            <div class="seg-donut-center-l">total</div>
+          </div>
+        </div>
+        <div class="seg-donut-legend">
+          ${donutData.map(d=>`<span class="seg-donut-item"><span class="seg-donut-dot" style="background:${d.c}"></span>${d.l} · ${d.n}</span>`).join('')}
+        </div>
+      </div>
+      <div class="seg-bars-col">
+        <div class="seg-bars-lbl">Distribución por área</div>
+        ${areasConProy.map(a=>{
+          const d=porArea[a.key];
+          const segs=[
+            {n:d.done, c:'seg-bar-fill-done'},
+            {n:d.curso,c:'seg-bar-fill-curso'},
+            {n:d.atras,c:'seg-bar-fill-atras'},
+            {n:d.block,c:'seg-bar-fill-block'},
+            {n:d.pend, c:'seg-bar-fill-pend'}
+          ].filter(s=>s.n>0);
+          return `<div class="seg-bar-row">
+            <span class="seg-bar-name" title="${esc(d.label)}">${a.icon} ${esc(d.label)}</span>
+            <div class="seg-bar-track">${segs.map(s=>`<div class="${s.c}" style="width:${s.n*100/d.total}%;height:100%"></div>`).join('')}</div>
+            <span class="seg-bar-n">${d.total}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
 }
 
-function _segToggleHist(projectId){
-  const wrap = document.getElementById('seg-cmts-wrap-'+projectId);
-  const chev = document.getElementById('seg-hist-chev-'+projectId);
-  if(!wrap||!chev) return;
-  const isCol = wrap.classList.contains('collapsed');
-  wrap.classList.toggle('collapsed',!isCol);
-  chev.classList.toggle('rot',!isCol);
+/* ── Re-render single card without rebuilding the list ── */
+function _segRerenderCard(projectId){
+  const card=document.getElementById('seg-card-'+projectId);
+  if(!card){ renderSeguimiento(); return; }
+  const wasOpen=card.classList.contains('seg-card-open');
+  const p=projects.find(x=>x.id===projectId); if(!p) return;
+  const tmp=document.createElement('div');
+  tmp.innerHTML=_segRenderCard(p);
+  const nc=tmp.firstElementChild;
+  if(wasOpen){
+    nc.classList.add('seg-card-open');
+    const body=nc.querySelector('.seg-card-body');
+    const tog=nc.querySelector('.seg-card-toggle');
+    if(body) body.classList.add('open');
+    if(tog)  tog.classList.add('open');
+  }
+  card.replaceWith(nc);
 }
 
 function renderSeguimiento(){
   const grid    = document.getElementById('seg-grid');
   const counter = document.getElementById('seg-count');
   const authNote= document.getElementById('seg-auth-note');
+  const dashWrap= document.getElementById('seg-dashboard-wrap');
   if(!grid) return;
 
   if(!_currentUser){
     if(authNote) authNote.style.display='flex';
+    if(dashWrap) dashWrap.innerHTML='';
     grid.innerHTML='';
     return;
   }
   if(authNote) authNote.style.display='none';
 
+  // Asegurar ranking actualizado para prioridad automática
+  if(_lastRanking.length === 0) computeRankingSilent();
+
+  // Dashboard ejecutivo: SIEMPRE muestra el total de activas, no respeta filtros visuales
+  const activasTodas = projects.filter(p=>!p.inactiva && p.nombre.trim()!=='');
+  _segRenderDashboard(activasTodas);
+
   const areaF   = (document.getElementById('seg-filter-area')?.value)||'';
   const estadoF = (document.getElementById('seg-filter-estado')?.value)||'';
 
   const filtered = projects.filter(p=>{
+    if(p.inactiva) return false; // Excluir pospuestas para 2027
     if(areaF && p.area!==areaF) return false;
     if(estadoF){
       const e = _segEstados[p.id]?.estado||'pendiente';
@@ -4275,5 +4836,330 @@ function flujoInit() {
 }
 
 </script>
+
+<!-- ════ v4.5 SEGUIMIENTO & INACTIVACIÓN ════ -->
+<style>
+
+/* ────────────────────────────────────────────
+   INACTIVACIÓN — Proyectos, Flujo, Guía
+──────────────────────────────────────────── */
+.btn-posponer {
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:8px;
+  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
+  border:1.5px solid #E4EAF4;background:#FAFBFE;color:#6B7894;cursor:pointer;
+  white-space:nowrap;transition:all .15s;
+}
+.btn-posponer:hover{background:#FFF4E5;border-color:#FF9800;color:#B26A00;}
+.btn-reactivar {
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:8px;
+  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
+  border:1.5px solid #00C9B7;background:#E8FFF5;color:#0a6e5e;cursor:pointer;
+  white-space:nowrap;transition:all .15s;
+}
+.btn-reactivar:hover{background:#00C9B7;color:#fff;}
+.badge-inactiva {
+  display:inline-block;font-size:9px;font-weight:700;
+  background:#FFF4E5;color:#B26A00;border:1px solid #FFB84D;
+  padding:1px 7px;border-radius:10px;margin-left:8px;vertical-align:middle;
+}
+.project-form.is-inactiva{opacity:.6;}
+.project-form.is-inactiva .pf-name{text-decoration:line-through;text-decoration-color:rgba(155,165,188,.55);}
+.project-form.is-inactiva:hover{opacity:.9;}
+.inactivas-divider{
+  margin:14px 0 6px;padding:5px 12px;
+  font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:#B26A00;background:#FFF4E5;border-radius:8px;border:1px dashed #FFB84D;
+  display:flex;align-items:center;gap:6px;
+}
+#page-flujo [data-id].flujo-is-inactiva{
+  opacity:.35!important;filter:grayscale(.6);position:relative;
+}
+#page-flujo [data-id].flujo-is-inactiva::after{
+  content:'⏸ 2027';position:absolute;top:3px;right:5px;
+  font-size:8px;font-weight:700;background:#FFF4E5;color:#B26A00;
+  padding:1px 5px;border-radius:5px;border:1px solid #FFB84D;pointer-events:none;
+}
+tr.guia-is-inactiva{opacity:.45;}
+tr.guia-is-inactiva .tbl-obj-title{text-decoration:line-through;text-decoration-color:rgba(155,165,188,.6);}
+
+/* ────────────────────────────────────────────
+   DASHBOARD EJECUTIVO
+──────────────────────────────────────────── */
+.seg-dashboard{
+  background:#fff;border-radius:14px;
+  border:1px solid #E4EAF4;padding:20px 22px;margin-bottom:20px;
+  box-shadow:0 2px 10px rgba(0,40,100,.05);
+}
+.seg-dash-title{
+  font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:#8B95A5;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.seg-dash-title::after{content:'';flex:1;height:1px;background:#F0F3FA;}
+
+/* KPIs — flex, 5 en fila, wrap en < 600px */
+.seg-kpi-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:nowrap;}
+.seg-kpi{
+  flex:1;min-width:0;
+  background:linear-gradient(145deg,#FAFBFE,#F2F5FC);
+  border:1px solid #E4EAF4;border-radius:12px;padding:14px 14px 12px;
+  position:relative;overflow:hidden;
+}
+.seg-kpi::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:12px 0 0 12px;
+}
+.seg-kpi.k-total::before{background:linear-gradient(180deg,#0052CC,#003D99);}
+.seg-kpi.k-curso::before{background:linear-gradient(180deg,#0099FF,#0073CC);}
+.seg-kpi.k-plazo::before{background:linear-gradient(180deg,#00C9B7,#009E90);}
+.seg-kpi.k-atras::before{background:linear-gradient(180deg,#FF6B6B,#CC3333);}
+.seg-kpi.k-criti::before{background:linear-gradient(180deg,#FF9800,#E65100);}
+.seg-kpi-n{font-size:26px;font-weight:700;color:#1A2340;letter-spacing:-.02em;line-height:1;}
+.seg-kpi-l{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#8B95A5;margin-top:5px;}
+.seg-kpi-sub{font-size:9px;color:#B0B8C8;margin-top:3px;line-height:1.3;}
+
+/* Charts — donut + barras */
+.seg-dash-charts{display:flex;gap:20px;align-items:flex-start;}
+.seg-donut-col{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;width:170px;}
+.seg-donut-container{position:relative;width:140px;height:140px;flex-shrink:0;}
+.seg-donut-svg{width:140px;height:140px;display:block;}
+.seg-donut-center-label{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;pointer-events:none;
+}
+.seg-donut-center-n{font-size:22px;font-weight:700;color:#1A2340;line-height:1;}
+.seg-donut-center-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#8B95A5;}
+.seg-donut-legend{display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:center;}
+.seg-donut-item{display:flex;align-items:center;gap:4px;font-size:9.5px;color:#5A6070;font-weight:500;}
+.seg-donut-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+.seg-bars-col{flex:1;min-width:0;}
+.seg-bars-lbl{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#8B95A5;margin-bottom:10px;}
+.seg-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.seg-bar-name{font-size:11px;font-weight:600;color:#1A2340;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:min(200px,35%);}
+.seg-bar-track{flex:1;min-width:0;height:16px;background:#F0F3FA;border-radius:6px;overflow:hidden;display:flex;}
+.seg-bar-fill-done {background:#00C9B7;height:100%;}
+.seg-bar-fill-curso{background:#0099FF;height:100%;}
+.seg-bar-fill-atras{background:#FF6B6B;height:100%;}
+.seg-bar-fill-block{background:#B26A00;height:100%;}
+.seg-bar-fill-pend {background:#FFB84D;height:100%;}
+.seg-bar-n{font-size:11px;font-weight:700;color:#1A2340;width:22px;text-align:right;flex-shrink:0;}
+
+/* ────────────────────────────────────────────
+   CARD DE INICIATIVA
+──────────────────────────────────────────── */
+.seg-card{
+  background:#fff;border-radius:12px;
+  border:1px solid #E4EAF4;border-left:5px solid #0052CC;
+  overflow:hidden;margin-bottom:12px;
+  box-shadow:0 1px 6px rgba(0,40,100,.05);
+  transition:box-shadow .2s,transform .15s;
+}
+.seg-card:hover{box-shadow:0 5px 18px rgba(0,82,204,.09);transform:translateY(-1px);}
+
+/* Header — siempre visible */
+.seg-card-hdr{
+  display:flex;align-items:center;gap:10px;padding:13px 16px;
+  cursor:pointer;user-select:none;background:#fff;transition:background .12s;
+}
+.seg-card-hdr:hover{background:#FAFBFF;}
+
+/* Zona izquierda: flex 1, trunca */
+.seg-card-left{flex:1;min-width:0;}
+.seg-card-name{
+  font-size:13.5px;font-weight:700;color:#1A2340;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;
+}
+.seg-card-meta{
+  font-size:10px;color:#8B95A5;margin-top:4px;
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+}
+.seg-meta-pilar{
+  background:#EEF2FA;color:#003D99;border-radius:5px;
+  padding:1px 6px;font-size:9px;font-weight:700;
+}
+.seg-meta-sep{color:#D0D8E8;}
+
+/* Zona derecha: no crece, ítems en fila */
+.seg-card-right{
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
+}
+.seg-prio-badge{
+  font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;
+  border:1px solid;white-space:nowrap;
+}
+.seg-reg-count{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;font-weight:600;color:#0052CC;
+  background:#EEF2FA;border-radius:8px;padding:3px 8px;white-space:nowrap;
+}
+.seg-estado-sel{
+  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
+  padding:5px 24px 5px 9px;border-radius:9px;border:1.5px solid;
+  cursor:pointer;outline:none;white-space:nowrap;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%235A6070'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+  transition:opacity .15s;
+}
+.seg-estado-sel:hover{opacity:.85;}
+.seg-estado-badge{
+  font-size:11px;font-weight:700;padding:5px 10px;border-radius:9px;
+  border:1.5px solid;white-space:nowrap;
+}
+
+/* Toggle al final */
+.seg-card-toggle{
+  flex-shrink:0;width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:#8B95A5;border-radius:6px;
+  transition:transform .22s,background .15s;
+  margin-left:2px;
+}
+.seg-card-hdr:hover .seg-card-toggle{background:#EEF2FA;}
+.seg-card-toggle.open{transform:rotate(180deg);}
+
+/* ────────────────────────────────────────────
+   BLOQUE B — Avance + Gantt
+──────────────────────────────────────────── */
+.seg-bloque-b{
+  padding:12px 16px 14px;
+  border-top:1px solid #F0F3FA;
+  background:linear-gradient(180deg,#FAFBFE,#fff);
+}
+.seg-b-fila{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px;
+}
+.seg-b-campo{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:500;color:#2D3A52;
+}
+.seg-b-campo svg{flex-shrink:0;opacity:.55;}
+.seg-b-empty{color:#B0B8C8;font-style:italic;}
+.seg-temporal-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:7px;}
+.seg-temporal-badge.done{background:#E8FFF5;color:#0a6e5e;}
+.seg-temporal-badge.ok  {background:#E8F4FF;color:#003D99;}
+.seg-temporal-badge.soon{background:#FFF4E5;color:#B26A00;}
+.seg-temporal-badge.late{background:#FFE8E8;color:#CC3333;}
+.seg-origen-tag{
+  font-size:9.5px;font-weight:600;background:#F0F3FA;color:#8B95A5;
+  padding:2px 8px;border-radius:7px;border:1px solid #E4EAF4;
+}
+
+.seg-b-progress{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.seg-b-progress-bar{flex:1;height:7px;background:#E4EAF4;border-radius:4px;overflow:hidden;}
+.seg-b-progress-fill{height:100%;border-radius:4px;transition:width .4s;}
+.seg-b-progress-pct{font-size:11px;font-weight:700;color:#1A2340;min-width:34px;text-align:right;}
+
+.seg-gantt-box{margin-top:2px;}
+.seg-gantt-svg{width:100%;height:24px;display:block;}
+.seg-gantt-dates{display:flex;justify-content:space-between;font-size:9px;font-weight:600;color:#B0B8C8;margin-top:2px;}
+.seg-gantt-today-lbl{color:#0052CC;font-weight:700;}
+.seg-gantt-no-dates{
+  text-align:center;font-size:11px;color:#B0B8C8;font-style:italic;
+  padding:8px;background:#FAFBFE;border-radius:8px;border:1px dashed #E4EAF4;
+}
+
+/* ────────────────────────────────────────────
+   BLOQUE C — Hitos
+──────────────────────────────────────────── */
+.seg-bloque-c{padding:9px 16px 12px;border-top:1px solid #F0F3FA;background:#fff;}
+.seg-bloque-lbl{
+  font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+  color:#8B95A5;margin-bottom:7px;display:flex;align-items:center;gap:5px;
+}
+.seg-bloque-lbl svg{color:#0052CC;}
+.seg-hitos-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.seg-hito-empty{font-size:11px;color:#B0B8C8;font-style:italic;}
+.seg-hito{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:13px;border:1.5px solid #E4EAF4;
+  background:#fff;font-size:11px;font-weight:600;cursor:pointer;
+  transition:transform .12s,box-shadow .12s;
+}
+.seg-hito:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,40,100,.09);}
+.seg-hito.h-done{background:#E8FFF5;border-color:#00C9B7;color:#0a6e5e;}
+.seg-hito.h-late{background:#FFE8E8;border-color:#FF6B6B;color:#CC3333;}
+.seg-hito.h-pend{color:#5A6070;}
+.seg-hito-ico{font-weight:900;font-size:11px;}
+.seg-hito-nm{max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.seg-hito-dt{font-size:9px;opacity:.65;}
+.seg-hito-del{font-size:13px;color:rgba(0,0,0,.22);margin-left:1px;transition:color .12s;}
+.seg-hito-del:hover{color:#CC3333;}
+.seg-hito-add{
+  display:inline-flex;align-items:center;padding:3px 10px;border-radius:13px;
+  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
+  border:1.5px dashed #B0B8C8;background:transparent;color:#8B95A5;cursor:pointer;
+  transition:border-color .15s,color .15s;
+}
+.seg-hito-add:hover{border-color:#0052CC;color:#0052CC;}
+
+/* ────────────────────────────────────────────
+   BLOQUE D — Editor admin + Compositor (body expandible)
+──────────────────────────────────────────── */
+.seg-card-body{display:none;}
+.seg-card-body.open{display:block;}
+
+.seg-editor{
+  padding:13px 16px;border-top:1px solid #EEF2FA;
+  background:linear-gradient(180deg,#F7F9FF,#FAFBFE);
+}
+.seg-editor-hdr{
+  font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+  color:#0052CC;margin-bottom:9px;
+}
+.seg-editor-grid{display:flex;flex-wrap:wrap;gap:9px;}
+.seg-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:148px;}
+.seg-field label{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#8B95A5;}
+.seg-field input,.seg-field select{
+  font-family:'Poppins',sans-serif;font-size:12px;padding:6px 10px;
+  border:1.5px solid #E4EAF4;border-radius:8px;background:#fff;color:#1A2340;outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.seg-field input:focus,.seg-field select:focus{
+  border-color:#0052CC;box-shadow:0 0 0 3px rgba(0,82,204,.07);
+}
+
+/* ────────────────────────────────────────────
+   RESPONSIVE
+──────────────────────────────────────────── */
+
+/* ≤ 900px: KPIs en 2 filas */
+@media (max-width:900px){
+  .seg-kpi-row{flex-wrap:wrap;}
+  .seg-kpi{flex:1 1 calc(33% - 8px);min-width:80px;}
+  .seg-bar-name{width:130px;}
+}
+
+/* ≤ 700px: dashboard charts apilados */
+@media (max-width:700px){
+  .seg-dash-charts{flex-direction:column;}
+  .seg-donut-col{width:100%;flex-direction:row;align-items:flex-start;gap:16px;}
+  .seg-bars-col{width:100%;}
+  .seg-bar-name{width:110px;}
+  /* Card header: comprimir zona derecha */
+  .seg-card-right{gap:4px;}
+  .seg-prio-badge{display:none;}       /* ocultar en muy estrecho */
+  .seg-estado-sel,.seg-estado-badge{font-size:10px;padding:4px 20px 4px 7px;}
+}
+
+/* ≤ 520px: layout ultra estrecho */
+@media (max-width:520px){
+  .seg-kpi-row{flex-wrap:wrap;}
+  .seg-kpi{flex:1 1 calc(50% - 5px);}
+  .seg-kpi-n{font-size:22px;}
+  .seg-kpi-sub{display:none;}
+  .seg-card-hdr{padding:10px 12px;gap:8px;}
+  .seg-card-name{font-size:12.5px;}
+  .seg-bloque-b,.seg-bloque-c{padding:9px 12px;}
+  .seg-b-campo{font-size:10.5px;}
+  .seg-bar-name{width:90px;}
+  .seg-donut-col{flex-direction:column;align-items:center;}
+  /* Fecha en bloque B: apilar */
+  .seg-b-fila{gap:6px;}
+}
+
+</style>
 </body>
 </html>
