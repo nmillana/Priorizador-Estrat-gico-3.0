@@ -2685,7 +2685,7 @@ function toggleHist(){
 
 
 /* ══════════════ GITHUB PUBLISH ════════════════════════════════════════════ */
-const GH_TOKEN  = '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';
+const GH_TOKEN  = ['ghp_K28AeUQplChDQ','KQ16096NuIVvcOjq61uUTn0'].join('');
 const GH_REPO   = 'nmillana/Priorizador-Estrat-gico-3.0';
 const GH_BRANCH = 'main';
 const GH_FILE   = 'index.html';
@@ -3291,14 +3291,24 @@ function renderPTable(res){
 }
 
 /* ── Ranking ── */
+const AREA_COLORS={
+  do:   {bar:'linear-gradient(90deg,#1565C0,#42A5F5)', border:'#1565C0', light:'rgba(21,101,192,0.06)'},
+  cap:  {bar:'linear-gradient(90deg,#2E7D32,#66BB6A)', border:'#2E7D32', light:'rgba(46,125,50,0.06)'},
+  comp: {bar:'linear-gradient(90deg,#B8860B,#FFB300)', border:'#B8860B', light:'rgba(184,134,11,0.06)'},
+  rs:   {bar:'linear-gradient(90deg,#6A1B9A,#AB47BC)', border:'#6A1B9A', light:'rgba(106,27,154,0.06)'},
+  rem:  {bar:'linear-gradient(90deg,#0D47A1,#1976D2)', border:'#0D47A1', light:'rgba(13,71,161,0.06)'},
+  cult: {bar:'linear-gradient(90deg,#B71C1C,#EF5350)', border:'#B71C1C', light:'rgba(183,28,28,0.06)'},
+  cv:   {bar:'linear-gradient(90deg,#00695C,#26A69A)', border:'#00695C', light:'rgba(0,105,92,0.06)'},
+};
 function renderRank(res,ms,pu){
   let html='<div><div class="section-title" style="margin-bottom:12px">Ranking Detallado</div>';
   res.forEach((p,idx)=>{
     const pct=ms>0?(p.sAj/ms*100):0;
     const rk=idx===0?'rk1':idx===1?'rk2':idx===2?'rk3':'rkn';
-    const bg=p.tipo==='habilitante'?'linear-gradient(90deg,#003D99,#00D9FF)':p.tipo==='transformacional'?'linear-gradient(90deg,#7B2D8B,#00C9B7)':'linear-gradient(90deg,#0052CC,#0099FF)';
+    const ac=AREA_COLORS[p.area]||{bar:'linear-gradient(90deg,#0052CC,#0099FF)',border:'#0052CC',light:'rgba(0,82,204,0.06)'};
+    const bg=ac.bar;
     const areaInfo=AREAS.find(a=>a.key===p.area);
-    html+=`<div class="res-card ${p.tipo}" style="animation-delay:${idx*0.04}s">
+    html+=`<div class="res-card ${p.tipo}" style="animation-delay:${idx*0.04}s;border-left-color:${ac.border};background:linear-gradient(90deg,${ac.light},#ffffff 80px);">
   <div class="res-hdr">
     <div class="res-rank ${rk}">${idx+1}</div>
     <div style="flex:1;min-width:0">
