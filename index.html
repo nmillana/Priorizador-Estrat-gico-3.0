@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&amp;family=DM+Serif+Display:ital@0;1&amp;display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#F5F5F7;--white:#FFFFFF;--border:#E0E0E0;--text:#1A1A2E;--text-light:#5A6070;
@@ -6766,7 +6767,12 @@ footer{background:transparent;border-top:1px solid var(--border);text-align:cent
 <div id="page-resultados" class="page">
   <div class="section-header mb-20">
     <div><div class="section-title">Resultado</div><div class="section-label">Ranking Estratégico del Portafolio</div></div>
-    <button class="btn-calc" onclick="showPage('proyectos')">← Editar proyectos</button>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn-sm" id="btn-excel" onclick="exportRankingExcel()" style="display:none;padding:9px 16px;border-color:var(--turquoise);color:var(--turquoise);font-size:12px;display:none;align-items:center;gap:6px;">
+        📥 Descargar Excel
+      </button>
+      <button class="btn-calc" onclick="showPage('proyectos')">← Editar proyectos</button>
+    </div>
   </div>
   <div id="res-cont"><div class="ins-panel"><h3>📊 Diagnóstico del Portafolio</h3>
   <div class="ins-grid">
@@ -9700,7 +9706,13 @@ function calcularRanking(){
   res.forEach((p,i)=>{p.lbl=mkLbl(p,i,res.length);});
   // Guardar ranking para uso en prioridad automática
   _lastRanking = res.map((p,i)=>({id:p.id, sAj:p.sAj, rank:i, total:res.length}));
+  _lastRankingData = res; // para export Excel
   renderResultados(res);showPage('resultados');
+  // Mostrar botón Excel
+  setTimeout(()=>{
+    const btn=document.getElementById('btn-excel');
+    if(btn){ btn.style.display='inline-flex'; }
+  },100);
 }
 function sBase(p,P){return p.scores.impacto*P.impacto+p.scores.urgencia*P.urgencia+p.scores.facilidad*P.facilidad+p.scores.alineacion*P.alineacion;}
 function mkLbl(p,i,t){
@@ -11326,6 +11338,91 @@ function flujo_showMatrixDetail(idsStr) {
 // ═══════════════════════════════════════════════════
 // EVENT DELEGATION - único listener para todo
 // ═══════════════════════════════════════════════════
+/* ══════════════ EXPORT EXCEL ══════════════════════════════════════════════ */
+let _lastRankingData = []; // guarda el array completo del último ranking calculado
+
+function exportRankingExcel(){
+  if(!_lastRankingData.length){ alert('Primero calcula el ranking.'); return; }
+  const pu = _lastRankingData[0]?.pu || pesosInt;
+  const areaMap = {};
+  AREAS.forEach(a=>{ areaMap[a.key]=a.label; });
+  const pilarMap = PILAR_N;
+
+  // Hoja 1: Ranking detallado
+  const rows = _lastRankingData.map((p,idx)=>{
+    const bl = (p.bl||[]).map(id=>{ const dep=_lastRankingData.find(x=>x.id===id); return dep?dep.nombre:id; }).join(', ');
+    const rs = (p.rs||[]).map(id=>{ const dep=_lastRankingData.find(x=>x.id===id); return dep?dep.nombre:id; }).join(', ');
+    return {
+      'Posición':           idx+1,
+      'Iniciativa':         p.nombre,
+      'Área':               areaMap[p.area]||p.area,
+      'Tipo':               {habilitante:'Habilitante',core:'Core',transformacional:'Transformacional'}[p.tipo]||p.tipo,
+      'Pilares':            (p.pilares||[]).join(', '),
+      'Etiqueta':           p.lbl?.x||'',
+      'Score Final':        parseFloat(p.sAj.toFixed(3)),
+      'Score Base':         parseFloat(p.sBase.toFixed(3)),
+      'Mult. Tipo':         parseFloat((p.mt||1).toFixed(2)),
+      'Factor Deps':        parseFloat((p.fd||1).toFixed(2)),
+      [`Impacto (×${pu.impacto}%)`]:    p.scores?.impacto||0,
+      [`Urgencia (×${pu.urgencia}%)`]:   p.scores?.urgencia||0,
+      [`Facilidad (×${pu.facilidad}%)`]: p.scores?.facilidad||0,
+      [`Alineación (×${pu.alineacion}%)`]: p.scores?.alineacion||0,
+      'Dependencias bloqueantes': bl||'—',
+      'Dependencias resueltas':   rs||'—',
+      'Dependientes a cargo':     p.dc||0,
+    };
+  });
+
+  // Hoja 2: Resumen por área
+  const resumenArea = {};
+  AREAS.forEach(a=>{ resumenArea[a.key]={area:a.label,total:0,habilitante:0,core:0,transformacional:0,scoreSum:0}; });
+  _lastRankingData.forEach(p=>{
+    if(!resumenArea[p.area]) return;
+    resumenArea[p.area].total++;
+    resumenArea[p.area][p.tipo]=(resumenArea[p.area][p.tipo]||0)+1;
+    resumenArea[p.area].scoreSum+=p.sAj;
+  });
+  const resumenRows = Object.values(resumenArea).filter(r=>r.total>0).map(r=>({
+    'Área':             r.area,
+    'Total iniciativas':r.total,
+    'Habilitantes':     r.habilitante||0,
+    'Core':             r.core||0,
+    'Transformacionales':r.transformacional||0,
+    'Score promedio':   parseFloat((r.scoreSum/r.total).toFixed(3)),
+  }));
+
+  // Hoja 3: Config pesos
+  const pesosRows = CRIT.map(c=>({
+    'Criterio': c.label,
+    'Peso (%)': pu[c.key],
+    'Nota':     c.tip
+  }));
+
+  // Crear workbook
+  const wb = XLSX.utils.book_new();
+
+  const ws1 = XLSX.utils.json_to_sheet(rows);
+  // Anchos de columna
+  ws1['!cols'] = [
+    {wch:8},{wch:42},{wch:28},{wch:16},{wch:14},{wch:22},
+    {wch:12},{wch:12},{wch:12},{wch:12},
+    {wch:16},{wch:16},{wch:16},{wch:18},
+    {wch:30},{wch:30},{wch:16}
+  ];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Ranking Detallado');
+
+  const ws2 = XLSX.utils.json_to_sheet(resumenRows);
+  ws2['!cols'] = [{wch:28},{wch:16},{wch:14},{wch:10},{wch:18},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Resumen por Área');
+
+  const ws3 = XLSX.utils.json_to_sheet(pesosRows);
+  ws3['!cols'] = [{wch:24},{wch:10},{wch:60}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Pesos Criterios');
+
+  const fecha = new Date().toLocaleDateString('es-CL').replace(/\//g,'-');
+  XLSX.writeFile(wb, `Ranking_RRHH_Socovesa_${fecha}.xlsx`);
+}
+
 let _flujoInited = false;
 function flujoInit() {
   if(_flujoInited) return;
