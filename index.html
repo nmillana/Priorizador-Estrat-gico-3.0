@@ -9585,18 +9585,7 @@ function showPage(n){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(n))b.classList.add('active');});
-  if(n==='seguimiento'){
-    // Si projects aún no cargó, esperar hasta 3s
-    if(projects.length===0){
-      let retries=0;
-      const wait=setInterval(()=>{
-        retries++;
-        if(projects.length>0||retries>30){ clearInterval(wait); loadSeguimiento(); }
-      },100);
-    } else {
-      loadSeguimiento();
-    }
-  }
+  if(n==='seguimiento') loadSeguimiento();
   if(n==='flujo')   setTimeout(()=>{ flujoInit(); applyInactivasToFlujo(); }, 50);
   if(n==='tabla')   setTimeout(applyInactivasToGuia, 50);
 }
@@ -10315,12 +10304,30 @@ function getPrioridadAuto(pid){
 
 /* ── Load desde Supabase ── */
 async function loadSeguimiento(){
-  if(!_supa||!_currentUser){ _applyGanttSeed(); svRenderAll(); return; }
+  // Esperar a que projects esté cargado (máx 4s)
+  if(projects.length === 0){
+    await new Promise(resolve => {
+      let t = 0;
+      const iv = setInterval(()=>{
+        t += 100;
+        if(projects.length > 0 || t >= 4000){ clearInterval(iv); resolve(); }
+      }, 100);
+    });
+  }
+
+  // Sin sesión: aplicar seed y renderizar
+  if(!_supa || !_currentUser){
+    _applyGanttSeed();
+    svRenderAll();
+    return;
+  }
+
+  // Con sesión: cargar desde Supabase
   try {
     const [eRes,cRes,hRes] = await Promise.all([
-      _supa.from('seg_estados').select('*'),
-      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false}),
-      _supa.from('seg_hitos').select('*').order('orden',{ascending:true})
+      _supa.from('seg_estados').select('*').then(r=>r).catch(()=>({data:[]})),
+      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false}).then(r=>r).catch(()=>({data:[]})),
+      _supa.from('seg_hitos').select('*').order('orden',{ascending:true}).then(r=>r).catch(()=>({data:[]}))
     ]);
     _segEstados={};_segComents={};_segHitos={};
     if(eRes.data) eRes.data.forEach(r=>{ _segEstados[r.project_id]=r; });
@@ -10334,6 +10341,7 @@ async function loadSeguimiento(){
     });
     _segLoaded=true;
   } catch(e){ console.error('Seguimiento load error',e); }
+
   _applyGanttSeed();
   computeRankingSilent();
   svRenderAll();
