@@ -10232,18 +10232,42 @@ function _applyGanttSeed(){
     if(!rec.que_necesita)       rec.que_necesita       =seed.que_necesita||null;
     if(!rec.colaborador)        rec.colaborador        =seed.colaborador||null;
   });
-  Object.entries(GANTT_SEED_HITOS).forEach(([pid,hitos])=>{
+  // Hitos en memoria SOLO para modo offline (sin sesión Supabase)
+  // Con sesión, se usa _seedHitosToSupabase() para guardar en Supabase con UUIDs reales
+  if(!_supa||!_currentUser){
+    Object.entries(GANTT_SEED_HITOS).forEach(([pid,hitos])=>{
+      const p=parseInt(pid);
+      if((_segHitos[p]||[]).length===0){
+        _segHitos[p]=hitos.map((h,i)=>({
+          id:'seed_'+p+'_'+i,project_id:p,
+          nombre:h.n,alcance_hito:h.a||null,
+          fecha_objetivo:null,completado_at:null,orden:i
+        }));
+      }
+    });
+  }
+}
+
+// Siembra los hitos del seed en Supabase si la iniciativa no tiene hitos aún.
+// Solo se ejecuta cuando hay sesión activa. Una vez sembrados, viven como
+// registros reales en seg_hitos (con UUID) y pueden editarse/completarse/borrarse.
+async function _seedHitosToSupabase(){
+  if(!_supa||!_currentUser) return;
+  const toSeed=Object.entries(GANTT_SEED_HITOS).filter(([pid])=>(_segHitos[parseInt(pid)]||[]).length===0);
+  if(!toSeed.length) return;
+  const promises=toSeed.map(([pid,hitos])=>{
     const p=parseInt(pid);
-    const existing=_segHitos[p]||[];
-    const allSeed=existing.length>0&&existing.every(h=>String(h.id).startsWith('seed_'));
-    if(existing.length===0||allSeed){
-      _segHitos[p]=hitos.map((h,i)=>({
-        id:'seed_'+p+'_'+i,project_id:p,
-        nombre:h.n,alcance_hito:h.a||null,
-        fecha_objetivo:null,completado_at:null,orden:i
-      }));
-    }
+    const rows=hitos.map((h,i)=>({
+      project_id:p,nombre:h.n,
+      alcance_hito:h.a||null,
+      fecha_objetivo:null,completado_at:null,
+      orden:i,created_by:'seed'
+    }));
+    return _supa.from('seg_hitos').insert(rows).select()
+      .then(({data,error})=>{ if(!error&&data) _segHitos[p]=data; })
+      .catch(e=>console.error('seedHitos pid',p,e));
   });
+  await Promise.all(promises);
 }
 
 /* ── Estado options ── */
@@ -10349,7 +10373,9 @@ async function loadSeguimiento(){
       _segHitos[r.project_id].push(r);
     });
     _segLoaded=true;
-    // Re-aplicar seed para llenar lo que Supabase no tenga
+    // Sembrar hitos del Excel en Supabase si la iniciativa aún no tiene hitos reales
+    await _seedHitosToSupabase();
+    // Re-aplicar seed de estados (fechas, responsable) para lo que Supabase no tenga
     _applyGanttSeed();
   } catch(e){ console.error('Seguimiento load error',e); }
 
