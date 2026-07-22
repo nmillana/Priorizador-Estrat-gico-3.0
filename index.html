@@ -10157,75 +10157,75 @@ const INIT_DATA=[
    SEGUIMIENTO v5 — Vista lista + Vista detalle
 ══════════════════════════════════════════════════════════════════════════════ */
 
-/* ── SEED DATA del Excel GANTT (datos base del levantamiento) ── */
+/* ── SEED DATA del Excel GANTT ── */
 const GANTT_SEED_ESTADOS = {
-  1: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-08-01", responsable:"Rose-Any-Natalia"},
-  2: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-10-01", responsable:""},
-  5: {fecha_inicio:null, fecha_fin_objetivo:null, responsable:""},
-  7: {fecha_inicio:null, fecha_fin_objetivo:null, responsable:"Natalia/Leslie/Maca"},
-  8: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-09-01", responsable:"Natalia/Rose"},
-  9: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:""},
-  10: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-09-01", responsable:""},
-  11: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-10-01", responsable:"David - Rose"},
-  12: {fecha_inicio:"2026-10-01", fecha_fin_objetivo:"2026-11-01", responsable:""},
-  13: {fecha_inicio:"2026-11-01", fecha_fin_objetivo:"2026-12-01", responsable:"Rose"},
-  14: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Rose-Leslie-Maca"},
-  15: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-09-01", responsable:"Jonhy-Paula"},
-  16: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Edgar-Dante-Any"},
-  19: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Any-Edgar"},
-  20: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2027-03-01", responsable:"Any-Berni-Rose-Edgar"},
-  21: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Edgar"},
-  22: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Carlos-Paula"},
-  23: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Carlos-Paula"},
-  24: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia-Maca"},
-  25: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia-Maca-Rose"},
-  26: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-12-01", responsable:""},
-  27: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:null, responsable:"Consuelo"},
-  28: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-10-01", responsable:""},
-  29: {fecha_inicio:"2027-03-01", fecha_fin_objetivo:null, responsable:""},
-  30: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Berni/Pauli"},
-  31: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia"},
+  1: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:'2026-08-01',responsable:'Rose-Any-Natalia',alcance:'Diseñar el modelo corporativo de competencias y desarrollar su implementación junto a Reclutamiento y Capacitación, asegurando su aplicación transversal en los principales procesos de Personas.',definicion:'Definir el marco de competencias que establecerá los comportamientos y capacidades esperadas en la organización, sirviendo como base para selección, desarrollo y capacitación.'},
+  2: {fecha_inicio:'2026-09-01',fecha_fin_objetivo:'2026-10-01',responsable:'',alcance:'Implementar el nuevo modelo de desempeño en Sistema Uno, realizando las adecuaciones necesarias para que la plataforma soporte la evaluación según el nuevo modelo y permita su operación.',definicion:'Modernizar el proceso de gestión del desempeño mediante un modelo más simple, continuo y alineado con las necesidades actuales de la organización.'},
+  5: {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'',alcance:'CAPACITACION PLATAFORMA, AMIPASS-SEGURO',definicion:'Digitalizar procesos administrativos de Personas para reducir tareas manuales, mejorar la trazabilidad y optimizar la experiencia de colaboradores y equipos de RRHH.'},
+  7: {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'Natalia/Leslie/Maca',alcance:'Brindar apoyo metodológico en la definición e implementación del Programa de Reconocimiento, asegurando consistencia con la estrategia cultural de la organización.',definicion:'Aportar metodologías y herramientas de Desarrollo Organizacional para fortalecer el diseño e implementación de iniciativas de cultura organizacional.'},
+  8: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-09-01',responsable:'Natalia/Rose',alcance:'Completo',definicion:''},
+  9: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'',alcance:'Completo',definicion:'Fortalecer las capacidades digitales de los colaboradores para mejorar la productividad y facilitar la adopción de nuevas formas de trabajo.'},
+  10: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-09-01',responsable:'',alcance:'Completo',definicion:''},
+  11: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-10-01',responsable:'David - Rose',alcance:'Completo',definicion:''},
+  12: {fecha_inicio:'2026-10-01',fecha_fin_objetivo:'2026-11-01',responsable:'',alcance:'parcial',definicion:''},
+  13: {fecha_inicio:'2026-11-01',fecha_fin_objetivo:'2026-12-01',responsable:'Rose',alcance:'Presupuesto y planificacion',definicion:'Medicion del curso bim'},
+  14: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:'2026-12-01',responsable:'Rose- Leslie-Maca',alcance:'Completo',definicion:''},
+  15: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-09-01',responsable:'Jonhy-Paula',alcance:'Cubre dotación, costo de personas, causales de egreso, ausentismo, vacaciones y ejecución presupuestaria por gerencia, empresa y tipo de centro de costo. Su foco está en instalar estándares donde hoy hay más riesgo: provisión de vacaciones descontrolada, dotación de obra que ya no está activa, horas',definicion:'Construir e implementar un modelo mensual de control de gestión de personas, y administrarlo en el tiempo: partir entregando el dato a cada gerencia, y progresivamente exigir que cada gerente explique sus números —dotación, costo, ausentismo, vacaciones— y tome las medidas correctivas. RRHH diseña, '},
+  16: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'Edgar-Dante-Any',alcance:'Diseñar e implementar en Sistema Uno los workflows digitales de Ingresos, cambio de renta, cambio de cargo, cambio de estructura y creación de nuevos cargos, cubriendo desde el diagnóstico de procesos actuales hasta la puesta en producción y estabilización.',definicion:'Digitalizar y formalizar los workflows críticos de compensaciones y estructura en Sistema Uno, reemplazando la gestión por correo y fortaleciendo la trazabilidad, el control presupuestario y la gobernanza de las decisiones sobre cargos, estructura y renta.'},
+  19: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'Any-Edgar',alcance:'Desde la solicitud de vacante hasta el alta: aprobación y compensación, proceso de selección, oferta y aceptación, documentación y contrato. Se trabaja en tres etapas —levantamiento del proceso actual (BPM), diseño del proceso futuro con las áreas dueñas (Design Thinking) e implementación por piloto',definicion:'Programa de Incorporación de Personas:'},
+  20: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:'2027-03-01',responsable:'Any-Berni-Rose-Edgar',alcance:'Desde el preboarding (al aceptar la oferta) hasta los 30 días: Day One Ready, bienvenida del primer día, semana 1 y seguimiento de cultura e integración. Se trabaja en tres etapas —levantamiento de la experiencia real de llegada (BPM), diseño del modelo con Cultura, Calidad de Vida y jefaturas (Desi',definicion:'Programa de Incorporación de Personas:'},
+  21: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'Edgar',alcance:'Impelmenatar mejoras a los porcedimientos llevados por Sistema Uno',definicion:''},
+  22: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'Carlos-Paula',alcance:'Automatizar porcedimientos de salidas de colaboradores.',definicion:''},
+  23: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'Carlos-Paula',alcance:'Realizar levantamiento por razon social y cargos,',definicion:''},
+  24: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'Leslie-Natalia-Maca',alcance:'Relanzar definiciones estrategicas como marco de gestion organizacional',definicion:'* Propósito.'},
+  25: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:'2026-12-01',responsable:'Leslie-Natalia-Maca-Rose, Leslie-Maca-Rose',alcance:'Definir y establecer estrategia de gdc',definicion:''},
+  26: {fecha_inicio:'2026-09-01',fecha_fin_objetivo:'2026-12-01',responsable:'',alcance:'Definicion sistema y lanzamiento herramienta reconocimiento',definicion:''},
+  27: {fecha_inicio:'2026-09-01',fecha_fin_objetivo:null,responsable:'Consuelo',alcance:'Reposicionamiento sistema UNO como medio de comunicacióin en EESS',definicion:''},
+  28: {fecha_inicio:'2026-09-01',fecha_fin_objetivo:'2026-10-01',responsable:'',alcance:'Foco en programa cuidadores y equidad de genero',definicion:''},
+  29: {fecha_inicio:'2027-03-01',fecha_fin_objetivo:null,responsable:'',alcance:'Definir indicadores de medicion',definicion:''},
+  30: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-01',responsable:'Berni/Pauli',alcance:'2 al año  julio / enero. Definir indicadores.',definicion:''},
+  31: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:'2026-12-01',responsable:'Leslie-Natalia',alcance:'Seguimiento a cumplimiento normativo oficina',definicion:''},
 };
 
 const GANTT_SEED_HITOS = {
-  1: ["Validación del modelo de competencias","Ajuste de competencias por familia de cargos","Definición de niveles por cargo y gerencia","Presentación al Comité de Gerencia","Publicación del modelo corporativo","Inicio de implementación en procesos de Personas"],
-  2: ["Diseño del nuevo proceso de desempeño","Configuración de Sistema Uno","Capacitación a líderes y colaboradores","Inicio del primer ciclo de evaluación","Cierre y evaluación del primer ciclo"],
-  8: ["Definición del modelo de competencias y EDD"],
-  9: ["Definición del nuevo modelo de competencias y EDD"],
-  10: ["Definición de cursos inducción por pilar/área"],
-  11: ["Definición de cursos con equipos de obra"],
-  12: ["Definir con obra el plan de competencias a certificar, tipos y certificaciones legales"],
-  13: ["Establecer metodologías, métricas cuanti y cuali"],
-  14: ["Incorporarse al inicio del proyecto para entender definiciones y alcances"],
-  15: ["Modelo y tablas validados con Gerencia General","Primer envío del informe a gerentes","Definición de estándares de gestión por tema","Solicitud progresiva de explicaciones a gerentes","Capacitación de cada gerencia por su analista"],
-  16: ["Roadmap y gobernanza aprobados","Diagnóstico AS IS y modelo TO BE definidos","Workflows diseñados: Ingresos, cambio renta, cargo, estructura","Parametrización e integraciones en Sistema Uno","UAT y capacitación a usuarios","Go Live y cierre del proyecto"],
-  19: ["Mapa AS-IS y detección de brechas (jul-ago)","Flujos del proceso rediseñado y cartas de oferta configuradas","Política de ingreso actualizada y cumplimiento Ley 19.628","Workflows validados en Sistema Uno con UAT","Piloto con área acotada y ajustes","Despliegue progresivo a todas las marcas"],
-  20: ["Journey map AS-IS de los primeros 30 días (ago-sep)","Day One Ready definido, plantillas por cargo diseñadas (sep-nov)","Indicadores de onboarding definidos","Plantillas y notificaciones configuradas en Sistema Uno","Piloto con primer grupo de ingresos reales (dic-ene27)","Despliegue completo en todas las marcas (feb-mar27)"],
-  21: ["Centralizaciones contables (rentas-finiquitos-provisión vacaciones)","Sincronización módulo asistencia/remuneraciones","Otras mejoras de procedimientos Sistema Uno"],
-  22: ["Automatizar avisos de salida","Levantamiento proceso de salida en obras o término de faena"],
-  23: ["Revisar cargos que deben marcar asistencia","Revisar cargos con renta variable sin anexos","Actualizar modelo de contratos por obra de las Constructoras"],
-  24: ["Validación de principios y propósito EESS por GG","Redefinición y validación de pilares estratégicos"],
-  25: ["Variables de evaluación","Instalación Modelo de Integración","Gestión del Cambio Sostenibilidad","Despliegue normativa de datos","Despliegue gobernanza de datos"],
-  26: ["¿Qué vamos a reconocer?","Herramienta de reconocimiento","Despliegue sistema de reconocimiento"],
-  27: ["KPI sistema UNO","Elaboración de estrategia","Implementación de estrategia"],
+  1: ['Validación del modelo de competencias','Ajuste de competencias por familia de cargos','Definición de niveles por cargo y gerencia','Presentación al Comité de Gerencia','Publicación del modelo corporativo','Inicio de implementación en procesos de Personas'],
+  2: ['Diseño del nuevo proceso de desempeño','Configuración de Sistema Uno','Capacitación a líderes y colaboradores','Inicio del primer ciclo de evaluación','Cierre y evaluación del primer ciclo'],
+  8: ['Definicion nuevo modelo de comptencvias y EDD'],
+  9: ['Definicion nuevo modelo de comptencvias y EDD'],
+  10: ['Defición de cursos induccion por pilar/area'],
+  11: ['Definición de cursos  con equipos de obra'],
+  12: ['denifir con obra el plan de competencias a certificar , tipos y certificaciones legales'],
+  13: ['Establecer metodologias, metricas cuanti y cuali'],
+  14: ['Incorporarme al inicio del proyecto para entender las definiciones, alcances y si la idea que tienen considerada como capacitación  es viable, impacta realmente en algun objetivo concreto y si es transferible al puesto de trabajo.'],
+  15: ['P1* Modelo y tablas validados con Gerencia General','Primer envío del informe a gerentes, sin exigir explicación (mes 1)','Definición de estándares de gestión por tema (vacaciones, dotación en obras, horarios, control de dotación)','Solicitud progresiva de explicaciones y medidas correctivas a gerentes (mes 2 en adelante)','Capacitación de cada gerencia por su analista de Compensaciones','Revisión y homologación de criterios entre empresas del grupo'],
+  16: ['Roadmap y gobernanza aprobados','Diagnóstico AS IS y modelo TO BE definidos','Workflows diseñados: Ingresos, cambio de renta, cambio de cargo, cambio de estructura, nuevo cargo','Parametrización e integraciones en Sistema Uno','UAT y capacitación a usuarios','Go Live y cierre del proyecto'],
+  19: ['Mapa AS-IS y detección de brechas (jul-ago)','Flujos del proceso rediseñado y cartas de oferta por rol configuradas (ago-nov)','Política de ingreso actualizada y cumplimiento Ley 19.628','Workflows validados y configurados en Sistema Uno, con UAT','Piloto con área acotada y ajustes post-piloto','Despliegue progresivo a todas las marcas + dashboard de selección operativo (dic-mar27)'],
+  20: ['Journey map AS-IS de los primeros 30 días y matriz de onboarding actualizada (ago-sep)','Day One Ready definido, plantillas por cargo y rol de la jefatura diseñados (sep-nov)','Indicadores de onboarding definidos','Plantillas y notificaciones configuradas en Sistema Uno','Piloto con primer grupo de ingresos reales y ajustes (dic-ene27)','Despliegue completo en todas las marcas + indicadores activos (feb-mar27)'],
+  21: ['Centraliaciones contables (rentas-finiquitos-provision de vacaciones);','Sincronizacion modulo asistencia/ remuneraciones;','otros'],
+  22: ['Automatizar avisos de salida que hoy no esta abordado por Sistema uno','Levantamiento proceso de salida en obras o termino de faena.'],
+  23: ['Revisar cargos que deben marcar asistencia; revisar cargos con renta variable sin anexos; analizar alternativas al actual modelo de contratos por obra'],
+  24: ['Validación de prinicipios y propósito EESS por GG.','Redifinición y valudación pilares estrategicos'],
+  25: ['Variables evaluación.','Metodologia evaluación.','Gobernanza','Instalación Modelo Intregración.','Instalación gobernanza (red + comunidad)','Gestión del Cambio Sostenibilidad','Despliegue normativa.','Despliegue gobernanza.'],
+  26: ['Que vamos a reconocer?','Herramienta de reconocimiento.','Despliegue sistema reconocimiento.'],
+  27: ['KPI sistema UNO.','Elaborcaión estrategia.','Implementación estrategia'],
 };
 
 function _applyGanttSeed(){
   Object.entries(GANTT_SEED_ESTADOS).forEach(([pid,seed])=>{
-    const p = parseInt(pid);
-    if(!_segEstados[p]) _segEstados[p] = {};
-    const rec = _segEstados[p];
-    if(!rec.fecha_inicio)       rec.fecha_inicio       = seed.fecha_inicio;
-    if(!rec.fecha_fin_objetivo) rec.fecha_fin_objetivo = seed.fecha_fin_objetivo;
-    if(!rec.responsable)        rec.responsable        = seed.responsable;
-    if(!rec.estado)             rec.estado             = 'pendiente';
+    const p=parseInt(pid);
+    if(!_segEstados[p]) _segEstados[p]={};
+    const rec=_segEstados[p];
+    if(!rec.fecha_inicio)       rec.fecha_inicio       =seed.fecha_inicio;
+    if(!rec.fecha_fin_objetivo) rec.fecha_fin_objetivo =seed.fecha_fin_objetivo;
+    if(!rec.responsable)        rec.responsable        =seed.responsable;
+    if(!rec.estado)             rec.estado             ='pendiente';
   });
   Object.entries(GANTT_SEED_HITOS).forEach(([pid,nombres])=>{
-    const p = parseInt(pid);
-    if(!_segHitos[p] || _segHitos[p].length===0){
-      _segHitos[p] = nombres.map((nm,i)=>({
-        id:'seed_'+p+'_'+i, project_id:p, nombre:nm,
-        fecha_objetivo:null, completado_at:null, orden:i
+    const p=parseInt(pid);
+    if(!_segHitos[p]||_segHitos[p].length===0){
+      _segHitos[p]=nombres.map((nm,i)=>({
+        id:'seed_'+p+'_'+i,project_id:p,nombre:nm,
+        fecha_objetivo:null,completado_at:null,orden:i
       }));
     }
   });
@@ -10711,7 +10711,7 @@ function svAbrirDetalle(projectId){
           ${tempBadge}
         </div>
         <h2 class="svd-title">${esc(p.nombre)}</h2>
-        <p class="svd-def">${esc(p.definicion||p.alcance||'Sin descripción.')}</p>
+        <p class="svd-def">${esc(p.definicion||p.alcance||GANTT_SEED_ESTADOS[projectId]?.definicion||GANTT_SEED_ESTADOS[projectId]?.alcance||'Sin descripción.')}</p>
         <div class="svd-meta-row">
           <span class="svd-meta-item">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
