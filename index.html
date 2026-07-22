@@ -975,7 +975,7 @@ footer{background:transparent;border-top:1px solid var(--border);text-align:cent
 <div id="sync-bar">
   <div class="sync-pill syncing" id="sync-pill">
     <span class="sync-dot"></span>
-    <span id="sync-txt">Publicando en GitHub Pages…</span>
+    <span id="sync-txt">Cargando…</span>
   </div>
 </div>
 
@@ -9426,6 +9426,7 @@ const GH_FILE   = 'index.html';
 async function publishToGitHub(label){
   if(!isAdmin()) return;
   setSyncStatus('syncing','Publicando en GitHub Pages…');
+  const _pubTimer = setTimeout(()=>clearTimeout(_pubTimer); setSyncStatus('ok','Listo'), 15000);
   try {
     let sha = undefined;
     const chk = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
@@ -9439,10 +9440,10 @@ async function publishToGitHub(label){
     const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
       {method:'PUT',headers:{'Authorization':`token ${GH_TOKEN}`,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!res.ok){const e=await res.json();throw new Error(e.message||res.statusText);}
-    setSyncStatus('ok','Publicado en GitHub Pages ✓');
+    clearTimeout(_pubTimer); setSyncStatus('ok','Publicado en GitHub Pages ✓');
     showGhToast('✅ Publicado — el equipo ya puede ver los cambios');
   } catch(e){
-    setSyncStatus('err','Error al publicar: '+e.message.slice(0,40));
+    clearTimeout(_pubTimer); setSyncStatus('err','Error al publicar: '+e.message.slice(0,40));
     showGhToast('❌ Error: '+e.message.slice(0,60));
   }
 }
@@ -10561,7 +10562,15 @@ function svAbrirDetalle(projectId){
   _svDetallePid = projectId;
   document.getElementById('seg-vista-lista').style.display='none';
   document.getElementById('seg-vista-detalle').style.display='block';
-  const p=projects.find(x=>x.id===projectId); if(!p) return;
+  // Buscar en projects (Supabase) o en INIT_DATA (fallback)
+  let p = projects.find(x=>x.id===projectId);
+  if(!p){
+    const idx = projectId - 1;
+    if(idx >= 0 && idx < INIT_DATA.length){
+      p = {...INIT_DATA[idx], id:projectId, deps:[], inactiva:false};
+    }
+  }
+  if(!p) return;
   const r=_segEstados[projectId]||{};
   const est=r.estado||'pendiente';
   const eInfo=ESTADO_OPTS.find(e=>e.v===est)||ESTADO_OPTS[0];
@@ -10973,10 +10982,11 @@ function buildMpDirTable(){
 document.addEventListener('DOMContentLoaded', ()=>{
   buildMpCards();
   buildMpDirTable();
+  checkSession(); // Iniciar carga de datos desde Supabase
 });
 // Also build if already loaded
 if(document.readyState !== 'loading'){
-  setTimeout(()=>{ buildMpCards(); buildMpDirTable(); }, 0);
+  setTimeout(()=>{ buildMpCards(); buildMpDirTable(); checkSession(); }, 0);
 }
 
 
