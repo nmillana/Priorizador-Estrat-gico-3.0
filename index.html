@@ -10304,30 +10304,23 @@ function getPrioridadAuto(pid){
 
 /* ── Load desde Supabase ── */
 async function loadSeguimiento(){
-  // Esperar a que projects esté cargado (máx 4s)
-  if(projects.length === 0){
-    await new Promise(resolve => {
-      let t = 0;
-      const iv = setInterval(()=>{
-        t += 100;
-        if(projects.length > 0 || t >= 4000){ clearInterval(iv); resolve(); }
-      }, 100);
-    });
-  }
+  // Aplicar seed del Excel siempre primero (no depende de Supabase)
+  _applyGanttSeed();
 
-  // Sin sesión: aplicar seed y renderizar
+  // Sin sesión: renderizar directamente con seed
   if(!_supa || !_currentUser){
-    _applyGanttSeed();
+    computeRankingSilent();
     svRenderAll();
     return;
   }
 
-  // Con sesión: cargar desde Supabase
+  // Con sesión: intentar cargar desde Supabase (cada tabla independiente)
   try {
+    const safeQuery = (q) => q.then(r=>r).catch(()=>({data:[]}));
     const [eRes,cRes,hRes] = await Promise.all([
-      _supa.from('seg_estados').select('*').then(r=>r).catch(()=>({data:[]})),
-      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false}).then(r=>r).catch(()=>({data:[]})),
-      _supa.from('seg_hitos').select('*').order('orden',{ascending:true}).then(r=>r).catch(()=>({data:[]}))
+      safeQuery(_supa.from('seg_estados').select('*')),
+      safeQuery(_supa.from('seg_comentarios').select('*').order('created_at',{ascending:false})),
+      safeQuery(_supa.from('seg_hitos').select('*').order('orden',{ascending:true}))
     ]);
     _segEstados={};_segComents={};_segHitos={};
     if(eRes.data) eRes.data.forEach(r=>{ _segEstados[r.project_id]=r; });
@@ -10340,9 +10333,10 @@ async function loadSeguimiento(){
       _segHitos[r.project_id].push(r);
     });
     _segLoaded=true;
+    // Re-aplicar seed para llenar lo que Supabase no tenga
+    _applyGanttSeed();
   } catch(e){ console.error('Seguimiento load error',e); }
 
-  _applyGanttSeed();
   computeRankingSilent();
   svRenderAll();
 }
@@ -10449,7 +10443,11 @@ async function addComentario(projectId){
    RENDER — Vista Lista
 ══════════════════════════════════════════════════════ */
 function svGetActivas(){
-  return projects.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
+  // Si projects no cargó aún, usar INIT_DATA como fuente directa
+  const src = projects.length > 0
+    ? projects
+    : INIT_DATA.map((d,i)=>({...d, id:i+1, deps:[], inactiva:false}));
+  return src.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
 }
 function svRenderAll(){
   computeRankingSilent();
