@@ -10222,7 +10222,11 @@ function _applyGanttSeed(){
   });
   Object.entries(GANTT_SEED_HITOS).forEach(([pid,nombres])=>{
     const p=parseInt(pid);
-    if(!_segHitos[p]||_segHitos[p].length===0){
+    const existing=_segHitos[p]||[];
+    // Aplicar seed si: no hay hitos, o todos son seed_ (del seed anterior), o hay menos que el seed
+    const allSeed=existing.length>0&&existing.every(h=>String(h.id).startsWith('seed_'));
+    const fewerThanSeed=existing.length<nombres.length&&existing.every(h=>String(h.id).startsWith('seed_'));
+    if(existing.length===0||allSeed){
       _segHitos[p]=nombres.map((nm,i)=>({
         id:'seed_'+p+'_'+i,project_id:p,nombre:nm,
         fecha_objetivo:null,completado_at:null,orden:i
