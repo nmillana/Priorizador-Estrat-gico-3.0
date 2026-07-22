@@ -10230,6 +10230,7 @@ function _applyGanttSeed(){
     if(!rec.estado)             rec.estado             ='pendiente';
     if(!rec.depende_de)         rec.depende_de         =seed.depende_de||null;
     if(!rec.que_necesita)       rec.que_necesita       =seed.que_necesita||null;
+    if(!rec.colaborador)        rec.colaborador        =seed.colaborador||null;
   });
   Object.entries(GANTT_SEED_HITOS).forEach(([pid,hitos])=>{
     const p=parseInt(pid);
@@ -10375,7 +10376,25 @@ async function setSegField(projectId, fieldName, value){
   upd[fieldName]=value||null;
   try {
     if(ex && ex.id){ await _supa.from('seg_estados').update(upd).eq('id',ex.id); _segEstados[projectId]={...ex,...upd}; }
-    else { const ins={project_id:projectId,estado:'pendiente',updated_by:u}; ins[fieldName]=value||null; const {data}=await _supa.from('seg_estados').insert(ins).select().single(); if(data) _segEstados[projectId]=data; }
+    else {
+      // INSERT: incluir todo el estado actual (fechas, responsable, etc.) para no perder datos del seed
+      const cur=_segEstados[projectId]||{};
+      const ins={
+        project_id:projectId,
+        estado:cur.estado||'pendiente',
+        updated_by:u,
+        fecha_inicio:cur.fecha_inicio||null,
+        fecha_fin_objetivo:cur.fecha_fin_objetivo||null,
+        responsable:cur.responsable||null,
+        fecha_origen:cur.fecha_origen||null,
+        depende_de:cur.depende_de||null,
+        que_necesita:cur.que_necesita||null,
+        colaborador:cur.colaborador||null,
+      };
+      ins[fieldName]=value||null;
+      const {data}=await _supa.from('seg_estados').insert(ins).select().single();
+      if(data) _segEstados[projectId]={...cur,...data};
+    }
     setSyncStatus('ok','Guardado');
   } catch(e){ console.error('setSegField',e); setSyncStatus('err','Error al guardar'); }
   // Update local seed too so render reflects immediately
@@ -10387,13 +10406,11 @@ async function addHito(projectId){
   if(!isAdmin()){ alert('Solo admins pueden agregar hitos.'); return; }
   const nombre=(prompt('Nombre del hito:','')||'').trim();
   if(!nombre) return;
-  const fechaStr=prompt('Fecha objetivo (AAAA-MM-DD), opcional:','');
-  const fecha=(fechaStr&&/^\d{4}-\d{2}-\d{2}$/.test(fechaStr.trim()))?fechaStr.trim():null;
   const u=_currentUser.email||'unknown';
   const orden=(_segHitos[projectId]||[]).length;
   if(_supa){
     try {
-      const {data,error}=await _supa.from('seg_hitos').insert({project_id:projectId,nombre,fecha_objetivo:fecha,orden,created_by:u}).select().single();
+      const {data,error}=await _supa.from('seg_hitos').insert({project_id:projectId,nombre,fecha_objetivo:null,orden,created_by:u}).select().single();
       if(error) throw error;
       if(!_segHitos[projectId]) _segHitos[projectId]=[];
       _segHitos[projectId].push(data);
@@ -10401,7 +10418,7 @@ async function addHito(projectId){
     } catch(e){ console.error('addHito',e); setSyncStatus('err','Error'); return; }
   } else {
     if(!_segHitos[projectId]) _segHitos[projectId]=[];
-    _segHitos[projectId].push({id:'local_'+Date.now(),project_id:projectId,nombre,fecha_objetivo:fecha,completado_at:null,orden});
+    _segHitos[projectId].push({id:'local_'+Date.now(),project_id:projectId,nombre,fecha_objetivo:null,completado_at:null,orden});
   }
   svAbrirDetalle(projectId);
 }
@@ -10684,14 +10701,16 @@ function svAbrirDetalle(projectId){
     : `<div class="svd-no-login">🔒 Inicia sesión para registrar avances.</div>`;
 
   // Editor admin
+  const colab=r.colaborador||'';
   const editorHtml = admin
     ? `<div class="svd-editor">
         <div class="svd-editor-hdr">⚙ Editor · solo admins</div>
         <div class="svd-editor-grid">
-          <div class="svd-field"><label>Responsable</label><input type="text" value="${esc(resp)}" placeholder="Nombre o email" onblur="setSegField(${projectId},'responsable',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></div>
+          <div class="svd-field"><label>Responsable</label><input type="text" value="${esc(resp)}" placeholder="Nombre" onblur="setSegField(${projectId},'responsable',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></div>
+          <div class="svd-field"><label>Persona / Área colaboradora</label><input type="text" value="${esc(colab)}" placeholder="Nombre o área" onblur="setSegField(${projectId},'colaborador',this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></div>
           <div class="svd-field"><label>Fecha inicio</label><input type="date" value="${fi}" onchange="setSegField(${projectId},'fecha_inicio',this.value||null)"></div>
           <div class="svd-field"><label>Fecha fin objetivo</label><input type="date" value="${ff}" onchange="setSegField(${projectId},'fecha_fin_objetivo',this.value||null)"></div>
-          <div class="svd-field"><label>Origen</label>
+          <div class="svd-field svd-field-full"><label>Origen</label>
             <select onchange="setSegField(${projectId},'fecha_origen',this.value||null)">
               <option value="">—</option>
               <option value="Compromiso con GG"${r.fecha_origen==='Compromiso con GG'?' selected':''}>Compromiso con GG</option>
@@ -11139,8 +11158,9 @@ if(document.readyState !== 'loading'){
 .svd-editor-hdr{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#856404;margin-bottom:12px;}
 .svd-editor-grid{display:flex;flex-wrap:wrap;gap:10px;}
 .svd-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+.svd-field-full{flex:0 0 100%;min-width:100%;}
 .svd-field label{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#8B95A5;}
-.svd-field input,.svd-field select{border:1.5px solid #E4EAF4;border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12px;color:#1A2340;background:#fff;transition:border-color .15s;}
+.svd-field input,.svd-field select{border:1.5px solid #E4EAF4;border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12px;color:#1A2340;background:#fff;transition:border-color .15s;width:100%;box-sizing:border-box;}
 .svd-field input:focus,.svd-field select:focus{outline:none;border-color:#0052CC;}
 
 /* Composer */
