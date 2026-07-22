@@ -8976,42 +8976,74 @@ footer{background:transparent;border-top:1px solid var(--border);text-align:cent
 
 <!-- ═══════════ PAGE SEGUIMIENTO ═══════════ -->
 <div id="page-seguimiento" class="page">
-  <div class="section-header mb-20">
-    <div><div class="section-title">Ejecución</div><div class="section-label">Seguimiento de Iniciativas</div></div>
-  </div>
-  <div class="alert-banner" id="seg-auth-note" style="display:none;">
-    <span style="font-size:16px;flex-shrink:0">🔒</span>
-    <div><strong>Inicia sesión</strong> para ver y agregar comentarios de seguimiento.</div>
+
+  <!-- VISTA LISTA -->
+  <div id="seg-vista-lista">
+    <!-- Header con KPIs -->
+    <div id="seg-kpi-header"></div>
+
+    <!-- Barra búsqueda y filtros -->
+    <div class="sv-toolbar">
+      <div class="sv-search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B95A5" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="sv-search" type="text" placeholder="Buscar iniciativas…" oninput="svRenderLista()" style="border:none;outline:none;font-family:inherit;font-size:13px;color:var(--text);background:transparent;width:100%;">
+      </div>
+      <select id="sv-filter-estado" onchange="svRenderLista()" class="sv-select">
+        <option value="">Estado</option>
+        <option value="pendiente">⏳ Pendiente</option>
+        <option value="en_curso">🔄 En curso</option>
+        <option value="completado">✅ Completado</option>
+        <option value="bloqueado">🚫 Bloqueado</option>
+        <option value="pausado">⏸️ Pausado</option>
+      </select>
+      <select id="sv-filter-prio" onchange="svRenderLista()" class="sv-select">
+        <option value="">Prioridad</option>
+        <option value="critica">🔴 Crítica</option>
+        <option value="alta">🟠 Alta</option>
+        <option value="media">🔵 Media</option>
+        <option value="baja">⚪ Baja</option>
+      </select>
+      <select id="sv-filter-area" onchange="svRenderLista()" class="sv-select">
+        <option value="">Área</option>
+        <option value="do">Desarrollo Organizacional</option>
+        <option value="cap">Capacitación</option>
+        <option value="comp">Compensaciones</option>
+        <option value="rs">R&amp;S</option>
+        <option value="rem">Remuneraciones y RL</option>
+        <option value="cult">Cultura y Gestión del Cambio</option>
+        <option value="cv">Calidad de Vida</option>
+      </select>
+      <button onclick="svClearFiltros()" class="sv-clear-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+        Limpiar
+      </button>
+      <span id="sv-count" class="sv-count-badge">–</span>
+    </div>
+
+    <!-- Tabla de objetivos -->
+    <div class="sv-table-wrap">
+      <table class="sv-table">
+        <thead>
+          <tr>
+            <th style="width:36%">Iniciativa</th>
+            <th style="width:14%">Responsable</th>
+            <th style="width:11%">Área</th>
+            <th style="width:10%">Estado</th>
+            <th style="width:8%">Prioridad</th>
+            <th style="width:12%">Fecha objetivo</th>
+            <th style="width:9%">Avance</th>
+          </tr>
+        </thead>
+        <tbody id="sv-tbody"></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- DASHBOARD EJECUTIVO -->
-  <div id="seg-dashboard-wrap"></div>
-
-  <!-- FILTROS -->
-  <div class="toolbar" style="margin-bottom:20px;gap:10px;">
-    <select id="seg-filter-area" onchange="renderSeguimiento()" style="width:200px;padding:8px 12px;border-radius:10px;border:1.5px solid #E4EAF4;font-size:12px;font-weight:600;color:var(--text);background:white;cursor:pointer;">
-      <option value="">Todas las áreas</option>
-      <option value="do">Desarrollo Organizacional</option>
-      <option value="cap">Capacitación</option>
-      <option value="comp">Compensaciones</option>
-      <option value="rs">R&amp;S</option>
-      <option value="rem">Remuneraciones y RL</option>
-      <option value="cult">Cultura y Gestión del Cambio</option>
-      <option value="cv">Calidad de Vida</option>
-    </select>
-    <select id="seg-filter-estado" onchange="renderSeguimiento()" style="width:180px;padding:8px 12px;border-radius:10px;border:1.5px solid #E4EAF4;font-size:12px;font-weight:600;color:var(--text);background:white;cursor:pointer;">
-      <option value="">Todos los estados</option>
-      <option value="pendiente">⏳ Pendiente</option>
-      <option value="en_curso">🔄 En curso</option>
-      <option value="completado">✅ Completado</option>
-      <option value="bloqueado">🚫 Bloqueado</option>
-      <option value="pausado">⏸️ Pausado</option>
-    </select>
-    <span class="tc" id="seg-count" style="font-size:12px;font-weight:700;color:var(--royal);background:linear-gradient(135deg,#EEF2FA,#E8F0FF);padding:6px 14px;border-radius:10px;">–</span>
+  <!-- VISTA DETALLE -->
+  <div id="seg-vista-detalle" style="display:none;">
+    <div id="svd-inner"></div>
   </div>
 
-  <!-- GRID INICIATIVAS -->
-  <div id="seg-grid" style="display:flex;flex-direction:column;gap:16px;"></div>
 </div>
 
 </main>
@@ -10113,29 +10145,9 @@ const INIT_DATA=[
 ];
 
 
-/* ══════════════ SEGUIMIENTO ════════════════════════════════════════════════ */
-// Supabase tables needed (run once):
-// CREATE TABLE seg_estados (
-//   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//   project_id INT NOT NULL,
-//   estado TEXT DEFAULT 'pendiente',
-//   updated_at TIMESTAMPTZ DEFAULT NOW(),
-//   updated_by TEXT
-// );
-// CREATE TABLE seg_comentarios (
-//   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//   project_id INT NOT NULL,
-//   texto TEXT NOT NULL,
-//   created_at TIMESTAMPTZ DEFAULT NOW(),
-//   created_by TEXT,
-//   tipo TEXT DEFAULT 'avance'
-// );
-// ALTER TABLE seg_estados ENABLE ROW LEVEL SECURITY;
-// ALTER TABLE seg_comentarios ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY "auth read" ON seg_estados FOR SELECT USING (auth.uid() IS NOT NULL);
-// CREATE POLICY "auth write" ON seg_estados FOR ALL USING (auth.uid() IS NOT NULL);
-// CREATE POLICY "auth read" ON seg_comentarios FOR SELECT USING (auth.uid() IS NOT NULL);
-// CREATE POLICY "auth write" ON seg_comentarios FOR ALL USING (auth.uid() IS NOT NULL);
+/* ══════════════════════════════════════════════════════════════════════════════
+   SEGUIMIENTO v5 — Vista lista + Vista detalle
+══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── SEED DATA del Excel GANTT (datos base del levantamiento) ── */
 const GANTT_SEED_ESTADOS = {
@@ -10149,7 +10161,7 @@ const GANTT_SEED_ESTADOS = {
   11: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-10-01", responsable:"David - Rose"},
   12: {fecha_inicio:"2026-10-01", fecha_fin_objetivo:"2026-11-01", responsable:""},
   13: {fecha_inicio:"2026-11-01", fecha_fin_objetivo:"2026-12-01", responsable:"Rose"},
-  14: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Rose- Leslie-Maca"},
+  14: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Rose-Leslie-Maca"},
   15: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-09-01", responsable:"Jonhy-Paula"},
   16: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Edgar-Dante-Any"},
   19: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Any-Edgar"},
@@ -10158,7 +10170,7 @@ const GANTT_SEED_ESTADOS = {
   22: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Carlos-Paula"},
   23: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Carlos-Paula"},
   24: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia-Maca"},
-  25: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia-Maca-Rose, Leslie-Maca-Rose"},
+  25: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia-Maca-Rose"},
   26: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-12-01", responsable:""},
   27: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:null, responsable:"Consuelo"},
   28: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-10-01", responsable:""},
@@ -10168,55 +10180,50 @@ const GANTT_SEED_ESTADOS = {
 };
 
 const GANTT_SEED_HITOS = {
-  1: ["Validación del modelo de competencias"],
-  2: ["Diseño del nuevo proceso de desempeño"],
-  8: ["Definicion nuevo modelo de comptencvias y EDD"],
-  9: ["Definicion nuevo modelo de comptencvias y EDD"],
-  10: ["Defición de cursos induccion por pilar/area"],
-  11: ["Definición de cursos  con equipos de obra"],
-  12: ["denifir con obra el plan de competencias a certificar , tipos y certificaciones legales"],
-  13: ["Establecer metodologias, metricas cuanti y cuali"],
-  14: ["Incorporarme al inicio del proyecto para entender las definiciones, alcances y si la idea que tienen considerada como capacitación  es viable, impacta realmente en algun objetivo concreto y si es transferible al puesto de trabajo."],
-  15: ["P1* Modelo y tablas validados con Gerencia General"],
-  16: ["Roadmap y gobernanza aprobados"],
-  19: ["Mapa AS-IS y detección de brechas (jul-ago)"],
-  20: ["Journey map AS-IS de los primeros 30 días y matriz de onboarding actualizada (ago-sep)"],
-  21: ["Centraliaciones contables (rentas-finiquitos-provision de vacaciones);"],
-  22: ["Automatizar avisos de salida que hoy no esta abordado por Sistema uno"],
-  23: ["Revisar cargos que deben marcar asistencia; revisar cargos con renta variable sin anexos; analizar alternativas al actual modelo de contratos por obra"],
-  24: ["Validación de prinicipios y propósito EESS por GG."],
-  25: ["Variables evaluación.", "Instalación Modelo Intregración.", "Gestión del Cambio Sostenibilidad", "Despliegue normativa."],
-  26: ["Que vamos a reconocer?"],
-  27: ["KPI sistema UNO."],
+  1: ["Validación del modelo de competencias","Ajuste de competencias por familia de cargos","Definición de niveles por cargo y gerencia","Presentación al Comité de Gerencia","Publicación del modelo corporativo","Inicio de implementación en procesos de Personas"],
+  2: ["Diseño del nuevo proceso de desempeño","Configuración de Sistema Uno","Capacitación a líderes y colaboradores","Inicio del primer ciclo de evaluación","Cierre y evaluación del primer ciclo"],
+  8: ["Definición del modelo de competencias y EDD"],
+  9: ["Definición del nuevo modelo de competencias y EDD"],
+  10: ["Definición de cursos inducción por pilar/área"],
+  11: ["Definición de cursos con equipos de obra"],
+  12: ["Definir con obra el plan de competencias a certificar, tipos y certificaciones legales"],
+  13: ["Establecer metodologías, métricas cuanti y cuali"],
+  14: ["Incorporarse al inicio del proyecto para entender definiciones y alcances"],
+  15: ["Modelo y tablas validados con Gerencia General","Primer envío del informe a gerentes","Definición de estándares de gestión por tema","Solicitud progresiva de explicaciones a gerentes","Capacitación de cada gerencia por su analista"],
+  16: ["Roadmap y gobernanza aprobados","Diagnóstico AS IS y modelo TO BE definidos","Workflows diseñados: Ingresos, cambio renta, cargo, estructura","Parametrización e integraciones en Sistema Uno","UAT y capacitación a usuarios","Go Live y cierre del proyecto"],
+  19: ["Mapa AS-IS y detección de brechas (jul-ago)","Flujos del proceso rediseñado y cartas de oferta configuradas","Política de ingreso actualizada y cumplimiento Ley 19.628","Workflows validados en Sistema Uno con UAT","Piloto con área acotada y ajustes","Despliegue progresivo a todas las marcas"],
+  20: ["Journey map AS-IS de los primeros 30 días (ago-sep)","Day One Ready definido, plantillas por cargo diseñadas (sep-nov)","Indicadores de onboarding definidos","Plantillas y notificaciones configuradas en Sistema Uno","Piloto con primer grupo de ingresos reales (dic-ene27)","Despliegue completo en todas las marcas (feb-mar27)"],
+  21: ["Centralizaciones contables (rentas-finiquitos-provisión vacaciones)","Sincronización módulo asistencia/remuneraciones","Otras mejoras de procedimientos Sistema Uno"],
+  22: ["Automatizar avisos de salida","Levantamiento proceso de salida en obras o término de faena"],
+  23: ["Revisar cargos que deben marcar asistencia","Revisar cargos con renta variable sin anexos","Actualizar modelo de contratos por obra de las Constructoras"],
+  24: ["Validación de principios y propósito EESS por GG","Redefinición y validación de pilares estratégicos"],
+  25: ["Variables de evaluación","Instalación Modelo de Integración","Gestión del Cambio Sostenibilidad","Despliegue normativa de datos","Despliegue gobernanza de datos"],
+  26: ["¿Qué vamos a reconocer?","Herramienta de reconocimiento","Despliegue sistema de reconocimiento"],
+  27: ["KPI sistema UNO","Elaboración de estrategia","Implementación de estrategia"],
 };
 
-/* Aplica seed data a _segEstados y _segHitos sin pisar datos de Supabase */
 function _applyGanttSeed(){
   Object.entries(GANTT_SEED_ESTADOS).forEach(([pid,seed])=>{
     const p = parseInt(pid);
     if(!_segEstados[p]) _segEstados[p] = {};
     const rec = _segEstados[p];
-    // Solo aplica seed si el campo está vacío en Supabase
-    if(!rec.fecha_inicio)        rec.fecha_inicio        = seed.fecha_inicio;
-    if(!rec.fecha_fin_objetivo)  rec.fecha_fin_objetivo  = seed.fecha_fin_objetivo;
-    if(!rec.responsable)         rec.responsable         = seed.responsable;
-    if(!rec.estado)              rec.estado              = 'pendiente';
+    if(!rec.fecha_inicio)       rec.fecha_inicio       = seed.fecha_inicio;
+    if(!rec.fecha_fin_objetivo) rec.fecha_fin_objetivo = seed.fecha_fin_objetivo;
+    if(!rec.responsable)        rec.responsable        = seed.responsable;
+    if(!rec.estado)             rec.estado             = 'pendiente';
   });
   Object.entries(GANTT_SEED_HITOS).forEach(([pid,nombres])=>{
     const p = parseInt(pid);
     if(!_segHitos[p] || _segHitos[p].length===0){
       _segHitos[p] = nombres.map((nm,i)=>({
-        id: 'seed_'+p+'_'+i,
-        project_id: p,
-        nombre: nm,
-        fecha_objetivo: null,
-        completado_at: null,
-        orden: i
+        id:'seed_'+p+'_'+i, project_id:p, nombre:nm,
+        fecha_objetivo:null, completado_at:null, orden:i
       }));
     }
   });
 }
 
+/* ── Estado options ── */
 const ESTADO_OPTS = [
   {v:'pendiente',  e:'⏳', l:'Pendiente',  bg:'#FFF9E8', bc:'#FFD44D', tc:'#856404'},
   {v:'en_curso',   e:'🔄', l:'En curso',   bg:'#E8F4FF', bc:'#0099FF', tc:'#003D99'},
@@ -10225,318 +10232,18 @@ const ESTADO_OPTS = [
   {v:'pausado',    e:'⏸️', l:'Pausado',    bg:'#F5F5F7', bc:'#AAAAAA', tc:'#555555'},
 ];
 const TIPO_OPTS = [
-  {v:'avance',    l:'Avance'},
-  {v:'riesgo',    l:'Riesgo'},
-  {v:'decision',  l:'Decisión'},
-  {v:'hito',      l:'Hito'},
+  {v:'avance',   l:'Avance'},
+  {v:'riesgo',   l:'Riesgo'},
+  {v:'decision', l:'Decisión'},
+  {v:'hito',     l:'Hito'},
 ];
 
-let _segEstados    = {};  // {project_id: estado}
-let _segComents    = {};  // {project_id: [comentarios]}
-let _segHitos      = {};  // {project_id: [hitos]}
-let _segLoaded     = false;
-let _lastRanking   = [];  // [{id, sAj, rank, total}] — auto-computed for prioridad
-
-/* ── Cálculo silencioso del ranking para prioridad automática ── */
-function computeRankingSilent(){
-  const activas = projects.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
-  if(activas.length===0){ _lastRanking=[]; return; }
-  const P=getPesos();
-  const res=activas.map(p=>({id:p.id,sBase:sBase(p,P),tipo:p.tipo,scores:p.scores,deps:p.deps||[]}));
-  const tIds=[...res].sort((a,b)=>b.sBase-a.sBase).slice(0,Math.ceil(res.length*0.4)).map(p=>p.id);
-  const dc={};res.forEach(p=>p.deps.forEach(d=>{dc[d]=(dc[d]||0)+1;}));
-  res.forEach(p=>{
-    let mt=MULT_TIPO[p.tipo]||1;let fd=1;
-    const bl=p.deps.filter(d=>!tIds.includes(d));
-    if(bl.length>0)fd=0.7;
-    if(p.tipo==='habilitante'&&(dc[p.id]||0)>=2)mt=Math.min(mt+0.15,1.5);
-    p.sAj=p.sBase*mt*fd;
-  });
-  res.sort((a,b)=>b.sAj-a.sAj);
-  _lastRanking = res.map((p,i)=>({id:p.id, sAj:p.sAj, rank:i, total:res.length}));
-}
-
-/* ── Prioridad automática derivada del ranking ── */
-function getPrioridadAuto(projectId){
-  const r = _lastRanking.find(x=>x.id===projectId);
-  if(!r) return null;
-  const pct = r.rank / Math.max(1, r.total-1); // 0 = top, 1 = bottom
-  if(pct <= 0.25) return {v:'critica',  l:'Crítica',  bg:'#FFE8E8', bc:'#FF6B6B', tc:'#CC3333'};
-  if(pct <= 0.50) return {v:'alta',     l:'Alta',     bg:'#FFF4E5', bc:'#FF9800', tc:'#B26A00'};
-  if(pct <= 0.75) return {v:'media',    l:'Media',    bg:'#E8F4FF', bc:'#0099FF', tc:'#003D99'};
-  return                  {v:'baja',     l:'Baja',     bg:'#F0F2F5', bc:'#8B95A5', tc:'#5A6070'};
-}
-
-async function loadSeguimiento(){
-  if(!_supa||!_currentUser){ _applyGanttSeed(); renderSeguimiento(); return; }
-  try {
-    const [eRes, cRes, hRes] = await Promise.all([
-      _supa.from('seg_estados').select('*'),
-      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false}),
-      _supa.from('seg_hitos').select('*').order('orden',{ascending:true})
-    ]);
-    _segEstados = {};
-    _segComents = {};
-    _segHitos   = {};
-    if(eRes.data) eRes.data.forEach(r=>{ _segEstados[r.project_id]=r; });
-    if(cRes.data) cRes.data.forEach(r=>{
-      if(!_segComents[r.project_id]) _segComents[r.project_id]=[];
-      _segComents[r.project_id].push(r);
-    });
-    if(hRes.data) hRes.data.forEach(r=>{
-      if(!_segHitos[r.project_id]) _segHitos[r.project_id]=[];
-      _segHitos[r.project_id].push(r);
-    });
-    _segLoaded = true;
-  } catch(e){ console.error('Seguimiento load error',e); }
-  _applyGanttSeed(); // merge Excel seed into loaded data
-  computeRankingSilent();
-  renderSeguimiento();
-}
-
-async function setEstado(projectId, estado){
-  if(!_supa||!_currentUser) return;
-  const existing = _segEstados[projectId];
-  const userEmail = _currentUser.email||'unknown';
-  try {
-    if(existing){
-      await _supa.from('seg_estados').update({estado, updated_at:new Date().toISOString(), updated_by:userEmail}).eq('id',existing.id);
-      _segEstados[projectId] = {...existing, estado, updated_by:userEmail};
-    } else {
-      const {data} = await _supa.from('seg_estados').insert({project_id:projectId, estado, updated_by:userEmail}).select().single();
-      if(data) _segEstados[projectId] = data;
-    }
-    renderSeguimiento();
-  } catch(e){ console.error('setEstado error',e); }
-}
-
-/* ── Update generic field on seg_estados ── */
-async function setSegField(projectId, fieldName, value){
-  if(!_supa||!_currentUser) return;
-  if(!isAdmin()){ alert('Solo admins pueden editar este campo.'); return; }
-  const existing = _segEstados[projectId];
-  const userEmail = _currentUser.email||'unknown';
-  const upd = {updated_at:new Date().toISOString(), updated_by:userEmail};
-  upd[fieldName] = value;
-  try {
-    if(existing){
-      await _supa.from('seg_estados').update(upd).eq('id',existing.id);
-      _segEstados[projectId] = {...existing, ...upd};
-    } else {
-      const ins = {project_id:projectId, estado:'pendiente', updated_by:userEmail};
-      ins[fieldName] = value;
-      const {data} = await _supa.from('seg_estados').insert(ins).select().single();
-      if(data) _segEstados[projectId] = data;
-    }
-    setSyncStatus('ok','Campo guardado');
-  } catch(e){
-    console.error('setSegField error',e);
-    setSyncStatus('err','Error al guardar');
-  }
-}
-
-/* ── Hitos CRUD ── */
-async function addHito(projectId){
-  if(!isAdmin()){ alert('Solo admins pueden agregar hitos.'); return; }
-  const nombre = (prompt('Nombre del hito:','')||'').trim();
-  if(!nombre) return;
-  const fechaStr = prompt('Fecha objetivo (AAAA-MM-DD), opcional:','');
-  const fecha = (fechaStr && /^\d{4}-\d{2}-\d{2}$/.test(fechaStr.trim())) ? fechaStr.trim() : null;
-  const userEmail = _currentUser.email||'unknown';
-  const orden = (_segHitos[projectId]||[]).length;
-  try {
-    const {data,error} = await _supa.from('seg_hitos')
-      .insert({project_id:projectId, nombre, fecha_objetivo:fecha, orden, created_by:userEmail})
-      .select().single();
-    if(error) throw error;
-    if(!_segHitos[projectId]) _segHitos[projectId]=[];
-    _segHitos[projectId].push(data);
-    setSyncStatus('ok','Hito agregado');
-    _segRerenderCard(projectId);
-  } catch(e){
-    console.error('addHito error',e);
-    setSyncStatus('err','Error al agregar hito');
-  }
-}
-
-async function deleteHito(projectId, hitoId){
-  if(!isAdmin()){ alert('Solo admins pueden eliminar hitos.'); return; }
-  if(!confirm('¿Eliminar este hito?')) return;
-  try {
-    await _supa.from('seg_hitos').delete().eq('id',hitoId);
-    if(_segHitos[projectId]) _segHitos[projectId] = _segHitos[projectId].filter(h=>h.id!==hitoId);
-    setSyncStatus('ok','Hito eliminado');
-    _segRerenderCard(projectId);
-  } catch(e){
-    console.error('deleteHito error',e);
-    setSyncStatus('err','Error al eliminar hito');
-  }
-}
-
-async function toggleHitoComplete(projectId, hitoId){
-  if(!isAdmin()){ alert('Solo admins pueden marcar hitos.'); return; }
-  const h = (_segHitos[projectId]||[]).find(x=>x.id===hitoId);
-  if(!h) return;
-  const userEmail = _currentUser.email||'unknown';
-  const newCompletado = h.completado_at ? null : new Date().toISOString();
-  try {
-    await _supa.from('seg_hitos').update({
-      completado_at: newCompletado,
-      completado_by: newCompletado ? userEmail : null
-    }).eq('id',hitoId);
-    h.completado_at = newCompletado;
-    h.completado_by = newCompletado ? userEmail : null;
-    setSyncStatus('ok',newCompletado?'Hito completado':'Hito reabierto');
-    _segRerenderCard(projectId);
-  } catch(e){
-    console.error('toggleHitoComplete error',e);
-    setSyncStatus('err','Error al marcar hito');
-  }
-}
-
-/* ── Re-render single card without collapsing siblings ── */
-function _segRerenderCard(projectId){
-  const card = document.getElementById('seg-card-'+projectId);
-  if(!card) { renderSeguimiento(); return; }
-  const wasOpen = card.classList.contains('seg-card-open');
-  const p = projects.find(x=>x.id===projectId);
-  if(!p) return;
-  const newHtml = _segRenderCard(p);
-  const tmp = document.createElement('div');
-  tmp.innerHTML = newHtml;
-  const newCard = tmp.firstElementChild;
-  if(wasOpen){
-    newCard.classList.add('seg-card-open');
-    const body = newCard.querySelector('.seg-card-body');
-    const tog  = newCard.querySelector('.seg-card-toggle');
-    if(body) body.classList.add('open');
-    if(tog)  tog.classList.add('open');
-  }
-  card.replaceWith(newCard);
-}
-
-/* ── Progress derived from hitos (D2 = b) ── */
-function calcProgreso(projectId){
-  const hitos = _segHitos[projectId]||[];
-  if(hitos.length===0) return 0;
-  const done = hitos.filter(h=>h.completado_at).length;
-  return Math.round(done * 100 / hitos.length);
-}
-
-/* ── Format date helpers ── */
-function fmtFecha(d){
-  if(!d) return '—';
-  const dt = new Date(d+'T00:00:00');
-  if(isNaN(dt)) return '—';
-  return dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'2-digit'});
-}
-function daysBetween(a, b){
-  if(!a||!b) return null;
-  const da = new Date(a+'T00:00:00');
-  const db = new Date(b+'T00:00:00');
-  if(isNaN(da)||isNaN(db)) return null;
-  return Math.round((db-da)/(1000*60*60*24));
-}
-function todayStr(){
-  const d = new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-
-async function addComentario(projectId){
-  if(!_supa||!_currentUser){ alert('Debes iniciar sesión para comentar.'); return; }
-  const inp     = document.getElementById('seg-inp-'+projectId);
-  const sendBtn = document.getElementById('seg-send-'+projectId);
-  const okBadge = document.getElementById('seg-ok-'+projectId);
-  if(!inp||!inp.value.trim()) return;
-  const texto   = inp.value.trim();
-  // Leer tipo del chip activo (data-tipo-sel en el botón, seteado por _segSetTipo)
-  const tipoVal = sendBtn?.dataset?.tipoSel || 'avance';
-  const userEmail = _currentUser.email||'unknown';
-  if(sendBtn) sendBtn.disabled=true;
-  try {
-    const {data,error} = await _supa.from('seg_comentarios')
-      .insert({project_id:projectId, texto, tipo:tipoVal, created_by:userEmail})
-      .select().single();
-    if(error) throw error;
-    if(!_segComents[projectId]) _segComents[projectId]=[];
-    _segComents[projectId].unshift(data);
-    inp.value='';
-    // Feedback inline antes de re-render
-    if(okBadge){ okBadge.classList.add('show'); setTimeout(()=>okBadge.classList.remove('show'),2200); }
-    setSyncStatus('ok','Registro guardado');
-    // Actualizar solo el historial sin colapsar la card
-    const cmtsEl = document.getElementById('seg-cmts-'+projectId);
-    const histToggle = cmtsEl?.closest('.seg-hist')?.querySelector('.seg-hist-toggle');
-    if(cmtsEl){
-      const updatedComents = (_segComents[projectId]||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-      const nC = updatedComents.length;
-      cmtsEl.innerHTML = updatedComents.map(cm=>{
-        const tipoV    = cm.tipo||'avance';
-        const tipoInfo = TIPO_OPTS.find(t=>t.v===tipoV)||TIPO_OPTS[0];
-        const dt       = new Date(cm.created_at);
-        const dtStr    = dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'})
-                         +' · '+dt.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
-        return `<div class="seg-comment tipo-${tipoV}">
-          <div class="seg-comment-hdr">
-            <span class="seg-comment-tipo tipo-${tipoV}">${tipoInfo.l}</span>
-            <span class="seg-comment-user">👤 ${esc((cm.created_by||'').split('@')[0])}</span>
-            <span class="seg-comment-ts">${dtStr}</span>
-          </div>
-          <div class="seg-comment-txt">${esc(cm.texto)}</div>
-        </div>`;
-      }).join('');
-      // Actualizar label de historial
-      if(histToggle){
-        const chevEl = histToggle.querySelector('.seg-hist-chev');
-        const chevHtml = chevEl ? chevEl.outerHTML : '';
-        histToggle.innerHTML = `Historial · ${nC} registro${nC!==1?'s':''} ${chevHtml}`;
-      }
-      // Asegurar que historial esté visible
-      const wrap = document.getElementById('seg-cmts-wrap-'+projectId);
-      if(wrap) wrap.classList.remove('collapsed');
-    }
-    // Mantener textarea en foco
-    inp.focus();
-  } catch(e){
-    console.error('addComentario error',e);
-    setSyncStatus('err','Error al guardar registro');
-  }
-  finally { if(sendBtn) sendBtn.disabled=false; }
-}
-
-function toggleSegCard(id){
-  const body   = document.getElementById('seg-body-'+id);
-  const card   = document.getElementById('seg-card-'+id);
-  const toggle = document.getElementById('seg-tog-'+id);
-  if(!body||!toggle) return;
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  toggle.classList.toggle('open', !isOpen);
-  if(card) card.classList.toggle('seg-card-open', !isOpen);
-  // Auto-focus textarea al abrir
-  if(!isOpen){
-    setTimeout(()=>{
-      const ta = document.getElementById('seg-inp-'+id);
-      if(ta) ta.focus();
-    }, 60);
-  }
-}
-
-/* ── Tipo chips: selección visual ── */
-function _segSetTipo(projectId, tipoVal){
-  document.querySelectorAll(`[data-seg-tipo-card="${projectId}"]`).forEach(c=>{
-    const isActive = c.dataset.segTipo === tipoVal;
-    c.className = 'seg-tipo-chip' + (isActive ? ' active-'+tipoVal : '');
-  });
-  const ta = document.getElementById('seg-inp-'+projectId);
-  if(ta){ ta.className = 'seg-inp tipo-'+tipoVal; ta.focus(); }
-  const btn = document.getElementById('seg-send-'+projectId);
-  if(btn) btn.dataset.tipoSel = tipoVal;
-}
-
-/* ════════════════════════════════════════════════════════════════════
-   SEGUIMIENTO v4.5 — Renders reescritos desde cero
-════════════════════════════════════════════════════════════════════ */
+let _segEstados = {};
+let _segComents = {};
+let _segHitos   = {};
+let _segLoaded  = false;
+let _lastRanking= [];
+let _svDetallePid = null;  // proyecto actualmente en detalle
 
 /* ── Helpers de fecha ── */
 function fmtFecha(d){
@@ -10561,1158 +10268,494 @@ function calcProgreso(projectId){
   return Math.round(hitos.filter(h=>h.completado_at).length*100/hitos.length);
 }
 
-/* ── Prioridad automática desde ranking ── */
-function getPrioridadAuto(projectId){
-  const r=_lastRanking.find(x=>x.id===projectId);
+/* ── Ranking ── */
+function computeRankingSilent(){
+  const activas = projects.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
+  if(!activas.length){ _lastRanking=[]; return; }
+  const P=getPesos();
+  const res=activas.map(p=>({id:p.id,sBase:sBase(p,P),tipo:p.tipo,scores:p.scores,deps:p.deps||[]}));
+  const tIds=[...res].sort((a,b)=>b.sBase-a.sBase).slice(0,Math.ceil(res.length*0.4)).map(p=>p.id);
+  const dc={};res.forEach(p=>p.deps.forEach(d=>{dc[d]=(dc[d]||0)+1;}));
+  res.forEach(p=>{
+    let mt=MULT_TIPO[p.tipo]||1, fd=1;
+    if(p.deps.filter(d=>!tIds.includes(d)).length>0) fd=0.7;
+    if(p.tipo==='habilitante'&&(dc[p.id]||0)>=2) mt=Math.min(mt+0.15,1.5);
+    p.sAj=p.sBase*mt*fd;
+  });
+  res.sort((a,b)=>b.sAj-a.sAj);
+  _lastRanking=res.map((p,i)=>({id:p.id,sAj:p.sAj,rank:i,total:res.length}));
+}
+function getPrioridadAuto(pid){
+  const r=_lastRanking.find(x=>x.id===pid);
   if(!r) return null;
   const pct=r.rank/Math.max(1,r.total-1);
-  if(pct<=0.25) return {v:'critica', l:'Crítica',  bg:'#FFE8E8',bc:'#FF6B6B',tc:'#CC3333'};
-  if(pct<=0.50) return {v:'alta',    l:'Alta',     bg:'#FFF4E5',bc:'#FF9800',tc:'#B26A00'};
-  if(pct<=0.75) return {v:'media',   l:'Media',    bg:'#E8F4FF',bc:'#0099FF',tc:'#003D99'};
-  return              {v:'baja',     l:'Baja',      bg:'#F0F2F5',bc:'#8B95A5',tc:'#5A6070'};
+  if(pct<=0.25) return {v:'critica',l:'Crítica', bg:'#FFE8E8',bc:'#FF6B6B',tc:'#CC3333'};
+  if(pct<=0.50) return {v:'alta',   l:'Alta',    bg:'#FFF4E5',bc:'#FF9800',tc:'#B26A00'};
+  if(pct<=0.75) return {v:'media',  l:'Media',   bg:'#E8F4FF',bc:'#0099FF',tc:'#003D99'};
+  return              {v:'baja',    l:'Baja',    bg:'#F0F2F5',bc:'#8B95A5',tc:'#5A6070'};
 }
 
-/* ── Mini-Gantt SVG por iniciativa ── */
-function _segRenderMiniGantt(projectId, fi, ff, hitos){
-  const di=new Date(fi+'T00:00:00'), df=new Date(ff+'T00:00:00'), dh=new Date(todayStr()+'T00:00:00');
-  if(isNaN(di)||isNaN(df)||df<=di) return '';
-  const total=(df-di)/(1000*60*60*24);
-  let pHoy=((dh-di)/(1000*60*60*24))/total;
-  pHoy=Math.max(0,Math.min(1,pHoy));
-  const W=200, H=24, C=70, R=12;
-  const hitoPts=(hitos||[]).filter(h=>h.fecha_objetivo).map(h=>{
-    const d=new Date(h.fecha_objetivo+'T00:00:00'); if(isNaN(d)) return null;
-    const pct=((d-di)/(1000*60*60*24))/total; if(pct<0||pct>1) return null;
-    const done=!!h.completado_at, venc=!done&&h.fecha_objetivo<todayStr();
-    return {pct,done,venc,nm:h.nombre,dt:h.fecha_objetivo};
-  }).filter(Boolean);
-  const barColor = _segEstados[projectId]?.estado==='completado'?'#00C9B7':'#0052CC';
-  return `<div class="seg-gantt-box">
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" class="seg-gantt-svg" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="9" width="${W}" height="6" rx="3" fill="#E4EAF4"/>
-      ${pHoy>0?`<rect x="0" y="9" width="${pHoy*W}" height="6" rx="3" fill="${barColor}" opacity="0.65"/>`:''}
-      <line x1="${pHoy*W}" y1="2" x2="${pHoy*W}" y2="22" stroke="#1A2340" stroke-width="0.6" stroke-dasharray="1.5,1.5"/>
-      ${hitoPts.map(h=>{
-        const cx=h.pct*W;
-        const fill=h.done?'#00C9B7':h.venc?'#FF6B6B':'#fff';
-        const stroke=h.done?'#00C9B7':h.venc?'#CC3333':'#8B95A5';
-        return `<circle cx="${cx}" cy="12" r="3" fill="${fill}" stroke="${stroke}" stroke-width="1.2"><title>${esc(h.nm)} · ${fmtFecha(h.dt)}</title></circle>`;
-      }).join('')}
-    </svg>
-    <div class="seg-gantt-dates">
-      <span>${fmtFecha(fi)}</span>
-      <span class="seg-gantt-today-lbl">hoy</span>
-      <span>${fmtFecha(ff)}</span>
-    </div>
-  </div>`;
+/* ── Load desde Supabase ── */
+async function loadSeguimiento(){
+  if(!_supa||!_currentUser){ _applyGanttSeed(); svRenderAll(); return; }
+  try {
+    const [eRes,cRes,hRes] = await Promise.all([
+      _supa.from('seg_estados').select('*'),
+      _supa.from('seg_comentarios').select('*').order('created_at',{ascending:false}),
+      _supa.from('seg_hitos').select('*').order('orden',{ascending:true})
+    ]);
+    _segEstados={};_segComents={};_segHitos={};
+    if(eRes.data) eRes.data.forEach(r=>{ _segEstados[r.project_id]=r; });
+    if(cRes.data) cRes.data.forEach(r=>{
+      if(!_segComents[r.project_id]) _segComents[r.project_id]=[];
+      _segComents[r.project_id].push(r);
+    });
+    if(hRes.data) hRes.data.forEach(r=>{
+      if(!_segHitos[r.project_id]) _segHitos[r.project_id]=[];
+      _segHitos[r.project_id].push(r);
+    });
+    _segLoaded=true;
+  } catch(e){ console.error('Seguimiento load error',e); }
+  _applyGanttSeed();
+  computeRankingSilent();
+  svRenderAll();
 }
 
-/* ── Card principal ── */
-function _segRenderCard(p){
-  const rec       = _segEstados[p.id]||{};
-  const estadoVal = rec.estado||'pendiente';
-  const eInfo     = ESTADO_OPTS.find(e=>e.v===estadoVal)||ESTADO_OPTS[0];
-  const coments   = (_segComents[p.id]||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-  const hitos     = (_segHitos[p.id]||[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
-  const admin     = isAdmin();
-  const loggedIn  = !!_currentUser;
-  const nC        = coments.length;
-  const prio      = getPrioridadAuto(p.id);
-  const progreso  = calcProgreso(p.id);
-  const fi        = rec.fecha_inicio||'';
-  const ff        = rec.fecha_fin_objetivo||'';
-  const fo        = rec.fecha_origen||'';
-  const resp      = rec.responsable||'';
-  const hoy       = todayStr();
-
-  /* ── Estado control ── */
-  const estadoEl = admin
-    ? `<select class="seg-estado-sel" style="background:${eInfo.bg};border-color:${eInfo.bc};color:${eInfo.tc};"
-        onchange="setEstado(${p.id},this.value)" onclick="event.stopPropagation()">
-        ${ESTADO_OPTS.map(e=>`<option value="${e.v}"${e.v===estadoVal?' selected':''}>${e.e} ${e.l}</option>`).join('')}
-       </select>`
-    : `<span class="seg-estado-badge" style="background:${eInfo.bg};border-color:${eInfo.bc};color:${eInfo.tc};">${eInfo.e} ${eInfo.l}</span>`;
-
-  /* ── Badge prioridad ── */
-  const prioBadge = prio
-    ? `<span class="seg-prio-badge" style="background:${prio.bg};border-color:${prio.bc};color:${prio.tc};">${prio.l}</span>`
-    : '';
-
-  /* ── Meta (tipo + pilares) ── */
-  const tipoLbl = {habilitante:'🧱 Habilitante',core:'⚙️ Core',transformacional:'✨ Transformacional'}[p.tipo]||p.tipo;
-  const pilarChips = (p.pilares||[]).map(pl=>`<span class="seg-meta-pilar">${pl}</span>`).join('');
-
-  /* ── Bloque B: Avance ── */
-  let tempBadge = '';
-  if(ff && estadoVal!=='completado'){
-    const diff = daysBetween(hoy,ff);
-    if(diff===null){}
-    else if(diff<0) tempBadge=`<span class="seg-temporal-badge late">${Math.abs(diff)}d de atraso</span>`;
-    else if(diff<=14) tempBadge=`<span class="seg-temporal-badge soon">${diff}d restantes</span>`;
-    else tempBadge=`<span class="seg-temporal-badge ok">${diff}d restantes</span>`;
-  } else if(estadoVal==='completado'){
-    tempBadge=`<span class="seg-temporal-badge done">Completado</span>`;
+/* ── Escritura en Supabase ── */
+async function setEstado(projectId, estado){
+  if(!_supa||!_currentUser) return;
+  const ex=_segEstados[projectId], u=_currentUser.email||'unknown';
+  try {
+    if(ex){ await _supa.from('seg_estados').update({estado,updated_at:new Date().toISOString(),updated_by:u}).eq('id',ex.id); _segEstados[projectId]={...ex,estado,updated_by:u}; }
+    else { const {data}=await _supa.from('seg_estados').insert({project_id:projectId,estado,updated_by:u}).select().single(); if(data) _segEstados[projectId]=data; }
+  } catch(e){ console.error('setEstado',e); }
+  svRenderAll();
+  if(_svDetallePid===projectId) svAbrirDetalle(projectId);
+}
+async function setSegField(projectId, fieldName, value){
+  if(!_supa||!_currentUser) return;
+  if(!isAdmin()){ alert('Solo admins pueden editar este campo.'); return; }
+  const ex=_segEstados[projectId], u=_currentUser.email||'unknown';
+  const upd={updated_at:new Date().toISOString(),updated_by:u};
+  upd[fieldName]=value||null;
+  try {
+    if(ex){ await _supa.from('seg_estados').update(upd).eq('id',ex.id); _segEstados[projectId]={...ex,...upd}; }
+    else { const ins={project_id:projectId,estado:'pendiente',updated_by:u}; ins[fieldName]=value||null; const {data}=await _supa.from('seg_estados').insert(ins).select().single(); if(data) _segEstados[projectId]=data; }
+    setSyncStatus('ok','Guardado');
+  } catch(e){ console.error('setSegField',e); setSyncStatus('err','Error al guardar'); }
+  // Update local seed too so render reflects immediately
+  if(GANTT_SEED_ESTADOS[projectId]) GANTT_SEED_ESTADOS[projectId][fieldName]=value||null;
+  svRenderAll();
+  if(_svDetallePid===projectId) svAbrirDetalle(projectId);
+}
+async function addHito(projectId){
+  if(!isAdmin()){ alert('Solo admins pueden agregar hitos.'); return; }
+  const nombre=(prompt('Nombre del hito:','')||'').trim();
+  if(!nombre) return;
+  const fechaStr=prompt('Fecha objetivo (AAAA-MM-DD), opcional:','');
+  const fecha=(fechaStr&&/^\d{4}-\d{2}-\d{2}$/.test(fechaStr.trim()))?fechaStr.trim():null;
+  const u=_currentUser.email||'unknown';
+  const orden=(_segHitos[projectId]||[]).length;
+  if(_supa){
+    try {
+      const {data,error}=await _supa.from('seg_hitos').insert({project_id:projectId,nombre,fecha_objetivo:fecha,orden,created_by:u}).select().single();
+      if(error) throw error;
+      if(!_segHitos[projectId]) _segHitos[projectId]=[];
+      _segHitos[projectId].push(data);
+      setSyncStatus('ok','Hito agregado');
+    } catch(e){ console.error('addHito',e); setSyncStatus('err','Error'); return; }
+  } else {
+    if(!_segHitos[projectId]) _segHitos[projectId]=[];
+    _segHitos[projectId].push({id:'local_'+Date.now(),project_id:projectId,nombre,fecha_objetivo:fecha,completado_at:null,orden});
   }
+  svAbrirDetalle(projectId);
+}
+async function deleteHito(projectId, hitoId){
+  if(!isAdmin()){ alert('Solo admins pueden eliminar hitos.'); return; }
+  if(!confirm('¿Eliminar este hito?')) return;
+  if(_supa && !String(hitoId).startsWith('seed_') && !String(hitoId).startsWith('local_')){
+    try { await _supa.from('seg_hitos').delete().eq('id',hitoId); } catch(e){ console.error('deleteHito',e); }
+  }
+  if(_segHitos[projectId]) _segHitos[projectId]=_segHitos[projectId].filter(h=>h.id!==hitoId);
+  setSyncStatus('ok','Hito eliminado');
+  svAbrirDetalle(projectId);
+}
+async function toggleHitoComplete(projectId, hitoId){
+  if(!isAdmin()){ alert('Solo admins pueden marcar hitos.'); return; }
+  const h=(_segHitos[projectId]||[]).find(x=>x.id===hitoId);
+  if(!h) return;
+  const u=_currentUser?_currentUser.email:'unknown';
+  const newC=h.completado_at?null:new Date().toISOString();
+  if(_supa && !String(hitoId).startsWith('seed_') && !String(hitoId).startsWith('local_')){
+    try { await _supa.from('seg_hitos').update({completado_at:newC,completado_by:newC?u:null}).eq('id',hitoId); } catch(e){ console.error('toggleHito',e); }
+  }
+  h.completado_at=newC; h.completado_by=newC?u:null;
+  setSyncStatus('ok',newC?'Hito completado':'Hito reabierto');
+  svRenderAll();
+  if(_svDetallePid===projectId) svAbrirDetalle(projectId);
+}
+async function addComentario(projectId){
+  const ta=document.getElementById('sv-inp-'+projectId); if(!ta) return;
+  const texto=ta.value.trim(); if(!texto) return;
+  if(!_currentUser){ alert('Inicia sesión para registrar comentarios.'); return; }
+  const sendBtn=document.getElementById('sv-send-'+projectId);
+  const tipoVal=(sendBtn&&sendBtn.dataset.tipoSel)||'avance';
+  const u=_currentUser.email||'unknown';
+  const obj={project_id:projectId,texto,tipo:tipoVal,created_by:u,created_at:new Date().toISOString()};
+  if(_supa){
+    try {
+      const {data,error}=await _supa.from('seg_comentarios').insert(obj).select().single();
+      if(error) throw error;
+      if(!_segComents[projectId]) _segComents[projectId]=[];
+      _segComents[projectId].unshift(data);
+    } catch(e){ console.error('addComentario',e); }
+  } else {
+    if(!_segComents[projectId]) _segComents[projectId]=[];
+    _segComents[projectId].unshift({...obj, id:'local_'+Date.now()});
+  }
+  ta.value='';
+  const ok=document.getElementById('sv-ok-'+projectId);
+  if(ok){ ok.style.opacity='1'; setTimeout(()=>ok.style.opacity='0',1800); }
+  svAbrirDetalle(projectId);
+}
 
-  const barColor = progreso>=100?'#00C9B7':progreso>=66?'#0099FF':progreso>=33?'#FFB84D':'#D0D8E8';
-  const ganttOrEmpty = (fi&&ff) ? _segRenderMiniGantt(p.id,fi,ff,hitos) : `<div class="seg-gantt-no-dates">📍 Sin fechas definidas${admin?' — completa en el editor debajo':''}</div>`;
-
-  const bloqueB = `<div class="seg-bloque-b">
-    <div class="seg-b-fila">
-      <span class="seg-b-campo">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
-        ${resp ? esc(resp.split('@')[0]) : '<span class="seg-b-empty">Sin responsable</span>'}
-      </span>
-      <span class="seg-b-campo">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        ${fmtFecha(fi)} → ${fmtFecha(ff)}
-      </span>
-      ${tempBadge}
-      ${fo?`<span class="seg-origen-tag">${esc(fo)}</span>`:''}
+/* ══════════════════════════════════════════════════════
+   RENDER — Vista Lista
+══════════════════════════════════════════════════════ */
+function svGetActivas(){
+  return projects.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
+}
+function svRenderAll(){
+  computeRankingSilent();
+  svRenderKpis();
+  svRenderLista();
+}
+function svRenderKpis(){
+  const wrap=document.getElementById('seg-kpi-header'); if(!wrap) return;
+  const activas=svGetActivas();
+  const hoy=todayStr();
+  let nTotal=activas.length, nCurso=0, nDone=0, nRiesgo=0, nAtras=0;
+  activas.forEach(p=>{
+    const r=_segEstados[p.id]||{};
+    const est=r.estado||'pendiente';
+    const ff=r.fecha_fin_objetivo;
+    const late=ff&&ff<hoy&&est!=='completado';
+    if(est==='completado') nDone++;
+    else if(est==='en_curso') nCurso++;
+    if(late||est==='bloqueado') nAtras++;
+  });
+  nRiesgo=nAtras;
+  wrap.innerHTML=`<div class="sv-kpi-row">
+    <div class="sv-kpi sv-kpi-total">
+      <div class="sv-kpi-icon" style="background:#EEF2FF;color:#4F46E5;">🎯</div>
+      <div><div class="sv-kpi-n">${nTotal}</div><div class="sv-kpi-l">Total iniciativas</div><div class="sv-kpi-sub">Portafolio activo</div></div>
     </div>
-    <div class="seg-b-progress">
-      <div class="seg-b-progress-bar"><div class="seg-b-progress-fill" style="width:${progreso}%;background:${barColor};"></div></div>
-      <span class="seg-b-progress-pct">${progreso}%</span>
+    <div class="sv-kpi sv-kpi-curso">
+      <div class="sv-kpi-icon" style="background:#EFF6FF;color:#3B82F6;">📈</div>
+      <div><div class="sv-kpi-n">${nCurso}</div><div class="sv-kpi-l">En progreso</div><div class="sv-kpi-sub">${nTotal?Math.round(nCurso*100/nTotal):0}% del total</div></div>
     </div>
-    ${ganttOrEmpty}
+    <div class="sv-kpi sv-kpi-done">
+      <div class="sv-kpi-icon" style="background:#F0FDF4;color:#16A34A;">✅</div>
+      <div><div class="sv-kpi-n">${nDone}</div><div class="sv-kpi-l">Completadas</div><div class="sv-kpi-sub">${nTotal?Math.round(nDone*100/nTotal):0}% del total</div></div>
+    </div>
+    <div class="sv-kpi sv-kpi-riesgo">
+      <div class="sv-kpi-icon" style="background:#FFF7ED;color:#EA580C;">⚠️</div>
+      <div><div class="sv-kpi-n">${nRiesgo}</div><div class="sv-kpi-l">En riesgo</div><div class="sv-kpi-sub">${nTotal?Math.round(nRiesgo*100/nTotal):0}% del total</div></div>
+    </div>
   </div>`;
+}
 
-  /* ── Bloque C: Hitos ── */
+function svClearFiltros(){
+  document.getElementById('sv-search').value='';
+  document.getElementById('sv-filter-estado').value='';
+  document.getElementById('sv-filter-prio').value='';
+  document.getElementById('sv-filter-area').value='';
+  svRenderLista();
+}
+
+function svRenderLista(){
+  const tbody=document.getElementById('sv-tbody'); if(!tbody) return;
+  const q=(document.getElementById('sv-search')?.value||'').toLowerCase();
+  const fEst=document.getElementById('sv-filter-estado')?.value||'';
+  const fPrio=document.getElementById('sv-filter-prio')?.value||'';
+  const fArea=document.getElementById('sv-filter-area')?.value||'';
+  const hoy=todayStr();
+
+  let activas=svGetActivas().filter(p=>{
+    const r=_segEstados[p.id]||{};
+    const est=r.estado||'pendiente';
+    const prio=getPrioridadAuto(p.id);
+    if(q && !(p.nombre||'').toLowerCase().includes(q)) return false;
+    if(fEst && est!==fEst) return false;
+    if(fPrio && (!prio||prio.v!==fPrio)) return false;
+    if(fArea && p.area!==fArea) return false;
+    return true;
+  });
+
+  const count=document.getElementById('sv-count');
+  if(count) count.textContent=`${activas.length} iniciativa${activas.length!==1?'s':''}`;
+
+  tbody.innerHTML = activas.map(p=>{
+    const r=_segEstados[p.id]||{};
+    const est=r.estado||'pendiente';
+    const eInfo=ESTADO_OPTS.find(e=>e.v===est)||ESTADO_OPTS[0];
+    const prio=getPrioridadAuto(p.id);
+    const ff=r.fecha_fin_objetivo;
+    const late=ff&&ff<hoy&&est!=='completado';
+    const prog=calcProgreso(p.id);
+    const resp=(r.responsable||'').split(/[-\/,]/)[0].trim();
+    const area=AREAS.find(a=>a.key===p.area);
+    const tipoLbl={habilitante:'🧱',core:'⚙️',transformacional:'✨'}[p.tipo]||'';
+    const barC=prog>=100?'#16A34A':prog>=66?'#3B82F6':prog>=33?'#F59E0B':'#E5E7EB';
+    const dateStyle=late?'color:#DC2626;font-weight:700;':'';
+    return `<tr class="sv-row" onclick="svAbrirDetalle(${p.id})">
+      <td>
+        <div class="sv-ini-name">${tipoLbl} ${esc(p.nombre)}</div>
+        <div class="sv-ini-sub">${area?area.label:''}</div>
+      </td>
+      <td>
+        <div class="sv-resp-chip">${resp?`<span class="sv-resp-avatar">${resp[0].toUpperCase()}</span><span class="sv-resp-nm">${esc(resp)}</span>`:'<span style="color:#B0B8C8;font-size:11px;">Sin asignar</span>'}</div>
+      </td>
+      <td><span class="sv-area-tag" style="color:${area?.color||'#5A6070'};background:${(area?.color||'#5A6070')}18;">${area?.icon||'·'} ${area?.label||p.area||'—'}</span></td>
+      <td><span class="sv-estado-badge" style="background:${eInfo.bg};border-color:${eInfo.bc};color:${eInfo.tc};">${eInfo.e} ${eInfo.l}</span></td>
+      <td>${prio?`<span class="sv-prio-badge" style="background:${prio.bg};border-color:${prio.bc};color:${prio.tc};">${prio.l}</span>`:'-'}</td>
+      <td><span style="font-size:12px;${dateStyle}">${late?'⚠ ':''}${fmtFecha(ff)}</span></td>
+      <td>
+        <div class="sv-prog-wrap">
+          <div class="sv-prog-bar"><div style="width:${prog}%;background:${barC};height:100%;border-radius:4px;transition:width .3s;"></div></div>
+          <span class="sv-prog-pct">${prog}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER — Vista Detalle
+══════════════════════════════════════════════════════ */
+function svAbrirDetalle(projectId){
+  _svDetallePid = projectId;
+  document.getElementById('seg-vista-lista').style.display='none';
+  document.getElementById('seg-vista-detalle').style.display='block';
+  const p=projects.find(x=>x.id===projectId); if(!p) return;
+  const r=_segEstados[projectId]||{};
+  const est=r.estado||'pendiente';
+  const eInfo=ESTADO_OPTS.find(e=>e.v===est)||ESTADO_OPTS[0];
+  const prio=getPrioridadAuto(projectId);
+  const hitos=(_segHitos[projectId]||[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+  const coments=(_segComents[projectId]||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const admin=isAdmin(), loggedIn=!!_currentUser;
+  const prog=calcProgreso(projectId);
+  const fi=r.fecha_inicio||'', ff=r.fecha_fin_objetivo||'';
+  const resp=r.responsable||'';
+  const hoy=todayStr();
+  const area=AREAS.find(a=>a.key===p.area);
+
+  // Temporal badge
+  let tempBadge='';
+  if(ff&&est!=='completado'){
+    const diff=daysBetween(hoy,ff);
+    if(diff!==null){
+      if(diff<0) tempBadge=`<span class="svd-temp late">⚠ ${Math.abs(diff)}d de atraso</span>`;
+      else if(diff<=14) tempBadge=`<span class="svd-temp soon">${diff}d restantes</span>`;
+      else tempBadge=`<span class="svd-temp ok">${diff}d restantes</span>`;
+    }
+  } else if(est==='completado') tempBadge=`<span class="svd-temp done">✓ Completado</span>`;
+
+  // Progress donut
+  const r2=36, cx=44, cy=44, circumf=2*Math.PI*r2;
+  const dashC=prog>=100?'#16A34A':prog>=66?'#3B82F6':prog>=33?'#F59E0B':'#E5E7EB';
+  const dashArr=`${(prog/100)*circumf} ${circumf}`;
+  const donutSvg=`<svg width="88" height="88" viewBox="0 0 88 88"><circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="#F0F3FA" stroke-width="8"/><circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="${dashC}" stroke-width="8" stroke-dasharray="${dashArr}" stroke-dashoffset="${circumf*0.25}" stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#1A2340">${prog}%</text><text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="8" fill="#8B95A5">avance</text></svg>`;
+
+  // Hitos HTML
   const hitosHtml = hitos.length===0
-    ? `<span class="seg-hito-empty">Sin hitos${admin?' — agrega el primero':''}</span>`
-    : hitos.map(h=>{
-        const done=!!h.completado_at, venc=!done&&h.fecha_objetivo&&h.fecha_objetivo<hoy;
-        const cls=done?'h-done':venc?'h-late':'h-pend';
-        const ico=done?'✓':venc?'!':'○';
-        return `<span class="seg-hito ${cls}"${admin?` onclick="event.stopPropagation();toggleHitoComplete(${p.id},'${h.id}')" title="${done?'Reabrir':'Completar'}"`:''}>
-          <span class="seg-hito-ico">${ico}</span>
-          <span class="seg-hito-nm">${esc(h.nombre)}</span>
-          ${h.fecha_objetivo?`<span class="seg-hito-dt">${fmtFecha(h.fecha_objetivo)}</span>`:''}
-          ${admin?`<span class="seg-hito-del" onclick="event.stopPropagation();deleteHito(${p.id},'${h.id}')">×</span>`:''}
-        </span>`;
+    ? `<div class="svd-empty">Sin hitos${admin?' — agrega el primero':''}</div>`
+    : hitos.map((h,i)=>{
+        const done=!!h.completado_at;
+        const venc=!done&&h.fecha_objetivo&&h.fecha_objetivo<hoy;
+        return `<div class="svd-hito ${done?'done':venc?'late':''}">
+          <div class="svd-hito-left" ${admin?`onclick="event.stopPropagation();toggleHitoComplete(${projectId},'${h.id}')" title="${done?'Reabrir':'Marcar completado'}" style="cursor:pointer;"`:''}> 
+            <div class="svd-hito-circle ${done?'done':venc?'late':''}">${done?'✓':i+1}</div>
+          </div>
+          <div class="svd-hito-body">
+            <div class="svd-hito-name ${done?'done':''}">${esc(h.nombre)}</div>
+            ${h.fecha_objetivo?`<div class="svd-hito-fecha ${venc?'venc':''}">${fmtFecha(h.fecha_objetivo)}</div>`:''}
+            ${done?`<div class="svd-hito-completado-tag">✓ ${h.completado_by?esc(h.completado_by.split('@')[0]):''}</div>`:''}
+          </div>
+          ${admin?`<button class="svd-hito-del" onclick="event.stopPropagation();deleteHito(${projectId},'${h.id}')">×</button>`:''}
+        </div>`;
       }).join('');
 
-  const bloqueC = `<div class="seg-bloque-c">
-    <div class="seg-bloque-lbl">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      Hitos · ${hitos.length}
-    </div>
-    <div class="seg-hitos-wrap">
-      ${hitosHtml}
-      ${admin?`<button class="seg-hito-add" onclick="event.stopPropagation();addHito(${p.id})">+ Hito</button>`:''}
-    </div>
-  </div>`;
-
-  /* ── Editor admin ── */
-  const editorAdmin = admin ? `<div class="seg-editor">
-    <div class="seg-editor-hdr">⚙ Editar · solo admins</div>
-    <div class="seg-editor-grid">
-      <div class="seg-field">
-        <label>Responsable</label>
-        <input type="text" value="${esc(resp)}" placeholder="email o nombre"
-          onchange="setSegField(${p.id},'responsable',this.value)" onclick="event.stopPropagation()">
-      </div>
-      <div class="seg-field">
-        <label>Fecha inicio</label>
-        <input type="date" value="${fi}" onchange="setSegField(${p.id},'fecha_inicio',this.value||null)" onclick="event.stopPropagation()">
-      </div>
-      <div class="seg-field">
-        <label>Fecha fin objetivo</label>
-        <input type="date" value="${ff}" onchange="setSegField(${p.id},'fecha_fin_objetivo',this.value||null)" onclick="event.stopPropagation()">
-      </div>
-      <div class="seg-field">
-        <label>Origen del compromiso</label>
-        <select onchange="setSegField(${p.id},'fecha_origen',this.value||null)" onclick="event.stopPropagation()">
-          <option value=""${!fo?' selected':''}>—</option>
-          <option value="Compromiso con GG"${fo==='Compromiso con GG'?' selected':''}>Compromiso con GG</option>
-          <option value="Estimación interna"${fo==='Estimación interna'?' selected':''}>Estimación interna</option>
-          <option value="Tentativa"${fo==='Tentativa'?' selected':''}>Tentativa</option>
-        </select>
-      </div>
-    </div>
-  </div>` : '';
-
-  /* ── Compositor ── */
-  const compositor = loggedIn ? `<div class="seg-composer">
-    <div class="seg-composer-label">Registrar avance</div>
-    <div class="seg-composer-tipo-row">
-      ${TIPO_OPTS.map((t,i)=>`<button class="seg-tipo-chip${i===0?' active-avance':''}"
-        data-seg-tipo="${t.v}" data-seg-tipo-card="${p.id}"
-        onclick="event.stopPropagation();_segSetTipo(${p.id},'${t.v}')">${t.l}</button>`).join('')}
-    </div>
-    <textarea id="seg-inp-${p.id}" class="seg-inp tipo-avance"
-      placeholder="Escribe el avance, riesgo o decisión de esta iniciativa…"
-      onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();addComentario(${p.id});}"></textarea>
-    <div class="seg-composer-footer">
-      <span class="seg-inp-hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> para registrar</span>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="seg-send-ok" id="seg-ok-${p.id}">✓ Registrado</span>
-        <button class="seg-send-btn" id="seg-send-${p.id}" data-tipo-sel="avance" onclick="addComentario(${p.id})">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9Z"/></svg>
-          Registrar
-        </button>
-      </div>
-    </div>
-  </div>` : `<div style="padding:14px 18px;font-size:12px;color:#8B95A5;background:#FAFBFE;border-top:1px solid #F0F3FA;">🔒 Inicia sesión para registrar.</div>`;
-
-  /* ── Historial ── */
-  const cmtsHtml = nC===0
-    ? '<div class="seg-no-comments"><span class="seg-no-comments-icon">📝</span>Sin registros aún.</div>'
+  // Comentarios HTML
+  const cmtsHtml = coments.length===0
+    ? `<div class="svd-empty">Sin registros aún.</div>`
     : coments.map(cm=>{
         const tv=cm.tipo||'avance', ti=TIPO_OPTS.find(t=>t.v===tv)||TIPO_OPTS[0];
         const dt=new Date(cm.created_at);
         const ds=dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'})+' · '+dt.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
-        return `<div class="seg-comment tipo-${tv}">
-          <div class="seg-comment-hdr">
-            <span class="seg-comment-tipo tipo-${tv}">${ti.l}</span>
-            <span class="seg-comment-user">👤 ${esc((cm.created_by||'').split('@')[0])}</span>
-            <span class="seg-comment-ts">${ds}</span>
+        return `<div class="svd-comment tipo-${tv}">
+          <div class="svd-comment-hdr">
+            <span class="svd-comment-tipo tipo-${tv}">${ti.l}</span>
+            <span class="svd-comment-user">👤 ${esc((cm.created_by||'').split('@')[0])}</span>
+            <span class="svd-comment-ts">${ds}</span>
           </div>
-          <div class="seg-comment-txt">${esc(cm.texto)}</div>
+          <div class="svd-comment-txt">${esc(cm.texto)}</div>
         </div>`;
       }).join('');
 
-  return `<div class="seg-card" id="seg-card-${p.id}" style="border-left-color:${eInfo.bc};">
-    <div class="seg-card-hdr" onclick="toggleSegCard(${p.id})">
-      <div class="seg-card-left">
-        <div class="seg-card-name">${esc(p.nombre)}</div>
-        <div class="seg-card-meta">
-          <span>${tipoLbl}</span>
-          ${pilarChips?`<span class="seg-meta-sep">·</span>${pilarChips}`:''}
+  // Próximos pasos (hitos pendientes más próximos)
+  const hitosP=hitos.filter(h=>!h.completado_at).slice(0,3);
+  const proxPasosHtml=hitosP.length
+    ? hitosP.map((h,i)=>`<div class="svd-paso"><span class="svd-paso-n">${i+1}</span> ${esc(h.nombre)}</div>`).join('')
+    : `<div class="svd-empty">Todos los hitos completados</div>`;
+
+  // Estado select (admin) o badge
+  const estadoCtrl = admin
+    ? `<select class="svd-estado-sel" style="background:${eInfo.bg};border-color:${eInfo.bc};color:${eInfo.tc};" onchange="setEstado(${projectId},this.value)">
+        ${ESTADO_OPTS.map(e=>`<option value="${e.v}"${e.v===est?' selected':''}>${e.e} ${e.l}</option>`).join('')}
+       </select>`
+    : `<span class="svd-estado-badge" style="background:${eInfo.bg};border-color:${eInfo.bc};color:${eInfo.tc};">${eInfo.e} ${eInfo.l}</span>`;
+
+  // Composer
+  const composerHtml = loggedIn
+    ? `<div class="svd-composer">
+        <div class="svd-composer-label">Registrar avance</div>
+        <div class="svd-tipo-row">
+          ${TIPO_OPTS.map((t,i)=>`<button class="svd-tipo-chip ${i===0?'active-avance':''}" data-tipo="${t.v}" onclick="event.stopPropagation();_svSetTipo(${projectId},'${t.v}',this)">${t.l}</button>`).join('')}
         </div>
-      </div>
-      <div class="seg-card-right" onclick="event.stopPropagation()">
-        ${prioBadge}
-        ${nC>0?`<span class="seg-reg-count">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${nC}
-        </span>`:''}
-        ${estadoEl}
-      </div>
-      <span class="seg-card-toggle" id="seg-tog-${p.id}">▾</span>
-    </div>
-    ${bloqueB}
-    ${bloqueC}
-    <div class="seg-card-body" id="seg-body-${p.id}">
-      ${editorAdmin}
-      ${compositor}
-      <div class="seg-hist">
-        <div class="seg-hist-toggle" onclick="event.stopPropagation();_segToggleHist(${p.id})">
-          Historial · ${nC} registro${nC!==1?'s':''}
-          <span class="seg-hist-chev" id="seg-hist-chev-${p.id}">▾</span>
-        </div>
-        <div class="seg-comments-wrap" id="seg-cmts-wrap-${p.id}">
-          <div class="seg-comments" id="seg-cmts-${p.id}">${cmtsHtml}</div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ── Dashboard ejecutivo ── */
-function _segRenderDashboard(activas){
-  const wrap = document.getElementById('seg-dashboard-wrap');
-  if(!wrap) return;
-  const total = activas.length;
-  if(!total){ wrap.innerHTML=''; return; }
-
-  const hoy = todayStr();
-  let nCurso=0, nDone=0, nAtras=0, nBloq=0, nPend=0, nPaus=0, nCriti=0, nSinFecha=0, nPlazo=0;
-  const porArea = {};
-  AREAS.forEach(a=>{ porArea[a.key]={curso:0,done:0,atras:0,pend:0,block:0,total:0,label:a.label,icon:a.icon}; });
-
-  activas.forEach(p=>{
-    const r   = _segEstados[p.id]||{};
-    const est = r.estado||'pendiente';
-    const ff  = r.fecha_fin_objetivo;
-    const late= ff && ff<hoy && est!=='completado';
-    if(!ff && est!=='completado') nSinFecha++;
-    if(ff && ff>=hoy && est!=='completado') nPlazo++;
-    const prio = getPrioridadAuto(p.id);
-    if(prio&&prio.v==='critica') nCriti++;
-    let cat='pend';
-    if(est==='completado'){ nDone++; cat='done'; }
-    else if(est==='bloqueado'){ nBloq++; cat='block'; }
-    else if(late){ nAtras++; cat='atras'; }
-    else if(est==='en_curso'){ nCurso++; cat='curso'; }
-    else if(est==='pausado'){ nPaus++; cat='block'; }
-    else { nPend++; cat='pend'; }
-    if(porArea[p.area]) { porArea[p.area].total++; porArea[p.area][cat]++; }
-  });
-
-  const pctPlazo = total ? Math.round((nDone+nPlazo)*100/total) : 0;
-  const pctAtras = total ? Math.round(nAtras*100/total) : 0;
-
-  /* Donut SVG */
-  const donutData=[
-    {l:'Completado',n:nDone,       c:'#00C9B7'},
-    {l:'En curso',  n:nCurso,      c:'#0099FF'},
-    {l:'Atrasado',  n:nAtras+nBloq,c:'#FF6B6B'},
-    {l:'Pendiente', n:nPend+nPaus, c:'#FFB84D'}
-  ].filter(d=>d.n>0);
-  const CX=70,R=50,ri=30; let acc=0;
-  const ttl = donutData.reduce((s,d)=>s+d.n,0)||1;
-  const arcs = donutData.map(d=>{
-    const frac=d.n/ttl;
-    const a0=acc*2*Math.PI-Math.PI/2, a1=(acc+frac)*2*Math.PI-Math.PI/2;
-    acc+=frac;
-    if(frac>=0.999) return `<circle cx="${CX}" cy="${CX}" r="${(R+ri)/2}" fill="none" stroke="${d.c}" stroke-width="${R-ri}"/>`;
-    const x1=CX+R*Math.cos(a0),y1=CX+R*Math.sin(a0),x2=CX+R*Math.cos(a1),y2=CX+R*Math.sin(a1);
-    const xi1=CX+ri*Math.cos(a1),yi1=CX+ri*Math.sin(a1),xi2=CX+ri*Math.cos(a0),yi2=CX+ri*Math.sin(a0);
-    const lg=frac>0.5?1:0;
-    return `<path d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xi1} ${yi1} A${ri} ${ri} 0 ${lg} 0 ${xi2} ${yi2}Z" fill="${d.c}"/>`;
-  }).join('');
-
-  const areasConProy = AREAS.filter(a=>porArea[a.key].total>0);
-
-  wrap.innerHTML=`<div class="seg-dashboard">
-    <div class="seg-dash-title">📊 Resumen del portafolio · ${total} iniciativas activas</div>
-    <div class="seg-kpi-row">
-      <div class="seg-kpi k-total">
-        <div class="seg-kpi-n">${total}</div>
-        <div class="seg-kpi-l">Total activas</div>
-        <div class="seg-kpi-sub">${nSinFecha?`${nSinFecha} sin fecha`:'Todas con plan'}</div>
-      </div>
-      <div class="seg-kpi k-curso">
-        <div class="seg-kpi-n">${nCurso}</div>
-        <div class="seg-kpi-l">En curso</div>
-        <div class="seg-kpi-sub">${total?Math.round(nCurso*100/total):0}% del portafolio</div>
-      </div>
-      <div class="seg-kpi k-plazo">
-        <div class="seg-kpi-n">${pctPlazo}%</div>
-        <div class="seg-kpi-l">En plazo</div>
-        <div class="seg-kpi-sub">${nDone} completadas · ${nPlazo} con holgura</div>
-      </div>
-      <div class="seg-kpi k-atras">
-        <div class="seg-kpi-n">${nAtras}</div>
-        <div class="seg-kpi-l">Atrasadas</div>
-        <div class="seg-kpi-sub">${pctAtras}% del portafolio${nBloq?` · +${nBloq} bloq.`:''}</div>
-      </div>
-      <div class="seg-kpi k-criti">
-        <div class="seg-kpi-n">${nCriti}</div>
-        <div class="seg-kpi-l">Críticas</div>
-        <div class="seg-kpi-sub">Top 25% del ranking</div>
-      </div>
-    </div>
-    <div class="seg-dash-charts">
-      <div class="seg-donut-col">
-        <div class="seg-donut-container">
-          <svg viewBox="0 0 140 140" class="seg-donut-svg" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="${CX}" cy="${CX}" r="${(R+ri)/2}" fill="none" stroke="#F0F3FA" stroke-width="${R-ri}"/>
-            ${arcs}
-          </svg>
-          <div class="seg-donut-center-label">
-            <div class="seg-donut-center-n">${total}</div>
-            <div class="seg-donut-center-l">total</div>
+        <textarea id="sv-inp-${projectId}" class="svd-ta" placeholder="Escribe el avance, riesgo o decisión…" onkeydown="if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();addComentario(${projectId});}"></textarea>
+        <div class="svd-composer-footer">
+          <span class="svd-hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> para enviar</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="svd-ok" id="sv-ok-${projectId}" style="opacity:0;transition:opacity .3s;">✓ Registrado</span>
+            <button class="svd-send-btn" id="sv-send-${projectId}" data-tipo-sel="avance" onclick="addComentario(${projectId})">Registrar</button>
           </div>
         </div>
-        <div class="seg-donut-legend">
-          ${donutData.map(d=>`<span class="seg-donut-item"><span class="seg-donut-dot" style="background:${d.c}"></span>${d.l} · ${d.n}</span>`).join('')}
+       </div>`
+    : `<div class="svd-no-login">🔒 Inicia sesión para registrar avances.</div>`;
+
+  // Editor admin
+  const editorHtml = admin
+    ? `<div class="svd-editor">
+        <div class="svd-editor-hdr">⚙ Editor · solo admins</div>
+        <div class="svd-editor-grid">
+          <div class="svd-field"><label>Responsable</label><input type="text" value="${esc(resp)}" placeholder="Nombre o email" onchange="setSegField(${projectId},'responsable',this.value)"></div>
+          <div class="svd-field"><label>Fecha inicio</label><input type="date" value="${fi}" onchange="setSegField(${projectId},'fecha_inicio',this.value||null)"></div>
+          <div class="svd-field"><label>Fecha fin objetivo</label><input type="date" value="${ff}" onchange="setSegField(${projectId},'fecha_fin_objetivo',this.value||null)"></div>
+          <div class="svd-field"><label>Origen</label>
+            <select onchange="setSegField(${projectId},'fecha_origen',this.value||null)">
+              <option value="">—</option>
+              <option value="Compromiso con GG"${r.fecha_origen==='Compromiso con GG'?' selected':''}>Compromiso con GG</option>
+              <option value="Estimación interna"${r.fecha_origen==='Estimación interna'?' selected':''}>Estimación interna</option>
+              <option value="Tentativa"${r.fecha_origen==='Tentativa'?' selected':''}>Tentativa</option>
+            </select>
+          </div>
+        </div>
+       </div>`
+    : '';
+
+  // Indicators
+  const nHitosDone=hitos.filter(h=>h.completado_at).length;
+  const nCmts=coments.length;
+
+  document.getElementById('svd-inner').innerHTML = `
+  <div class="svd-wrap">
+
+    <!-- BACK -->
+    <button class="svd-back" onclick="svVolverLista()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Volver al listado
+    </button>
+
+    <!-- HEADER OBJETIVO -->
+    <div class="svd-header">
+      <div class="svd-header-left">
+        <div class="svd-header-top">
+          <span class="svd-tipo-lbl">${{habilitante:'🧱 Habilitante',core:'⚙️ Core',transformacional:'✨ Transformacional'}[p.tipo]||p.tipo}</span>
+          ${area?`<span class="sv-area-tag" style="color:${area.color};background:${area.color}18;">${area.icon} ${area.label}</span>`:''}
+          ${prio?`<span class="sv-prio-badge" style="background:${prio.bg};border-color:${prio.bc};color:${prio.tc};">${prio.l}</span>`:''}
+          ${tempBadge}
+        </div>
+        <h2 class="svd-title">${esc(p.nombre)}</h2>
+        <p class="svd-def">${esc(p.definicion||p.alcance||'Sin descripción.')}</p>
+        <div class="svd-meta-row">
+          <span class="svd-meta-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg>
+            ${resp?esc(resp):'Sin responsable'}
+          </span>
+          <span class="svd-meta-item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${fmtFecha(fi)} → ${fmtFecha(ff)}
+          </span>
+          <span class="svd-meta-item">${estadoCtrl}</span>
         </div>
       </div>
-      <div class="seg-bars-col">
-        <div class="seg-bars-lbl">Distribución por área</div>
-        ${areasConProy.map(a=>{
-          const d=porArea[a.key];
-          const segs=[
-            {n:d.done, c:'seg-bar-fill-done'},
-            {n:d.curso,c:'seg-bar-fill-curso'},
-            {n:d.atras,c:'seg-bar-fill-atras'},
-            {n:d.block,c:'seg-bar-fill-block'},
-            {n:d.pend, c:'seg-bar-fill-pend'}
-          ].filter(s=>s.n>0);
-          return `<div class="seg-bar-row">
-            <span class="seg-bar-name" title="${esc(d.label)}">${a.icon} ${esc(d.label)}</span>
-            <div class="seg-bar-track">${segs.map(s=>`<div class="${s.c}" style="width:${s.n*100/d.total}%;height:100%"></div>`).join('')}</div>
-            <span class="seg-bar-n">${d.total}</span>
-          </div>`;
-        }).join('')}
+      <div class="svd-header-right">${donutSvg}</div>
+    </div>
+
+    <!-- INDICADORES CLAVE -->
+    <div class="svd-kpis">
+      <div class="svd-kpi-mini"><div class="svd-kpi-mini-n" style="color:#16A34A;">${nHitosDone}</div><div class="svd-kpi-mini-l">Hitos cumplidos</div></div>
+      <div class="svd-kpi-mini"><div class="svd-kpi-mini-n" style="color:#F59E0B;">${hitos.length-nHitosDone}</div><div class="svd-kpi-mini-l">Hitos pendientes</div></div>
+      <div class="svd-kpi-mini"><div class="svd-kpi-mini-n" style="color:#3B82F6;">${nCmts}</div><div class="svd-kpi-mini-l">Registros</div></div>
+      <div class="svd-kpi-mini"><div class="svd-kpi-mini-n">${prio?prio.l:'—'}</div><div class="svd-kpi-mini-l">Prioridad</div></div>
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="svd-grid">
+
+      <!-- COL IZQUIERDA: Hitos + Próximos pasos -->
+      <div class="svd-col-left">
+        <div class="svd-section">
+          <div class="svd-section-hdr">
+            <span>Hitos · ${hitos.length}</span>
+            ${admin?`<button class="svd-add-btn" onclick="addHito(${projectId})">+ Agregar</button>`:''}
+          </div>
+          <div class="svd-hitos-list">${hitosHtml}</div>
+        </div>
+
+        <div class="svd-section">
+          <div class="svd-section-hdr"><span>Próximos pasos</span></div>
+          <div class="svd-pasos">${proxPasosHtml}</div>
+        </div>
+
+        ${editorHtml}
       </div>
+
+      <!-- COL DERECHA: Comentarios + Composer -->
+      <div class="svd-col-right">
+        ${composerHtml}
+
+        <div class="svd-section" style="margin-top:16px;">
+          <div class="svd-section-hdr"><span>Historial de seguimiento · ${nCmts}</span></div>
+          <div class="svd-comments-list">${cmtsHtml}</div>
+        </div>
+      </div>
+
     </div>
   </div>`;
 }
 
-/* ── Re-render single card without rebuilding the list ── */
-function _segRerenderCard(projectId){
-  const card=document.getElementById('seg-card-'+projectId);
-  if(!card){ renderSeguimiento(); return; }
-  const wasOpen=card.classList.contains('seg-card-open');
-  const p=projects.find(x=>x.id===projectId); if(!p) return;
-  const tmp=document.createElement('div');
-  tmp.innerHTML=_segRenderCard(p);
-  const nc=tmp.firstElementChild;
-  if(wasOpen){
-    nc.classList.add('seg-card-open');
-    const body=nc.querySelector('.seg-card-body');
-    const tog=nc.querySelector('.seg-card-toggle');
-    if(body) body.classList.add('open');
-    if(tog)  tog.classList.add('open');
-  }
-  card.replaceWith(nc);
+function svVolverLista(){
+  _svDetallePid = null;
+  document.getElementById('seg-vista-detalle').style.display='none';
+  document.getElementById('seg-vista-lista').style.display='block';
+  svRenderAll();
 }
 
-function renderSeguimiento(){
-  const grid    = document.getElementById('seg-grid');
-  const counter = document.getElementById('seg-count');
-  const authNote= document.getElementById('seg-auth-note');
-  const dashWrap= document.getElementById('seg-dashboard-wrap');
-  if(!grid) return;
-
-  if(!_currentUser){
-    if(authNote) authNote.style.display='flex';
-    if(dashWrap) dashWrap.innerHTML='';
-    grid.innerHTML='';
-    return;
-  }
-  if(authNote) authNote.style.display='none';
-
-  // Asegurar ranking actualizado para prioridad automática
-  if(_lastRanking.length === 0) computeRankingSilent();
-
-  // Dashboard ejecutivo: SIEMPRE muestra el total de activas, no respeta filtros visuales
-  const activasTodas = projects.filter(p=>!p.inactiva && p.nombre.trim()!=='');
-  _segRenderDashboard(activasTodas);
-
-  const areaF   = (document.getElementById('seg-filter-area')?.value)||'';
-  const estadoF = (document.getElementById('seg-filter-estado')?.value)||'';
-
-  const filtered = projects.filter(p=>{
-    if(p.inactiva) return false; // Excluir pospuestas para 2027
-    if(areaF && p.area!==areaF) return false;
-    if(estadoF){
-      const e = _segEstados[p.id]?.estado||'pendiente';
-      if(e!==estadoF) return false;
-    }
-    return p.nombre.trim()!=='';
+function _svSetTipo(projectId, tipo, btn){
+  document.querySelectorAll(`[data-tipo]`).forEach(b=>{
+    if(b.closest('[id="sv-inp-'+projectId+'"]')||b.dataset.tipo===tipo){ /* keep */ }
+    b.className='svd-tipo-chip';
   });
-
-  if(counter) counter.textContent = filtered.length+' iniciativa'+(filtered.length!==1?'s':'');
-
-  if(filtered.length===0){
-    grid.innerHTML='<div class="empty-s"><div class="ei">📌</div><h3>Sin iniciativas</h3><p>Ajusta los filtros para ver más.</p></div>';
-    return;
-  }
-
-  // Si hay filtro de área activo: mostrar plano (sin agrupar)
-  if(areaF){
-    grid.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">${filtered.map(p=>_segRenderCard(p)).join('')}</div>`;
-    return;
-  }
-
-  // Agrupar por área (misma lógica que pestaña Proyectos)
-  let html = '';
-  AREAS.forEach(area=>{
-    const areaProjects = filtered.filter(p=>p.area===area.key);
-    if(areaProjects.length===0) return;
-    // Contar estados para el badge del grupo
-    const pendientes = areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='pendiente').length;
-    const enCurso    = areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='en_curso').length;
-    const completados= areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='completado').length;
-    const bloqueados = areaProjects.filter(p=>(_segEstados[p.id]?.estado||'pendiente')==='bloqueado').length;
-    // Mini stat pills
-    const statPills = [];
-    if(completados>0) statPills.push(`<span class="seg-area-stat" style="background:#E8FFF5;color:#0a6e5e;">✅ ${completados}</span>`);
-    if(enCurso>0)     statPills.push(`<span class="seg-area-stat" style="background:#E8F4FF;color:#003D99;">🔄 ${enCurso}</span>`);
-    if(bloqueados>0)  statPills.push(`<span class="seg-area-stat" style="background:#FFF0F0;color:#CC3333;">🚫 ${bloqueados}</span>`);
-    if(pendientes>0)  statPills.push(`<span class="seg-area-stat" style="background:#FFF9E8;color:#856404;">⏳ ${pendientes}</span>`);
-
-    html += `<div class="seg-area-group" id="seg-ag-${area.key}">
-      <div class="seg-area-hdr" style="border-bottom-color:${area.color}" onclick="toggleSegAreaGroup('${area.key}')">
-        <span class="seg-area-icon">${area.icon}</span>
-        <span class="seg-area-name">${area.label}</span>
-        <div class="seg-area-stats">
-          ${statPills.join('')}
-          <span class="seg-area-count" style="background:${area.color}">${areaProjects.length}</span>
-        </div>
-        <span class="seg-area-chev" id="seg-ag-chev-${area.key}">▾</span>
-      </div>
-      <div class="seg-area-body" id="seg-ag-body-${area.key}">
-        ${areaProjects.map(p=>_segRenderCard(p)).join('')}
-      </div>
-    </div>`;
+  // find all chips for this card
+  document.getElementById('svd-inner').querySelectorAll('.svd-tipo-chip').forEach(b=>{
+    b.className='svd-tipo-chip'+(b.dataset.tipo===tipo?' active-'+tipo:'');
   });
-  grid.innerHTML = html;
+  const sendBtn=document.getElementById('sv-send-'+projectId);
+  if(sendBtn) sendBtn.dataset.tipoSel=tipo;
 }
-
-/* ══════════════ BOOTSTRAP ══════════════════════════════════════════════════ */
-renderPesosGrid();
-updatePesosSum();
-// Auth check kicks off the full load chain
-checkSession();
-
-/* ══ FLUJO JS ══ */
-
-// ═══════════════════════════════════════════════════
-// DATA - 31 iniciativas + nodos de sistema
-// ═══════════════════════════════════════════════════
-const DETAILS = {
-
-  estrategia: {
-    icon:'🎯', title:'Estrategia RRHH 2026-2027', area:'Gerencia de Personas',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Ser socios estratégicos del negocio gestionando los desafíos adaptativos de EESS','Construir Capacidad Organizacional para la Era Humano-Máquina','Estrategia de Personas + Estrategia de Negocio = Ventaja Competitiva'],
-    dep:'Marco de referencia que orienta todas las decisiones de diseño, priorización y ejecución del área.',
-    connections:['competencias','sistema-uno','medicion-cultural','resultado']
-  },
-
-  'p6-sistema': {
-    icon:'🏛️', title:'P6 - Procesos RRHH como Cimientos', area:'Transversal',
-    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Operación confiable como condición de credibilidad estratégica','RRHH gana el derecho a la mesa estratégica siendo primero confiable en lo operativo','Incluye: nómina, contratos, finiquitos, selección, compensaciones, beneficios, capacitación, desempeño'],
-    dep:'Sin P6 sólido, cualquier iniciativa estratégica carece de base. Es la condición, no el objetivo.',
-    connections:['sistema-uno','offboarding','diagnostico-salarial','pasaje-cargo','reportabilidad','digitalizacion','automatizacion']
-  },
-
-  competencias: {
-    icon:'🗂️', title:'Modelo de Competencias', area:'Desarrollo Organizacional',
-    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Redefinir el modelo alineado a la lógica de skills (P2) y principios culturales (P3)','Reducir de 20 subcompetencias a 6 con conductas observables por nivel','Asegurar que sea el lenguaje común de selección, desempeño, desarrollo y compensación','Desarrollar arquetipos de roles: núcleo estable + zona de adaptación dinámica'],
-    dep:'Pieza fundante de P2 - sin este mapa no hay base para trayectorias no lineales. Dependencia directa con Desempeño Ágil y R&S.',
-    connections:['desempeno','atraccion','desarrollo','diagnostico-salarial']
-  },
-
-  desempeno: {
-    icon:'📊', title:'Sistema de Desempeño Ágil', area:'Desarrollo Organizacional',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Diseñar ciclos de evaluación continuos (no anuales), con foco en desarrollo','Incorporar feedback continuo como componente formal del sistema','Habilitar a líderes para conducir conversaciones de desempeño efectivas','Conversaciones de 15 min: conductas + resultados + desarrollo'],
-    dep:'Depende del Modelo de Competencias actualizado. Comparte feedback continuo con Cultura - debe ser un único sistema, no dos paralelos.',
-    connections:['competencias','liderazgo','reconocimiento','desarrollo']
-  },
-
-  habilidades: {
-    icon:'🧩', title:'Arquitectura de Habilidades', area:'Desarrollo Organizacional',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
-    tasks:['Mapear skills actuales vs. requeridas 2027-2030','Diseñar arquetipos de roles con núcleo estable y zona de adaptación dinámica','Definir trayectorias no lineales de desarrollo','Identificar skills críticos para la era IA en cada familia de roles'],
-    dep:'Habilita movilidad interna real y upskilling focalizado. Depende del Modelo de Competencias como lenguaje base.',
-    connections:['competencias','desarrollo','desempeno']
-  },
-
-  lidera: {
-    icon:'⚙️', title:'Programa Lidera tus Procesos', area:'Desarrollo Organizacional',
-    pilares:[{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'}],
-    tasks:['Dotar a líderes de herramientas para gestionar sus procesos con autonomía','Incorporar criterio de uso de IA en decisiones cotidianas de gestión','Diseñar cómo líderes actúan sobre resultados del pulso cultural'],
-    alert:'Definir población objetivo y formato antes de diseñar. El contenido varía significativamente entre líderes de obra y oficina. Esto condiciona escala, formato y recursos.',
-    connections:['desempeno','liderazgo','medicion-cultural']
-  },
-
-  automatizacion: {
-    icon:'🤖', title:'Automatizar Procesos RRHH', area:'Desarrollo Organizacional',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Mapear procesos actuales e identificar cuellos de botella automatizables','Documentar metodología y diseñar herramienta estándar de cálculo','Validar con stakeholders - política, flujo, solicitud, plazos','Implementar gobernanza y confidencialidad de datos'],
-    dep:'Iniciativa transversal que habilita eficiencia en múltiples áreas. Requiere alineación con TI y owner claro.',
-    connections:['sistema-uno','digitalizacion','resultado']
-  },
-
-  liderazgo: {
-    icon:'🧭', title:'Liderazgo en la Era IA - Programa Lidera', area:'Desarrollo Organizacional',
-    pilares:[{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'}],
-    tasks:['Desarrollar competencias de liderazgo adaptativo y gestión del cambio en contexto IA','Incluir toma de decisiones aumentada y criterio ético bajo IA','Diseñar cómo los líderes actúan sobre los resultados del pulso cultural'],
-    alert:'Definir población objetivo y formato antes de diseñar. El contenido varía significativamente entre líderes de obra y oficina.',
-    connections:['desempeno','cambio','medicion-cultural']
-  },
-
-  'apoyo-cultura': {
-    icon:'🔗', title:'Apoyo Metodológico a Cultura', area:'Desarrollo Organizacional',
-    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Soporte metodológico a iniciativas de gestión cultural','Co-diseño del modelo de medición continua de salud cultural con Calidad de Vida','Definir roles explícitos: qué hace Cultura, qué hace DO, qué hace Calidad de Vida'],
-    dep:'Iniciativa de articulación transversal - evitar duplicidades entre DO, Cultura y CV.',
-    connections:['programa-cultura','medicion-cultural','desempeno']
-  },
-
-  desarrollo: {
-    icon:'🌙', title:'Plataforma MOOC (LMS + Videos)', area:'Capacitación',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
-    tasks:['Desarrollar plataforma LMS y videos de libre disposición para autogestión del aprendizaje','Nivel 1 de capacitación: oferta base accesible para todos los trabajadores','Las personas eligen sus rutas de aprendizaje — fomentar autonomía y aprendizaje continuo','Activa como soporte de onboarding: cursos obligatorios por cargo disponibles desde el primer día'],
-    alert:'Riesgo de secuencia: sin Modelo de Competencias (P2), la plataforma no tiene criterio de priorización de contenidos. Orden correcto: Competencias → MOOC.',
-    connections:['competencias','desempeno','habilidades','cursos-estrategicos','cursos-onboarding']
-  },
-
-  'cursos-estrategicos': {
-    icon:'📖', title:'Cursos Estratégicos y Multicompetencias', area:'Capacitación',
-    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'}],
-    tasks:['Diseñar e implementar nuevos cursos vinculados a los pilares estratégicos y al Modelo de Competencias actualizado','Actualizar contenidos de cursos vigentes y desarrollar cursos multicompetencias','Ampliar y actualizar la oferta curricular de GESOC: Nivel 2 de capacitación','La oferta debe seguir la lógica del mapa de habilidades — no construir catálogo sin criterio previo'],
-    dep:'Depende del Modelo de Competencias actualizado. Sin ese mapa, los cursos se diseñan sin criterio de priorización estratégica.',
-    connections:['competencias','desarrollo','habilidades','transferencia']
-  },
-
-  'cursos-onboarding': {
-    icon:'🎓', title:'Cursos de Onboarding por Cargo', area:'Capacitación',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Diseñar y actualizar cursos específicos para incluir en el proceso de onboarding','Definir propuesta de cursos obligatorios por cada pilar estratégico: Nivel 1 de capacitación','Asegurar disponibilidad en plataforma MOOC desde el primer día de ingreso','Coordinación con R&S y DO para integrar al flujo de onboarding end-to-end'],
-    dep:'Iniciativa coordinada con Onboarding (R&S) — los cursos son un componente del proceso de incorporación, no una acción separada.',
-    connections:['onboarding','desarrollo','competencias']
-  },
-
-  'certificacion-obra': {
-    icon:'🏅', title:'Certificación Obra — Programa Progresivo Chilevalora', area:'Capacitación',
-    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Programa de certificación de competencias Chilevalora específico para obra y proveedores externos','Establecer alianza/convenio con uno o dos proveedores de certificación: reducir costos, tiempos y agilizar proceso','Foco en certificación SEC como prioridad: alta demanda y mayor impacto en acreditación técnica','Programa progresivo: los trabajadores avanzan en niveles de competencia reconocidos externamente'],
-    dep:'Diferente a la capacitación de oficios (formación interna): esta iniciativa apunta a certificación formal reconocida por organismos externos. Coordinación con DO para alinear con mapa de habilidades.',
-    connections:['capacitacion-obra','habilidades','competencias']
-  },
-
-  'gestion-cambio-cap': {
-    icon:'🔀', title:'Gestión del Cambio desde Capacitación', area:'Capacitación',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'}],
-    tasks:['Desarrollar propuesta desde Capacitación para los distintos proyectos de cambio organizacional','Participar e incidir en el diseño e implementación de propuestas de capacitación vinculadas a proyectos clave','No limitarse a ejecutar el pedido de otras áreas — tener criterio propio sobre qué capacitación habilita qué cambio','Construir capacidad interna: que Capacitación sea un socio activo en proyectos de cambio, no un proveedor pasivo'],
-    dep:'Requiere coordinación con Cultura y Gestión del Cambio para no duplicar roles. Capacitación aporta el componente de habilitación de habilidades; Cultura aporta el componente de adhesión y significado.',
-    connections:['cambio','apoyo-cultura','programa-cultura','competencias']
-  },
-
-  'capacitacion-obra': {
-    icon:'🏗️', title:'Capacitación Obra - Oficios', area:'Capacitación',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
-    tasks:['Diseñar formato específico para capacitación en obra, diferenciado de oficina','Vinculación con programas de la Cámara Chilena de la Construcción','Desarrollar itinerarios de formación por oficio'],
-    dep:'Requiere coordinación con jefes de obra y supervisores para validar formatos y disponibilidad horaria.',
-    connections:['desarrollo','habilidades']
-  },
-
-  transferencia: {
-    icon:'📏', title:'Medición de Transferencia', area:'Capacitación',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Medir transferencia y anclaje al puesto de trabajo (nivel 3 Kirkpatrick)','Diseñar pilotos antes de escalar cualquier programa','Construir metodología de evaluación de impacto replicable'],
-    dep:'Sin medición de transferencia, el presupuesto de capacitación no puede justificarse estratégicamente.',
-    connections:['desarrollo','desempeno']
-  },
-
-  'diagnostico-salarial': {
-    icon:'💰', title:'Estandarización Base y Herramienta Diagnóstico Salarial', area:'Compensaciones',
-    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Sanear bases de datos (Personal y Remuneraciones) como punto de partida','Definir fuentes e inputs del modelo: encuestas de mercado + Finanzas','Construir modelo Excel base para diagnóstico salarial estandarizado','Desarrollar política borrador y tipos de diagnóstico aplicables','Validación inicial con GG César antes de cierre de año'],
-    alert:'Vacío crítico: sin acuerdo previo sobre el entregable y su uso, el diagnóstico pierde efecto. Iniciar con saneamiento de base de datos — no se puede diagnosticar sobre datos inconsistentes.',
-    connections:['competencias','pasaje-cargo','resultado']
-  },
-
-  'pasaje-cargo': {
-    icon:'📐', title:'Gestión Integral de Cargos, Estructura y Valorización', area:'Compensaciones',
-    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'}],
-    tasks:['Mapear el proceso actual de pesaje de cargos (metodología HAY)','Documentar metodología preliminar con criterios explícitos y replicables','Coordinación con DO para alinear con Descriptores de Cargo (DDC)','Establecer comité de pesaje: quiénes participan, con qué frecuencia, con qué criterio','Definir gobernanza del proceso: quién aprueba, quién ejecuta, quién fiscaliza'],
-    dep:'Iniciativa que consolida tres dimensiones: estructura organizacional, descripción de cargos (DO) y valorización (Compensaciones). Sin coordinación entre estas tres piezas, el proceso es inconsistente.',
-    connections:['sistema-uno','diagnostico-salarial','reportabilidad']
-  },
-
-  reportabilidad: {
-    icon:'📊', title:'Modelo Mensual de Control de Gestión RRHH', area:'Compensaciones',
-    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Levantamiento de requerimientos con GG César: qué información necesita el negocio de RRHH','Inventario de reportes actuales por área: Personal y Rem, CdV, Legal, Finanzas, DO','Construir matriz de 13 KPIs estratégicos validada con GG César','Desarrollar plantilla estándar en Excel + módulo piloto de Dotación','Definir roadmap de módulos restantes para 2027'],
-    dep:'Modelo en Excel como primera versión (confiable, rápido de implementar). La migración a Sistema Uno es el paso siguiente — no el punto de partida.',
-    connections:['sistema-uno','pasaje-cargo','resultado']
-  },
-
-  digitalizacion: {
-    icon:'⚙️', title:'Workflows de Compensaciones y Estructura en Sistema 1', area:'Compensaciones',
-    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Levantar 4 procesos actuales (todos por correo hoy) para migrar a Sistema 1: Cambio de Renta, Cambio de Estructura, Cambio de Cargo, Nuevo Cargo/Modificación','Workflow 1: Cambio de Renta (piloto inicial con Personal y Rem.)','Definir gobernanza y aprobadores por workflow con gerencias solicitantes','Parametrización en Sistema 1 + pruebas con usuarios clave y capacitación','Activación oficial con fecha de corte del correo por workflow — el correo deja de ser el canal'],
-    dep:'Coordinación estrecha con TI, Remuneraciones y gerencias solicitantes. El correo como canal de solicitud es el problema a resolver — cada workflow migrado elimina una fuente de error y retraso.',
-    connections:['sistema-uno','reportabilidad','automatizacion']
-  },
-
-  atraccion: {
-    icon:'🔍', title:'Estandarización Selección y EVP', area:'Reclutamiento y Selección',
-    pilares:[{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Actualizar política, proceso y sistema de atracción y evaluación de talento','Estandarizar herramientas, flujos y criterios de evaluación','Apalancar tecnología disponible (ATS, evaluaciones en línea)','Gestionar el cambio con los clientes internos'],
-    dep:'La calidad de selección depende del Modelo de Competencias. Sin perfil de skills, los criterios de evaluación son ambiguos.',
-    connections:['competencias','onboarding','sistema-uno']
-  },
-
-  onboarding: {
-    icon:'🚀', title:'Proceso de Onboarding', area:'R&S + DO + Capacitación',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Diseñar proceso integrado desde firma hasta productividad plena','Tareas claras por área y cargo con seguimiento automatizado','Métricas de cumplimiento - para que el colaborador aporte desde el primer día','Incluir inducción cultural (DO) y formación inicial (Capacitación)'],
-    dep:'El onboarding es la primera experiencia concreta de la PVE - define la percepción inicial del colaborador. No puede ser solo un checklist administrativo.',
-    connections:['atraccion','desempeno','medicion-cultural']
-  },
-
-  'sistema-uno': {
-    icon:'💻', title:'Potenciar Herramientas Sistema Uno', area:'Remuneraciones y Relaciones Laborales',
-    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'}],
-    tasks:[
-      '— PATA A: Evidenciar eficiencia generada —',
-      'Construir dashboard con KPIs que muestre ahorro de tiempo por proceso ya migrado a Sistema Uno',
-      'Caso emblema: firma de documentos integrada (antes: salir a plataforma externa → hoy: flujo completo en Sistema Uno). Medir tiempo ahorrado para el creador del doc, el firmante y el empleador',
-      'Objetivo: demostrar con datos que la migración generó valor y generar criterio para próximas decisiones de mejora',
-      '— PATA B: Reauditar implementación copy-paste —',
-      'Hacer ronda con cada subárea de la Gerencia de Personas: levantar qué fue replicado sin análisis y qué podría mejorarse dentro de la plataforma',
-      'Foco prioritario: módulo de KPIs/variables — permite automatizar cálculo de renta variable y generar tickets de compensación automáticamente (cubre requisito legal + eficiencia administrativa en un solo flujo)'
-    ],
-    alert:'Iniciativa con dos componentes distintos: (A) demostrar valor ya generado con datos, y (B) reauditar implementaciones copy-paste para identificar mejoras pendientes. El módulo de variables tiene potencial de cerrar la brecha operativa con Compensaciones (pesajes). No es un proyecto de TI nuevo — trabaja con lo que ya existe.',
-    connections:['pasaje-cargo','reportabilidad','digitalizacion','offboarding','revision-contratos']
-  },
-
-  offboarding: {
-    icon:'🚪', title:'Proceso de Offboarding', area:'Remuneraciones / Relaciones Laborales',
-    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:[
-      '— PLANO 1: Flujo operativo de salida —',
-      'Mapear el proceso completo desde aviso de baja hasta cierre: quién notifica qué, en qué plazo, qué información debe llegar a Remuneraciones antes del día 10 del finiquito',
-      'Problema actual: información llega incompleta al momento del finiquito (caja chica sin confirmar, comisiones sin dato disponible, equipos TI sin recuperar)',
-      'Meta: cuando llegue el aviso de baja, el área ya viene con checklist completo. Remuneraciones revisa — no persigue',
-      '— PLANO 2: Cierre financiero sin conflicto —',
-      'Comisiones de ventas: el desfase entre pago y finiquito genera firma "a ojos cerrados" — diseñar protocolo que resuelva esto antes del día 10',
-      'Bonos no escriturados: generan disputas post-salida entre Compensaciones y el trabajador. Requiere coordinación con iniciativa Revisión de Contratos',
-      'Caja chica: pasar de recuperación reactiva a protocolo preventivo (información confirmada antes del finiquito)',
-      '— PLANO 3: Gestión de contingencias post-salida —',
-      'Mapear dónde están las contingencias legales antes de que exploten — saber qué es corregible y qué se asume conscientemente',
-      'Vinculado directamente con Revisión y Actualización de Contratos: un contrato claro reduce las contingencias en la salida'
-    ],
-    alert:'El offboarding tiene tres planos superpuestos que hoy no están diferenciados: (1) proceso operativo de cierre, (2) cierre financiero limpio, y (3) gestión de contingencias legales. Resolver solo uno sin los otros genera eficiencia parcial. Priorizar Plano 1 tiene impacto inmediato en Remuneraciones y no requiere cambios legales.',
-    connections:['sistema-uno','revision-contratos','pasaje-cargo']
-  },
-
-  'revision-contratos': {
-    icon:'📄', title:'Revisión y Actualización de Contratos', area:'Relaciones Laborales',
-    pilares:[{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:[
-      '— OBJETIVO 1: Transparencia para el trabajador —',
-      'Auditoría completa de contratos vigentes por tipo (faena, oficios, oficina): verificar que lo que dice el contrato le haga sentido a quien lo firma',
-      'Política actual: contratos por faena con descripción específica (ej: "maestro pintor, obra gruesa del edificio Las Lías") — verificar que la ejecución esté alineada',
-      '— OBJETIVO 2: Protección legal de la empresa —',
-      'Mapear contingencias actuales: dónde hay dificultad para demostrar el término de la faena o del vínculo laboral',
-      'Evaluar incorporación de hitos técnicamente demostrables en contratos de obra (entregables específicos verificables por terceros)',
-      'Documentar y escriturar bonos que hoy se pagan sin respaldo formal (seguridad, resultado empresa, etc.): sin papel, hay debate',
-      '— CONDICIÓN PREVIA —',
-      'Coordinación con abogados laborales antes de modificar cualquier documento. Este levantamiento es diagnóstico primero, propuesta de cambio después'
-    ],
-    alert:'Doble objetivo simultáneo: transparencia para el trabajador (sabe exactamente para qué fue contratado y cuándo termina) y protección legal de la empresa (puede demostrar el término de la relación contractual). Requiere coordinación externa antes de ejecutar cambios. Vinculada directamente con el Plano 3 del Offboarding.',
-    connections:['offboarding','sistema-uno']
-  },
-
-  'programa-cultura': {
-    icon:'🌿', title:'Programa Trabajo Cultura', area:'Cultura y Gestión del Cambio',
-    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Elaborar estructura de gestión del cambio propia de Socovesa','Desarrollar un Programa de feedback continuo','Alinear reconocimiento del conjunto con DO','Traducir principios culturales en comportamientos observables por área y nivel'],
-    dep:'Iniciativa de elaboración y despliegue cultural - distinta a la medición. Cultura lidera; DO apoya metodológicamente.',
-    connections:['reconocimiento','medicion-cultural','cambio','apoyo-cultura']
-  },
-
-  cambio: {
-    icon:'🔄', title:'Gestión del Cambio Organizacional', area:'Cultura y Gestión del Cambio',
-    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'}],
-    tasks:['Acompañar el cambio organizacional en proyectos PI, Datos y Sostenibilidad','Desarrollar metodología interna de gestión del cambio replicable','No depender de consultoría externa en cada proyecto - construir capacidad interna'],
-    dep:'La metodología de gestión del cambio debe ser internalizada, no externalizada en cada proyecto.',
-    connections:['liderazgo','programa-cultura','medicion-cultural']
-  },
-
-  reconocimiento: {
-    icon:'⭐', title:'Reconocimiento y Feedback Continuo', area:'Cultura y Calidad de Vida + DO',
-    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Diseñar sistema de reconocimiento alineado a comportamientos culturales (no solo resultados)','Co-diseñar feedback continuo con DO: quién lo facilita, ciclo y registro','Articular con Sistema de Desempeño Ágil - evitar duplicidades'],
-    dep:'El feedback continuo es componente del Sistema de Desempeño Ágil (DO). Debe ser un único sistema alimentado por dos áreas. Acordar propiedad antes de ejecutar.',
-    connections:['desempeno','programa-cultura','medicion-cultural']
-  },
-
-  comunicaciones: {
-    icon:'📢', title:'Comunicaciones Internas', area:'Cultura y Gestión del Cambio',
-    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Newsletter unificado una vez al mes - canal ordenado de comunicaciones RRHH','Posicionar Sistema Uno como plataforma de gestión y comunicación de EESS'],
-    alert:'El newsletter es un medio, no una estrategia - definir primero qué se comunica y para qué antes de diseñar el formato.',
-    connections:['programa-cultura','sistema-uno']
-  },
-
-  'medicion-cultural': {
-    icon:'📡', title:'Medición Continua Salud Cultural', area:'Calidad de Vida + DO',
-    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Diseñar modelo de pulso de clima trimestral/cuatrimestral: qué se mide, con qué herramienta, quién actúa','Establecer protocolo de actuación ante resultados críticos','Calidad de Vida lidera la medición; DO lidera el análisis y la acción'],
-    dep:'Iniciativa de medición de clima - distinta al Programa Cultura. Requiere acuerdo explícito de roles entre Calidad de Vida y DO para evitar duplicidades.',
-    connections:['programa-cultura','apoyo-cultura','liderazgo','resultado']
-  },
-
-  bienestar: {
-    icon:'💚', title:'Calidad de Vida - Indicadores y Programas', area:'Calidad de Vida',
-    pilares:[{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Obra: generar indicadores de asistencia social trimestrales (bienestar, clima, uso de programas)','Automatizar y eficientar procesos de gestión de beneficios','Posicionar programas estratégicos con indicadores de alcance e impacto','Seguimiento y definición de iniciativas Proceso Psicosocial oficina'],
-    connections:['psicosocial','medicion-cultural','resultado']
-  },
-
-  diversidad: {
-    icon:'🌈', title:'Diversidad e Inclusión', area:'Calidad de Vida',
-    pilares:[{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'}],
-    tasks:['Sostener pilar de discapacidad - compromisos concretos con métricas','Desarrollar pilar de equidad de género','Consolidar comunidad de personas cuidadoras','Ley Karin: abordaje dimensión violencia en el trabajo'],
-    legal:'🔴 Ley Karin - obligación legal activa: verificar estado de cumplimiento como prioridad inmediata antes de avanzar otras iniciativas de este bloque.',
-    connections:['bienestar','psicosocial','programa-cultura']
-  },
-
-  psicosocial: {
-    icon:'🧠', title:'Factores Psicosociales', area:'Calidad de Vida',
-    pilares:[{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['Aplicar SUSESO-ISTAS21 2026','Seguimiento y definición de iniciativas de oficina','Seguimiento proceso obras en terreno','Integrar resultados a planes de mejora del área'],
-    dep:'Los resultados del diagnóstico psicosocial deben alimentar el plan de acción de Calidad de Vida y ser coherentes con el pulso cultural.',
-    connections:['bienestar','medicion-cultural','resultado']
-  },
-
-  resultado: {
-    icon:'🏆', title:'RRHH como Socio Estratégico', area:'Resultado esperado 2026-2027',
-    pilares:[{code:'P1',color:'#1565C0',bg:'#E3F2FD',label:'Capacidad Adaptativa'},{code:'P2',color:'#2E7D32',bg:'#E8F5E9',label:'Arquitectura de Habilidades'},{code:'P3',color:'#B8860B',bg:'#FFFDE7',label:'Cultura como Infraestructura'},{code:'P4',color:'#B71C1C',bg:'#FFEBEE',label:'Liderazgo en la Era IA'},{code:'P5',color:'#6A1B9A',bg:'#F3E5F5',label:'PVE Diferenciada'},{code:'P6',color:'#0D47A1',bg:'#E8EAF6',label:'Procesos como Cimientos'}],
-    tasks:['P6 funcionando: operación confiable que libera tiempo estratégico','P1+P2: organización que aprende y despliega talento según habilidades','P3+P4: cultura como ventaja competitiva, líderes preparados para la era IA','P5: propuesta de valor al empleado diferenciada y comunicada con evidencia'],
-    dep:'Capacidad Organizacional para la Era Humano-Máquina: Estrategia de Personas + Estrategia de Negocio.',
-    connections:[]
-  }
-};
-
-// ═══════════════════════════════════════════════════
-// DETAIL PANEL
-// ═══════════════════════════════════════════════════
-function flujo_openDetail(id) {
-  const d = DETAILS[id];
-  if (!d) return;
-  document.getElementById('dp-icon').textContent = d.icon;
-  document.getElementById('dp-title').textContent = d.title;
-  document.getElementById('dp-area').textContent = d.area;
-
-  let html = '';
-
-  if (d.pilares && d.pilares.length) {
-    html += '<div><div class="dp-section-title">Pilares vinculados<\/div><div class="dp-pilares">';
-    d.pilares.forEach(p => {
-      html += '<div class="dp-p-chip" style="background:' + p.bg + ';color:' + p.color + ';border-color:' + p.color + '33;">' + p.code + ' · ' + p.label + '<\/div>';
-    });
-    html += '<\/div><\/div>';
-  }
-
-  if (d.tasks && d.tasks.length) {
-    html += '<div><div class="dp-section-title">Iniciativas / acciones clave<\/div><ul class="dp-tasks">';
-    d.tasks.forEach(t => { html += '<li>▸ ' + t + '<\/li>'; });
-    html += '<\/ul><\/div>';
-  }
-
-  if (d.legal) html += '<div class="dp-legal">' + d.legal + '<\/div>';
-  if (d.alert) html += '<div class="dp-alert">⚠ ' + d.alert + '<\/div>';
-  if (d.dep)   html += '<div class="dp-deps">↔ ' + d.dep + '<\/div>';
-
-  if (d.connections && d.connections.length) {
-    html += '<div><div class="dp-section-title">Conectado con<\/div><div class="dp-connections">';
-    d.connections.forEach(cid => {
-      const c = DETAILS[cid];
-      if (c) html += '<div class="dp-conn-item" data-action="detail" data-id="' + cid + '">' + c.icon + ' ' + c.title + '<span class="arrow">→<\/span><\/div>';
-    });
-    html += '<\/div><\/div>';
-  }
-
-  document.getElementById('dp-body').innerHTML = html;
-  document.getElementById('detailPanel').classList.add('open');
-  document.getElementById('overlay').classList.add('show');
-}
-
-function flujo_closeDetail() {
-  document.getElementById('detailPanel').classList.remove('open');
-  document.getElementById('overlay').classList.remove('show');
-}
-
-// ═══════════════════════════════════════════════════
-// VIEW TOGGLE
-// ═══════════════════════════════════════════════════
-function flujo_setView(view) {
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector('[data-action="view"][data-view="' + view + '"]');
-  if (btn) btn.classList.add('active');
-  document.getElementById('view-flow').style.display   = view === 'flow'   ? 'block' : 'none';
-  document.getElementById('view-matrix').style.display = view === 'matrix' ? 'block' : 'none';
-  document.getElementById('view-tabla').style.display  = view === 'tabla'  ? 'block' : 'none';
-}
-
-// ═══════════════════════════════════════════════════
-// TABLA FILTER
-// ═══════════════════════════════════════════════════
-function flujo_tblFilter(pilar) {
-  document.querySelectorAll('.tbl-filter-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector('[data-action="tbl"][data-pilar="' + pilar + '"]');
-  if (btn) btn.classList.add('active');
-  const rows = document.querySelectorAll('#tblMain tbody tr[data-tp]');
-  let visible = 0;
-  rows.forEach(row => {
-    if (pilar === 'all') { row.classList.remove('thidden'); visible++; }
-    else {
-      const ps = row.dataset.tp || '';
-      if (ps.includes(pilar)) { row.classList.remove('thidden'); visible++; }
-      else { row.classList.add('thidden'); }
-    }
-  });
-  document.getElementById('tblCount').textContent = visible;
-}
-
-// ═══════════════════════════════════════════════════
-// FILTER BY PILAR (header legends)
-// ═══════════════════════════════════════════════════
-let activeFilter = null;
-function flujo_filterByPilar(pilar, el) {
-  if (activeFilter === pilar) {
-    activeFilter = null;
-    document.querySelectorAll('.p-legend').forEach(l => l.classList.remove('active-filter'));
-    document.querySelectorAll('.node, .foundation-strip, .resultado-node').forEach(n => n.classList.remove('dim','highlight'));
-    return;
-  }
-  activeFilter = pilar;
-  document.querySelectorAll('.p-legend').forEach(l => l.classList.remove('active-filter'));
-  if (el) el.classList.add('active-filter');
-  document.querySelectorAll('.node, .foundation-strip, .resultado-node').forEach(n => {
-    const ps = (n.dataset.pilares || '').split(' ');
-    if (ps.includes(pilar)) { n.classList.remove('dim'); n.classList.add('highlight'); }
-    else { n.classList.remove('highlight'); n.classList.add('dim'); }
-  });
-}
-
-// ═══════════════════════════════════════════════════
-// FILTER BY AREA (sidebar)
-// ═══════════════════════════════════════════════════
-const AREA_MAP = {
-  gerente: ['estrategia','resultado'],
-  do: ['competencias','desempeno','habilidades','lidera','automatizacion','liderazgo','apoyo-cultura'],
-  cap: ['desarrollo','cursos-estrategicos','cursos-onboarding','capacitacion-obra','certificacion-obra','transferencia','gestion-cambio-cap'],
-  comp: ['diagnostico-salarial','pasaje-cargo','reportabilidad','digitalizacion'],
-  rs: ['atraccion','onboarding'],
-  rem: ['sistema-uno','offboarding','revision-contratos'],
-  cultura: ['programa-cultura','cambio','reconocimiento','comunicaciones'],
-  cv: ['medicion-cultural','bienestar','diversidad','psicosocial']
-};
-
-function flujo_filterByArea(area) {
-  document.querySelectorAll('.area-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector('[data-action="area"][data-area="' + area + '"]');
-  if (btn) btn.classList.add('active');
-  activeFilter = null;
-  document.querySelectorAll('.p-legend').forEach(l => l.classList.remove('active-filter'));
-  document.querySelectorAll('.node, .foundation-strip, .resultado-node').forEach(n => n.classList.remove('dim','highlight'));
-  if (area === 'all') return;
-
-  const show = AREA_MAP[area] || [];
-  document.querySelectorAll('.node, .foundation-strip').forEach(n => {
-    const id = n.dataset.id || '';
-    const areaGroup = n.dataset.areaGroup || '';
-    // Resaltar si: el nodo tiene data-id en el mapa, o el nodo es el grupo de esta área
-    if (show.includes(id) || areaGroup === area) {
-      n.classList.add('highlight');
-    } else if (!id && !areaGroup) {
-      // nodo sin id ni grupo: no tocar
-    } else {
-      n.classList.add('dim');
-    }
-  });
-}
-
-// ═══════════════════════════════════════════════════
-// AREA GROUP PANEL — abre panel con todas las iniciativas de un área
-// ═══════════════════════════════════════════════════
-const AREA_LABELS = {
-  cap:     { icon: '📚', title: 'Capacitación',                     subtitle: '7 iniciativas' },
-  rem:     { icon: '📋', title: 'Remuneraciones y Relaciones Laborales', subtitle: '3 iniciativas' },
-  do:      { icon: '🏗️', title: 'Desarrollo Organizacional',         subtitle: '7 iniciativas' },
-  comp:    { icon: '⚖️', title: 'Compensaciones',                    subtitle: '4 iniciativas' },
-  rs:      { icon: '🔍', title: 'Reclutamiento y Selección',         subtitle: '2 iniciativas' },
-  cultura: { icon: '🌱', title: 'Cultura y Gestión del Cambio',      subtitle: '4 iniciativas' },
-  cv:      { icon: '💚', title: 'Calidad de Vida',                   subtitle: '4 iniciativas' },
-  do_lidera: { icon: '🧭', title: 'Liderazgo en la Era IA',          subtitle: '2 iniciativas' }
-};
-
-function flujo_openAreaGroup(area) {
-  const ids = AREA_MAP[area] || [];
-  const meta = AREA_LABELS[area] || { icon: '📂', title: area, subtitle: ids.length + ' iniciativas' };
-  const items = ids.map(id => DETAILS[id]).filter(Boolean);
-  if (!items.length) return;
-
-  document.getElementById('dp-icon').textContent = meta.icon;
-  document.getElementById('dp-title').textContent = meta.title;
-  document.getElementById('dp-area').textContent = meta.subtitle + ' · Clic en cada tarjeta para ver detalle completo';
-
-  let html = '<div><div class="dp-section-title">Iniciativas del área</div>';
-  html += '<div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">';
-
-  ids.forEach(id => {
-    const d = DETAILS[id];
-    if (!d) return;
-    // Chips de pilares
-    const pilarChips = (d.pilares || []).map(p =>
-      '<span style="display:inline-flex;align-items:center;gap:3px;background:' + p.bg + ';color:' + p.color + ';border:1px solid ' + p.color + '33;border-radius:10px;padding:1px 7px;font-size:9px;font-weight:700;">' + p.code + '<\/span>'
-    ).join(' ');
-    // Primera task como preview
-    const preview = (d.tasks && d.tasks.length)
-      ? d.tasks.filter(t => !t.startsWith('—'))[0] || d.tasks[0]
-      : '';
-    html += '<div class="dp-conn-item" data-action="detail" data-id="' + id + '" style="display:block;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#F8FAFD;cursor:pointer;transition:all 0.15s;">';
-    html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">';
-    html += '<div style="flex:1;">';
-    html += '<div style="font-weight:700;font-size:12px;color:var(--navy);margin-bottom:4px;">' + d.icon + ' ' + d.title + '<\/div>';
-    if (pilarChips) html += '<div style="margin-bottom:5px;">' + pilarChips + '<\/div>';
-    if (preview) html += '<div style="font-size:10px;color:var(--text-light);line-height:1.4;">' + preview + '<\/div>';
-    html += '<\/div>';
-    html += '<span style="color:var(--cian);font-size:14px;flex-shrink:0;margin-top:2px;">→<\/span>';
-    html += '<\/div>';
-    html += '<\/div>';
-  });
-
-  html += '<\/div><\/div>';
-
-  document.getElementById('dp-body').innerHTML = html;
-  document.getElementById('detailPanel').classList.add('open');
-  document.getElementById('overlay').classList.add('show');
-}
-
-
-function flujo_showMatrixDetail(idsStr) {
-  const ids = idsStr.split(',').map(s => s.trim()).filter(Boolean);
-  if (!ids.length) return;
-  if (ids.length === 1) { flujo_openDetail(ids[0]); return; }
-
-  const items = ids.map(id => DETAILS[id]).filter(Boolean);
-  if (!items.length) return;
-
-  document.getElementById('dp-icon').textContent = '📋';
-  document.getElementById('dp-title').textContent = items.length + ' iniciativas';
-  document.getElementById('dp-area').textContent = 'Haz clic en cada una para ver detalle';
-
-  let html = '<div><div class="dp-section-title">Iniciativas en esta celda<\/div><div class="dp-connections">';
-  ids.forEach(id => {
-    const c = DETAILS[id];
-    if (c) html += '<div class="dp-conn-item" data-action="detail" data-id="' + id + '">' + c.icon + ' ' + c.title + '<span class="arrow">→<\/span><\/div>';
-  });
-  html += '<\/div><\/div>';
-
-  document.getElementById('dp-body').innerHTML = html;
-  document.getElementById('detailPanel').classList.add('open');
-  document.getElementById('overlay').classList.add('show');
-}
-
-// ═══════════════════════════════════════════════════
-// EVENT DELEGATION - único listener para todo
-// ═══════════════════════════════════════════════════
-/* ══════════════ EXPORT EXCEL ══════════════════════════════════════════════ */
-let _lastRankingData = []; // guarda el array completo del último ranking calculado
-
-function exportRankingExcel(){
-  if(!_lastRankingData.length){ alert('Primero calcula el ranking.'); return; }
-  const pu = _lastRankingData[0]?.pu || pesosInt;
-  const areaMap = {};
-  AREAS.forEach(a=>{ areaMap[a.key]=a.label; });
-  const pilarMap = PILAR_N;
-
-  // Hoja 1: Ranking detallado
-  const rows = _lastRankingData.map((p,idx)=>{
-    const bl = (p.bl||[]).map(id=>{ const dep=_lastRankingData.find(x=>x.id===id); return dep?dep.nombre:id; }).join(', ');
-    const rs = (p.rs||[]).map(id=>{ const dep=_lastRankingData.find(x=>x.id===id); return dep?dep.nombre:id; }).join(', ');
-    return {
-      'Posición':           idx+1,
-      'Iniciativa':         p.nombre,
-      'Área':               areaMap[p.area]||p.area,
-      'Tipo':               {habilitante:'Habilitante',core:'Core',transformacional:'Transformacional'}[p.tipo]||p.tipo,
-      'Pilares':            (p.pilares||[]).join(', '),
-      'Etiqueta':           p.lbl?.x||'',
-      'Score Final':        parseFloat(p.sAj.toFixed(3)),
-      'Score Base':         parseFloat(p.sBase.toFixed(3)),
-      'Mult. Tipo':         parseFloat((p.mt||1).toFixed(2)),
-      'Factor Deps':        parseFloat((p.fd||1).toFixed(2)),
-      [`Impacto (×${pu.impacto}%)`]:    p.scores?.impacto||0,
-      [`Urgencia (×${pu.urgencia}%)`]:   p.scores?.urgencia||0,
-      [`Facilidad (×${pu.facilidad}%)`]: p.scores?.facilidad||0,
-      [`Alineación (×${pu.alineacion}%)`]: p.scores?.alineacion||0,
-      'Dependencias bloqueantes': bl||'—',
-      'Dependencias resueltas':   rs||'—',
-      'Dependientes a cargo':     p.dc||0,
-    };
-  });
-
-  // Hoja 2: Resumen por área
-  const resumenArea = {};
-  AREAS.forEach(a=>{ resumenArea[a.key]={area:a.label,total:0,habilitante:0,core:0,transformacional:0,scoreSum:0}; });
-  _lastRankingData.forEach(p=>{
-    if(!resumenArea[p.area]) return;
-    resumenArea[p.area].total++;
-    resumenArea[p.area][p.tipo]=(resumenArea[p.area][p.tipo]||0)+1;
-    resumenArea[p.area].scoreSum+=p.sAj;
-  });
-  const resumenRows = Object.values(resumenArea).filter(r=>r.total>0).map(r=>({
-    'Área':             r.area,
-    'Total iniciativas':r.total,
-    'Habilitantes':     r.habilitante||0,
-    'Core':             r.core||0,
-    'Transformacionales':r.transformacional||0,
-    'Score promedio':   parseFloat((r.scoreSum/r.total).toFixed(3)),
-  }));
-
-  // Hoja 3: Config pesos
-  const pesosRows = CRIT.map(c=>({
-    'Criterio': c.label,
-    'Peso (%)': pu[c.key],
-    'Nota':     c.tip
-  }));
-
-  // Crear workbook
-  const wb = XLSX.utils.book_new();
-
-  const ws1 = XLSX.utils.json_to_sheet(rows);
-  // Anchos de columna
-  ws1['!cols'] = [
-    {wch:8},{wch:42},{wch:28},{wch:16},{wch:14},{wch:22},
-    {wch:12},{wch:12},{wch:12},{wch:12},
-    {wch:16},{wch:16},{wch:16},{wch:18},
-    {wch:30},{wch:30},{wch:16}
-  ];
-  XLSX.utils.book_append_sheet(wb, ws1, 'Ranking Detallado');
-
-  const ws2 = XLSX.utils.json_to_sheet(resumenRows);
-  ws2['!cols'] = [{wch:28},{wch:16},{wch:14},{wch:10},{wch:18},{wch:14}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Resumen por Área');
-
-  const ws3 = XLSX.utils.json_to_sheet(pesosRows);
-  ws3['!cols'] = [{wch:24},{wch:10},{wch:60}];
-  XLSX.utils.book_append_sheet(wb, ws3, 'Pesos Criterios');
-
-  const fecha = new Date().toLocaleDateString('es-CL').replace(/\//g,'-');
-  XLSX.writeFile(wb, `Ranking_RRHH_Socovesa_${fecha}.xlsx`);
-}
-
-let _flujoInited = false;
-function flujoInit() {
-  if(_flujoInited) return;
-  _flujoInited = true;
-
-  document.body.addEventListener('click', function(e) {
-    const el = e.target.closest('[data-action]');
-    if (!el) return;
-    const action = el.dataset.action;
-
-    if (action === 'detail') {
-      flujo_openDetail(el.dataset.id);
-    }
-    else if (action === 'detail-stop') {
-      e.stopPropagation();
-      flujo_openDetail(el.dataset.id);
-    }
-    else if (action === 'area-group') {
-      e.stopPropagation();
-      flujo_openAreaGroup(el.dataset.area);
-    }
-    else if (action === 'close') {
-      flujo_closeDetail();
-    }
-    else if (action === 'view') {
-      flujo_setView(el.dataset.view);
-    }
-    else if (action === 'pilar') {
-      flujo_filterByPilar(el.dataset.pilar, el);
-    }
-    else if (action === 'area') {
-      flujo_filterByArea(el.dataset.area);
-    }
-    else if (action === 'tbl') {
-      flujo_tblFilter(el.dataset.pilar);
-    }
-    else if (action === 'matrix') {
-      flujo_showMatrixDetail(el.dataset.ids);
-    }
-  });
-
-  // Overlay click closes panel
-  document.getElementById('overlay').addEventListener('click', flujo_closeDetail);
-
-  // Keyboard ESC
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') flujo_closeDetail(); });
-
-  // Table rows with data-id open detail
-  document.querySelectorAll('#tblMain tbody tr[data-id]').forEach(row => {
-    row.style.cursor = 'pointer';
-  });
-}
-
-
-
 
 /* ═══ MACRO PROCESOS TAB ═══ */
 const MP_DATA = [
@@ -11915,329 +10958,171 @@ if(document.readyState !== 'loading'){
 
 </script>
 
-<!-- ════ v4.5 SEGUIMIENTO & INACTIVACIÓN ════ -->
+<!-- ════ SEGUIMIENTO v5 ════ -->
 <style>
+/* ══════════════════════════════════════════════════════════════════
+   SEGUIMIENTO v5 — Vista Lista + Vista Detalle
+══════════════════════════════════════════════════════════════════ */
 
-/* ────────────────────────────────────────────
-   INACTIVACIÓN — Proyectos, Flujo, Guía
-──────────────────────────────────────────── */
-.btn-posponer {
-  display:inline-flex;align-items:center;gap:4px;
-  padding:4px 10px;border-radius:8px;
-  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
-  border:1.5px solid #E4EAF4;background:#FAFBFE;color:#6B7894;cursor:pointer;
-  white-space:nowrap;transition:all .15s;
-}
-.btn-posponer:hover{background:#FFF4E5;border-color:#FF9800;color:#B26A00;}
-.btn-reactivar {
-  display:inline-flex;align-items:center;gap:4px;
-  padding:4px 10px;border-radius:8px;
-  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
-  border:1.5px solid #00C9B7;background:#E8FFF5;color:#0a6e5e;cursor:pointer;
-  white-space:nowrap;transition:all .15s;
-}
-.btn-reactivar:hover{background:#00C9B7;color:#fff;}
-.badge-inactiva {
-  display:inline-block;font-size:9px;font-weight:700;
-  background:#FFF4E5;color:#B26A00;border:1px solid #FFB84D;
-  padding:1px 7px;border-radius:10px;margin-left:8px;vertical-align:middle;
-}
-.project-form.is-inactiva{opacity:.6;}
-.project-form.is-inactiva .pf-name{text-decoration:line-through;text-decoration-color:rgba(155,165,188,.55);}
-.project-form.is-inactiva:hover{opacity:.9;}
-.inactivas-divider{
-  margin:14px 0 6px;padding:5px 12px;
-  font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
-  color:#B26A00;background:#FFF4E5;border-radius:8px;border:1px dashed #FFB84D;
-  display:flex;align-items:center;gap:6px;
-}
-#page-flujo [data-id].flujo-is-inactiva{
-  opacity:.35!important;filter:grayscale(.6);position:relative;
-}
-#page-flujo [data-id].flujo-is-inactiva::after{
-  content:'⏸ 2027';position:absolute;top:3px;right:5px;
-  font-size:8px;font-weight:700;background:#FFF4E5;color:#B26A00;
-  padding:1px 5px;border-radius:5px;border:1px solid #FFB84D;pointer-events:none;
-}
-tr.guia-is-inactiva{opacity:.45;}
-tr.guia-is-inactiva .tbl-obj-title{text-decoration:line-through;text-decoration-color:rgba(155,165,188,.6);}
+/* ── KPI Header ── */
+.sv-kpi-row{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+.sv-kpi{display:flex;align-items:center;gap:14px;flex:1;min-width:180px;background:#fff;border-radius:14px;padding:16px 20px;box-shadow:0 1px 6px rgba(0,40,100,.06);border:1px solid #F0F3FA;}
+.sv-kpi-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sv-kpi-n{font-size:26px;font-weight:700;color:#1A2340;line-height:1;}
+.sv-kpi-l{font-size:11px;font-weight:600;color:#5A6070;margin-top:2px;}
+.sv-kpi-sub{font-size:10px;color:#B0B8C8;margin-top:1px;}
 
-/* ────────────────────────────────────────────
-   DASHBOARD EJECUTIVO
-──────────────────────────────────────────── */
-.seg-dashboard{
-  background:#fff;border-radius:14px;
-  border:1px solid #E4EAF4;padding:20px 22px;margin-bottom:20px;
-  box-shadow:0 2px 10px rgba(0,40,100,.05);
-}
-.seg-dash-title{
-  font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
-  color:#8B95A5;margin-bottom:16px;
-  display:flex;align-items:center;gap:10px;
-}
-.seg-dash-title::after{content:'';flex:1;height:1px;background:#F0F3FA;}
+/* ── Toolbar ── */
+.sv-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.sv-search-wrap{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #E4EAF4;border-radius:10px;padding:8px 14px;flex:1;min-width:200px;transition:border-color .15s;}
+.sv-search-wrap:focus-within{border-color:#0052CC;}
+.sv-select{padding:8px 12px;border-radius:10px;border:1.5px solid #E4EAF4;font-size:12px;font-weight:600;color:#1A2340;background:#fff;cursor:pointer;font-family:inherit;}
+.sv-select:hover{border-color:#0052CC;}
+.sv-clear-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:10px;border:1.5px solid #E4EAF4;background:#fff;font-size:12px;font-weight:600;color:#8B95A5;cursor:pointer;font-family:inherit;transition:all .15s;}
+.sv-clear-btn:hover{color:#DC2626;border-color:#DC2626;}
+.sv-count-badge{font-size:12px;font-weight:700;color:#0052CC;background:#EEF2FF;padding:6px 14px;border-radius:10px;white-space:nowrap;}
 
-/* KPIs — flex, 5 en fila, wrap en < 600px */
-.seg-kpi-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:nowrap;}
-.seg-kpi{
-  flex:1;min-width:0;
-  background:linear-gradient(145deg,#FAFBFE,#F2F5FC);
-  border:1px solid #E4EAF4;border-radius:12px;padding:14px 14px 12px;
-  position:relative;overflow:hidden;
-}
-.seg-kpi::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:12px 0 0 12px;
-}
-.seg-kpi.k-total::before{background:linear-gradient(180deg,#0052CC,#003D99);}
-.seg-kpi.k-curso::before{background:linear-gradient(180deg,#0099FF,#0073CC);}
-.seg-kpi.k-plazo::before{background:linear-gradient(180deg,#00C9B7,#009E90);}
-.seg-kpi.k-atras::before{background:linear-gradient(180deg,#FF6B6B,#CC3333);}
-.seg-kpi.k-criti::before{background:linear-gradient(180deg,#FF9800,#E65100);}
-.seg-kpi-n{font-size:26px;font-weight:700;color:#1A2340;letter-spacing:-.02em;line-height:1;}
-.seg-kpi-l{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#8B95A5;margin-top:5px;}
-.seg-kpi-sub{font-size:9px;color:#B0B8C8;margin-top:3px;line-height:1.3;}
+/* ── Tabla de objetivos ── */
+.sv-table-wrap{background:#fff;border-radius:14px;box-shadow:0 1px 8px rgba(0,40,100,.06);border:1px solid #F0F3FA;overflow:hidden;}
+.sv-table{width:100%;border-collapse:collapse;}
+.sv-table thead tr{background:#F8FAFF;}
+.sv-table th{padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8B95A5;border-bottom:1px solid #F0F3FA;}
+.sv-row{border-bottom:1px solid #F5F7FC;cursor:pointer;transition:background .12s;}
+.sv-row:hover{background:#F8FAFF;}
+.sv-row:last-child{border-bottom:none;}
+.sv-table td{padding:13px 16px;vertical-align:middle;}
+.sv-ini-name{font-size:13px;font-weight:600;color:#1A2340;line-height:1.3;margin-bottom:2px;}
+.sv-ini-sub{font-size:11px;color:#B0B8C8;}
+.sv-resp-chip{display:flex;align-items:center;gap:7px;}
+.sv-resp-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#0052CC,#00C9B7);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sv-resp-nm{font-size:12px;font-weight:500;color:#1A2340;}
+.sv-area-tag{font-size:10px;font-weight:600;padding:3px 9px;border-radius:8px;white-space:nowrap;display:inline-block;}
+.sv-estado-badge,.svd-estado-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:8px;border:1px solid;white-space:nowrap;display:inline-block;}
+.sv-prio-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:8px;border:1px solid;white-space:nowrap;display:inline-block;}
+.sv-prog-wrap{display:flex;align-items:center;gap:8px;}
+.sv-prog-bar{flex:1;height:7px;background:#F0F3FA;border-radius:4px;overflow:hidden;min-width:50px;}
+.sv-prog-pct{font-size:11px;font-weight:700;color:#1A2340;width:30px;text-align:right;flex-shrink:0;}
 
-/* Charts — donut + barras */
-.seg-dash-charts{display:flex;gap:20px;align-items:flex-start;}
-.seg-donut-col{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;width:170px;}
-.seg-donut-container{position:relative;width:140px;height:140px;flex-shrink:0;}
-.seg-donut-svg{width:140px;height:140px;display:block;}
-.seg-donut-center-label{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  text-align:center;pointer-events:none;
-}
-.seg-donut-center-n{font-size:22px;font-weight:700;color:#1A2340;line-height:1;}
-.seg-donut-center-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#8B95A5;}
-.seg-donut-legend{display:flex;flex-wrap:wrap;gap:5px 12px;justify-content:center;}
-.seg-donut-item{display:flex;align-items:center;gap:4px;font-size:9.5px;color:#5A6070;font-weight:500;}
-.seg-donut-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+/* ══ VISTA DETALLE ══ */
+.svd-wrap{max-width:1200px;}
+.svd-back{display:inline-flex;align-items:center;gap:7px;background:none;border:1.5px solid #E4EAF4;border-radius:10px;padding:8px 16px;font-family:inherit;font-size:13px;font-weight:600;color:#5A6070;cursor:pointer;margin-bottom:20px;transition:all .15s;}
+.svd-back:hover{border-color:#0052CC;color:#0052CC;background:#F0F4FF;}
 
-.seg-bars-col{flex:1;min-width:0;}
-.seg-bars-lbl{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#8B95A5;margin-bottom:10px;}
-.seg-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
-.seg-bar-name{font-size:11px;font-weight:600;color:#1A2340;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:min(200px,35%);}
-.seg-bar-track{flex:1;min-width:0;height:16px;background:#F0F3FA;border-radius:6px;overflow:hidden;display:flex;}
-.seg-bar-fill-done {background:#00C9B7;height:100%;}
-.seg-bar-fill-curso{background:#0099FF;height:100%;}
-.seg-bar-fill-atras{background:#FF6B6B;height:100%;}
-.seg-bar-fill-block{background:#B26A00;height:100%;}
-.seg-bar-fill-pend {background:#FFB84D;height:100%;}
-.seg-bar-n{font-size:11px;font-weight:700;color:#1A2340;width:22px;text-align:right;flex-shrink:0;}
+/* Header detalle */
+.svd-header{background:#fff;border-radius:14px;padding:24px 28px;box-shadow:0 1px 8px rgba(0,40,100,.06);border:1px solid #F0F3FA;display:flex;align-items:flex-start;gap:24px;margin-bottom:14px;}
+.svd-header-left{flex:1;min-width:0;}
+.svd-header-right{flex-shrink:0;}
+.svd-header-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.svd-tipo-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8B95A5;}
+.svd-title{font-size:20px;font-weight:700;color:#1A2340;line-height:1.3;margin-bottom:8px;}
+.svd-def{font-size:13px;color:#5A6070;line-height:1.65;margin-bottom:14px;}
+.svd-meta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.svd-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#5A6070;font-weight:500;}
+.svd-meta-item svg{opacity:.6;}
+.svd-estado-sel{padding:5px 12px;border-radius:8px;border:1px solid;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;}
 
-/* ────────────────────────────────────────────
-   CARD DE INICIATIVA
-──────────────────────────────────────────── */
-.seg-card{
-  background:#fff;border-radius:12px;
-  border:1px solid #E4EAF4;border-left:5px solid #0052CC;
-  overflow:hidden;margin-bottom:12px;
-  box-shadow:0 1px 6px rgba(0,40,100,.05);
-  transition:box-shadow .2s,transform .15s;
-}
-.seg-card:hover{box-shadow:0 5px 18px rgba(0,82,204,.09);transform:translateY(-1px);}
+/* Temporal badges */
+.svd-temp{font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;}
+.svd-temp.late{background:#FFF0F0;color:#CC3333;border:1px solid #FF8080;}
+.svd-temp.soon{background:#FFF4E5;color:#B26A00;border:1px solid #FF9800;}
+.svd-temp.ok  {background:#E8F4FF;color:#003D99;border:1px solid #0099FF;}
+.svd-temp.done{background:#E8FFF5;color:#0a6e5e;border:1px solid #00C9B7;}
 
-/* Header — siempre visible */
-.seg-card-hdr{
-  display:flex;align-items:center;gap:10px;padding:13px 16px;
-  cursor:pointer;user-select:none;background:#fff;transition:background .12s;
-}
-.seg-card-hdr:hover{background:#FAFBFF;}
+/* KPIs mini */
+.svd-kpis{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.svd-kpi-mini{background:#fff;border-radius:12px;padding:14px 18px;flex:1;min-width:100px;box-shadow:0 1px 6px rgba(0,40,100,.05);border:1px solid #F0F3FA;text-align:center;}
+.svd-kpi-mini-n{font-size:22px;font-weight:700;line-height:1;color:#1A2340;}
+.svd-kpi-mini-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#B0B8C8;margin-top:4px;}
 
-/* Zona izquierda: flex 1, trunca */
-.seg-card-left{flex:1;min-width:0;}
-.seg-card-name{
-  font-size:13.5px;font-weight:700;color:#1A2340;letter-spacing:-.01em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;
-}
-.seg-card-meta{
-  font-size:10px;color:#8B95A5;margin-top:4px;
-  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
-}
-.seg-meta-pilar{
-  background:#EEF2FA;color:#003D99;border-radius:5px;
-  padding:1px 6px;font-size:9px;font-weight:700;
-}
-.seg-meta-sep{color:#D0D8E8;}
+/* Grid principal detalle */
+.svd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+.svd-col-left,.svd-col-right{display:flex;flex-direction:column;gap:14px;}
+.svd-section{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 1px 6px rgba(0,40,100,.05);border:1px solid #F0F3FA;}
+.svd-section-hdr{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8B95A5;margin-bottom:14px;}
+.svd-add-btn{background:none;border:1.5px solid #E4EAF4;border-radius:8px;padding:4px 12px;font-family:inherit;font-size:11px;font-weight:700;color:#0052CC;cursor:pointer;transition:all .15s;}
+.svd-add-btn:hover{background:#EEF4FF;border-color:#0052CC;}
 
-/* Zona derecha: no crece, ítems en fila */
-.seg-card-right{
-  display:flex;align-items:center;gap:6px;flex-shrink:0;
-}
-.seg-prio-badge{
-  font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;
-  border:1px solid;white-space:nowrap;
-}
-.seg-reg-count{
-  display:inline-flex;align-items:center;gap:3px;
-  font-size:10px;font-weight:600;color:#0052CC;
-  background:#EEF2FA;border-radius:8px;padding:3px 8px;white-space:nowrap;
-}
-.seg-estado-sel{
-  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
-  padding:5px 24px 5px 9px;border-radius:9px;border:1.5px solid;
-  cursor:pointer;outline:none;white-space:nowrap;
-  -webkit-appearance:none;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%235A6070'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 8px center;
-  transition:opacity .15s;
-}
-.seg-estado-sel:hover{opacity:.85;}
-.seg-estado-badge{
-  font-size:11px;font-weight:700;padding:5px 10px;border-radius:9px;
-  border:1.5px solid;white-space:nowrap;
-}
+/* Hitos detalle */
+.svd-hitos-list{display:flex;flex-direction:column;gap:0;}
+.svd-hito{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F5F7FC;}
+.svd-hito:last-child{border-bottom:none;}
+.svd-hito.done{opacity:.75;}
+.svd-hito-left{flex-shrink:0;padding-top:1px;}
+.svd-hito-circle{width:24px;height:24px;border-radius:50%;border:2px solid #D0D8E8;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#8B95A5;background:#fff;transition:all .15s;}
+.svd-hito-circle.done{background:#00C9B7;border-color:#00C9B7;color:#fff;}
+.svd-hito-circle.late{background:#FFF0F0;border-color:#FF6B6B;color:#CC3333;}
+.svd-hito-body{flex:1;min-width:0;}
+.svd-hito-name{font-size:13px;font-weight:500;color:#1A2340;line-height:1.4;}
+.svd-hito-name.done{text-decoration:line-through;color:#8B95A5;}
+.svd-hito-fecha{font-size:10px;color:#8B95A5;margin-top:2px;}
+.svd-hito-fecha.venc{color:#CC3333;font-weight:600;}
+.svd-hito-completado-tag{font-size:9px;color:#00C9B7;font-weight:700;margin-top:2px;}
+.svd-hito-del{background:none;border:none;color:#D0D8E8;cursor:pointer;font-size:16px;padding:0 4px;line-height:1;flex-shrink:0;transition:color .12s;}
+.svd-hito-del:hover{color:#CC3333;}
 
-/* Toggle al final */
-.seg-card-toggle{
-  flex-shrink:0;width:22px;height:22px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:#8B95A5;border-radius:6px;
-  transition:transform .22s,background .15s;
-  margin-left:2px;
-}
-.seg-card-hdr:hover .seg-card-toggle{background:#EEF2FA;}
-.seg-card-toggle.open{transform:rotate(180deg);}
+/* Próximos pasos */
+.svd-pasos{display:flex;flex-direction:column;gap:8px;}
+.svd-paso{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:#1A2340;line-height:1.4;}
+.svd-paso-n{width:20px;height:20px;border-radius:50%;background:#0052CC;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.svd-empty{font-size:12px;color:#B0B8C8;font-style:italic;padding:4px 0;}
 
-/* ────────────────────────────────────────────
-   BLOQUE B — Avance + Gantt
-──────────────────────────────────────────── */
-.seg-bloque-b{
-  padding:12px 16px 14px;
-  border-top:1px solid #F0F3FA;
-  background:linear-gradient(180deg,#FAFBFE,#fff);
-}
-.seg-b-fila{
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:9px;
-}
-.seg-b-campo{
-  display:flex;align-items:center;gap:5px;
-  font-size:11px;font-weight:500;color:#2D3A52;
-}
-.seg-b-campo svg{flex-shrink:0;opacity:.55;}
-.seg-b-empty{color:#B0B8C8;font-style:italic;}
-.seg-temporal-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:7px;}
-.seg-temporal-badge.done{background:#E8FFF5;color:#0a6e5e;}
-.seg-temporal-badge.ok  {background:#E8F4FF;color:#003D99;}
-.seg-temporal-badge.soon{background:#FFF4E5;color:#B26A00;}
-.seg-temporal-badge.late{background:#FFE8E8;color:#CC3333;}
-.seg-origen-tag{
-  font-size:9.5px;font-weight:600;background:#F0F3FA;color:#8B95A5;
-  padding:2px 8px;border-radius:7px;border:1px solid #E4EAF4;
-}
+/* Editor admin */
+.svd-editor{background:#FFFBF0;border-radius:12px;padding:16px 18px;border:1.5px solid #FFD44D;}
+.svd-editor-hdr{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#856404;margin-bottom:12px;}
+.svd-editor-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.svd-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+.svd-field label{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#8B95A5;}
+.svd-field input,.svd-field select{border:1.5px solid #E4EAF4;border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12px;color:#1A2340;background:#fff;transition:border-color .15s;}
+.svd-field input:focus,.svd-field select:focus{outline:none;border-color:#0052CC;}
 
-.seg-b-progress{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.seg-b-progress-bar{flex:1;height:7px;background:#E4EAF4;border-radius:4px;overflow:hidden;}
-.seg-b-progress-fill{height:100%;border-radius:4px;transition:width .4s;}
-.seg-b-progress-pct{font-size:11px;font-weight:700;color:#1A2340;min-width:34px;text-align:right;}
+/* Composer */
+.svd-composer{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 1px 6px rgba(0,40,100,.05);border:1px solid #F0F3FA;}
+.svd-composer-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8B95A5;margin-bottom:10px;}
+.svd-tipo-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.svd-tipo-chip{background:#F0F3FA;border:none;border-radius:8px;padding:5px 12px;font-family:inherit;font-size:11px;font-weight:600;color:#5A6070;cursor:pointer;transition:all .15s;}
+.svd-tipo-chip.active-avance{background:#E8F4FF;color:#003D99;}
+.svd-tipo-chip.active-riesgo{background:#FFF0F0;color:#CC3333;}
+.svd-tipo-chip.active-decision{background:#FFF4E5;color:#B26A00;}
+.svd-tipo-chip.active-hito{background:#E8FFF5;color:#0a6e5e;}
+.svd-ta{width:100%;min-height:80px;border:1.5px solid #E4EAF4;border-radius:8px;padding:10px 12px;font-family:inherit;font-size:12.5px;color:#1A2340;resize:vertical;transition:border-color .15s;box-sizing:border-box;}
+.svd-ta:focus{outline:none;border-color:#0052CC;}
+.svd-composer-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.svd-hint{font-size:10px;color:#B0B8C8;}
+.svd-hint kbd{background:#F0F3FA;border:1px solid #D0D8E8;border-radius:4px;padding:1px 5px;font-size:10px;}
+.svd-ok{font-size:11px;font-weight:700;color:#00C9B7;}
+.svd-send-btn{background:#0052CC;color:#fff;border:none;border-radius:9px;padding:8px 18px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s;}
+.svd-send-btn:hover{background:#003D99;}
+.svd-no-login{background:#F8FAFF;border-radius:12px;padding:16px 18px;font-size:12px;color:#8B95A5;border:1px solid #F0F3FA;}
 
-.seg-gantt-box{margin-top:2px;}
-.seg-gantt-svg{width:100%;height:24px;display:block;}
-.seg-gantt-dates{display:flex;justify-content:space-between;font-size:9px;font-weight:600;color:#B0B8C8;margin-top:2px;}
-.seg-gantt-today-lbl{color:#0052CC;font-weight:700;}
-.seg-gantt-no-dates{
-  text-align:center;font-size:11px;color:#B0B8C8;font-style:italic;
-  padding:8px;background:#FAFBFE;border-radius:8px;border:1px dashed #E4EAF4;
-}
+/* Comentarios */
+.svd-comments-list{display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;}
+.svd-comment{border-radius:10px;padding:12px 14px;border-left:3px solid;}
+.svd-comment.tipo-avance{background:#F0F9FF;border-left-color:#0099FF;}
+.svd-comment.tipo-riesgo{background:#FFF5F5;border-left-color:#FF6B6B;}
+.svd-comment.tipo-decision{background:#FFFBF0;border-left-color:#FFB84D;}
+.svd-comment.tipo-hito{background:#F0FFF9;border-left-color:#00C9B7;}
+.svd-comment-hdr{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;}
+.svd-comment-tipo{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:2px 7px;border-radius:6px;}
+.tipo-avance .svd-comment-tipo{background:#DBEAFE;color:#1D4ED8;}
+.tipo-riesgo .svd-comment-tipo{background:#FEE2E2;color:#DC2626;}
+.tipo-decision .svd-comment-tipo{background:#FEF3C7;color:#D97706;}
+.tipo-hito .svd-comment-tipo{background:#D1FAE5;color:#065F46;}
+.svd-comment-user{font-size:10px;font-weight:600;color:#5A6070;}
+.svd-comment-ts{font-size:10px;color:#B0B8C8;margin-left:auto;}
+.svd-comment-txt{font-size:12.5px;color:#1A2340;line-height:1.55;}
 
-/* ────────────────────────────────────────────
-   BLOQUE C — Hitos
-──────────────────────────────────────────── */
-.seg-bloque-c{padding:9px 16px 12px;border-top:1px solid #F0F3FA;background:#fff;}
-.seg-bloque-lbl{
-  font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
-  color:#8B95A5;margin-bottom:7px;display:flex;align-items:center;gap:5px;
+/* Responsive */
+@media(max-width:900px){
+  .svd-grid{grid-template-columns:1fr;}
+  .sv-kpi{min-width:140px;}
+  .sv-table th:nth-child(3),.sv-table td:nth-child(3){display:none;}
 }
-.seg-bloque-lbl svg{color:#0052CC;}
-.seg-hitos-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
-.seg-hito-empty{font-size:11px;color:#B0B8C8;font-style:italic;}
-.seg-hito{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:3px 9px;border-radius:13px;border:1.5px solid #E4EAF4;
-  background:#fff;font-size:11px;font-weight:600;cursor:pointer;
-  transition:transform .12s,box-shadow .12s;
+@media(max-width:640px){
+  .svd-header{flex-direction:column;}
+  .sv-table th:nth-child(5),.sv-table td:nth-child(5),
+  .sv-table th:nth-child(6),.sv-table td:nth-child(6){display:none;}
+  .sv-kpi{flex:1 1 calc(50% - 7px);}
 }
-.seg-hito:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,40,100,.09);}
-.seg-hito.h-done{background:#E8FFF5;border-color:#00C9B7;color:#0a6e5e;}
-.seg-hito.h-late{background:#FFE8E8;border-color:#FF6B6B;color:#CC3333;}
-.seg-hito.h-pend{color:#5A6070;}
-.seg-hito-ico{font-weight:900;font-size:11px;}
-.seg-hito-nm{max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.seg-hito-dt{font-size:9px;opacity:.65;}
-.seg-hito-del{font-size:13px;color:rgba(0,0,0,.22);margin-left:1px;transition:color .12s;}
-.seg-hito-del:hover{color:#CC3333;}
-.seg-hito-add{
-  display:inline-flex;align-items:center;padding:3px 10px;border-radius:13px;
-  font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;
-  border:1.5px dashed #B0B8C8;background:transparent;color:#8B95A5;cursor:pointer;
-  transition:border-color .15s,color .15s;
-}
-.seg-hito-add:hover{border-color:#0052CC;color:#0052CC;}
-
-/* ────────────────────────────────────────────
-   BLOQUE D — Editor admin + Compositor (body expandible)
-──────────────────────────────────────────── */
-.seg-card-body{display:none;}
-.seg-card-body.open{display:block;}
-
-.seg-editor{
-  padding:13px 16px;border-top:1px solid #EEF2FA;
-  background:linear-gradient(180deg,#F7F9FF,#FAFBFE);
-}
-.seg-editor-hdr{
-  font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
-  color:#0052CC;margin-bottom:9px;
-}
-.seg-editor-grid{display:flex;flex-wrap:wrap;gap:9px;}
-.seg-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:148px;}
-.seg-field label{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#8B95A5;}
-.seg-field input,.seg-field select{
-  font-family:'Poppins',sans-serif;font-size:12px;padding:6px 10px;
-  border:1.5px solid #E4EAF4;border-radius:8px;background:#fff;color:#1A2340;outline:none;
-  transition:border-color .15s,box-shadow .15s;
-}
-.seg-field input:focus,.seg-field select:focus{
-  border-color:#0052CC;box-shadow:0 0 0 3px rgba(0,82,204,.07);
-}
-
-/* ────────────────────────────────────────────
-   RESPONSIVE
-──────────────────────────────────────────── */
-
-/* ≤ 900px: KPIs en 2 filas */
-@media (max-width:900px){
-  .seg-kpi-row{flex-wrap:wrap;}
-  .seg-kpi{flex:1 1 calc(33% - 8px);min-width:80px;}
-  .seg-bar-name{width:130px;}
-}
-
-/* ≤ 700px: dashboard charts apilados */
-@media (max-width:700px){
-  .seg-dash-charts{flex-direction:column;}
-  .seg-donut-col{width:100%;flex-direction:row;align-items:flex-start;gap:16px;}
-  .seg-bars-col{width:100%;}
-  .seg-bar-name{width:110px;}
-  /* Card header: comprimir zona derecha */
-  .seg-card-right{gap:4px;}
-  .seg-prio-badge{display:none;}       /* ocultar en muy estrecho */
-  .seg-estado-sel,.seg-estado-badge{font-size:10px;padding:4px 20px 4px 7px;}
-}
-
-/* ≤ 520px: layout ultra estrecho */
-@media (max-width:520px){
-  .seg-kpi-row{flex-wrap:wrap;}
-  .seg-kpi{flex:1 1 calc(50% - 5px);}
-  .seg-kpi-n{font-size:22px;}
-  .seg-kpi-sub{display:none;}
-  .seg-card-hdr{padding:10px 12px;gap:8px;}
-  .seg-card-name{font-size:12.5px;}
-  .seg-bloque-b,.seg-bloque-c{padding:9px 12px;}
-  .seg-b-campo{font-size:10.5px;}
-  .seg-bar-name{width:90px;}
-  .seg-donut-col{flex-direction:column;align-items:center;}
-  /* Fecha en bloque B: apilar */
-  .seg-b-fila{gap:6px;}
-}
-
 </style>
 
 
