@@ -9426,7 +9426,7 @@ const GH_FILE   = 'index.html';
 async function publishToGitHub(label){
   if(!isAdmin()) return;
   setSyncStatus('syncing','Publicando en GitHub Pages…');
-  const _pubTimer = setTimeout(()=>clearTimeout(_pubTimer); setSyncStatus('ok','Listo'), 15000);
+  const _pubTimer = setTimeout(()=>{ setSyncStatus('ok','Listo'); }, 15000);
   try {
     let sha = undefined;
     const chk = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,
