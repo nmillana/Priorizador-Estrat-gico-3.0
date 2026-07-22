@@ -10137,6 +10137,86 @@ const INIT_DATA=[
 // CREATE POLICY "auth read" ON seg_comentarios FOR SELECT USING (auth.uid() IS NOT NULL);
 // CREATE POLICY "auth write" ON seg_comentarios FOR ALL USING (auth.uid() IS NOT NULL);
 
+/* ── SEED DATA del Excel GANTT (datos base del levantamiento) ── */
+const GANTT_SEED_ESTADOS = {
+  1: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-08-01", responsable:"Rose-Any-Natalia"},
+  2: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-10-01", responsable:""},
+  5: {fecha_inicio:null, fecha_fin_objetivo:null, responsable:""},
+  7: {fecha_inicio:null, fecha_fin_objetivo:null, responsable:"Natalia/Leslie/Maca"},
+  8: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-09-01", responsable:"Natalia/Rose"},
+  9: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:""},
+  10: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-09-01", responsable:""},
+  11: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-10-01", responsable:"David - Rose"},
+  12: {fecha_inicio:"2026-10-01", fecha_fin_objetivo:"2026-11-01", responsable:""},
+  13: {fecha_inicio:"2026-11-01", fecha_fin_objetivo:"2026-12-01", responsable:"Rose"},
+  14: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Rose- Leslie-Maca"},
+  15: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-09-01", responsable:"Jonhy-Paula"},
+  16: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Edgar-Dante-Any"},
+  19: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Any-Edgar"},
+  20: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2027-03-01", responsable:"Any-Berni-Rose-Edgar"},
+  21: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Edgar"},
+  22: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Carlos-Paula"},
+  23: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Carlos-Paula"},
+  24: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia-Maca"},
+  25: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia-Maca-Rose, Leslie-Maca-Rose"},
+  26: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-12-01", responsable:""},
+  27: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:null, responsable:"Consuelo"},
+  28: {fecha_inicio:"2026-09-01", fecha_fin_objetivo:"2026-10-01", responsable:""},
+  29: {fecha_inicio:"2027-03-01", fecha_fin_objetivo:null, responsable:""},
+  30: {fecha_inicio:"2026-07-01", fecha_fin_objetivo:"2026-12-01", responsable:"Berni/Pauli"},
+  31: {fecha_inicio:"2026-06-01", fecha_fin_objetivo:"2026-12-01", responsable:"Leslie-Natalia"},
+};
+
+const GANTT_SEED_HITOS = {
+  1: ["Validación del modelo de competencias"],
+  2: ["Diseño del nuevo proceso de desempeño"],
+  8: ["Definicion nuevo modelo de comptencvias y EDD"],
+  9: ["Definicion nuevo modelo de comptencvias y EDD"],
+  10: ["Defición de cursos induccion por pilar/area"],
+  11: ["Definición de cursos  con equipos de obra"],
+  12: ["denifir con obra el plan de competencias a certificar , tipos y certificaciones legales"],
+  13: ["Establecer metodologias, metricas cuanti y cuali"],
+  14: ["Incorporarme al inicio del proyecto para entender las definiciones, alcances y si la idea que tienen considerada como capacitación  es viable, impacta realmente en algun objetivo concreto y si es transferible al puesto de trabajo."],
+  15: ["P1* Modelo y tablas validados con Gerencia General"],
+  16: ["Roadmap y gobernanza aprobados"],
+  19: ["Mapa AS-IS y detección de brechas (jul-ago)"],
+  20: ["Journey map AS-IS de los primeros 30 días y matriz de onboarding actualizada (ago-sep)"],
+  21: ["Centraliaciones contables (rentas-finiquitos-provision de vacaciones);"],
+  22: ["Automatizar avisos de salida que hoy no esta abordado por Sistema uno"],
+  23: ["Revisar cargos que deben marcar asistencia; revisar cargos con renta variable sin anexos; analizar alternativas al actual modelo de contratos por obra"],
+  24: ["Validación de prinicipios y propósito EESS por GG."],
+  25: ["Variables evaluación.", "Instalación Modelo Intregración.", "Gestión del Cambio Sostenibilidad", "Despliegue normativa."],
+  26: ["Que vamos a reconocer?"],
+  27: ["KPI sistema UNO."],
+};
+
+/* Aplica seed data a _segEstados y _segHitos sin pisar datos de Supabase */
+function _applyGanttSeed(){
+  Object.entries(GANTT_SEED_ESTADOS).forEach(([pid,seed])=>{
+    const p = parseInt(pid);
+    if(!_segEstados[p]) _segEstados[p] = {};
+    const rec = _segEstados[p];
+    // Solo aplica seed si el campo está vacío en Supabase
+    if(!rec.fecha_inicio)        rec.fecha_inicio        = seed.fecha_inicio;
+    if(!rec.fecha_fin_objetivo)  rec.fecha_fin_objetivo  = seed.fecha_fin_objetivo;
+    if(!rec.responsable)         rec.responsable         = seed.responsable;
+    if(!rec.estado)              rec.estado              = 'pendiente';
+  });
+  Object.entries(GANTT_SEED_HITOS).forEach(([pid,nombres])=>{
+    const p = parseInt(pid);
+    if(!_segHitos[p] || _segHitos[p].length===0){
+      _segHitos[p] = nombres.map((nm,i)=>({
+        id: 'seed_'+p+'_'+i,
+        project_id: p,
+        nombre: nm,
+        fecha_objetivo: null,
+        completado_at: null,
+        orden: i
+      }));
+    }
+  });
+}
+
 const ESTADO_OPTS = [
   {v:'pendiente',  e:'⏳', l:'Pendiente',  bg:'#FFF9E8', bc:'#FFD44D', tc:'#856404'},
   {v:'en_curso',   e:'🔄', l:'En curso',   bg:'#E8F4FF', bc:'#0099FF', tc:'#003D99'},
@@ -10188,7 +10268,7 @@ function getPrioridadAuto(projectId){
 }
 
 async function loadSeguimiento(){
-  if(!_supa||!_currentUser){ renderSeguimiento(); return; }
+  if(!_supa||!_currentUser){ _applyGanttSeed(); renderSeguimiento(); return; }
   try {
     const [eRes, cRes, hRes] = await Promise.all([
       _supa.from('seg_estados').select('*'),
@@ -10209,6 +10289,7 @@ async function loadSeguimiento(){
     });
     _segLoaded = true;
   } catch(e){ console.error('Seguimiento load error',e); }
+  _applyGanttSeed(); // merge Excel seed into loaded data
   computeRankingSilent();
   renderSeguimiento();
 }
