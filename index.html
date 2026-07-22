@@ -9276,6 +9276,10 @@ async function loadFromSupabase(){
     renderAllAreas();
     computeRankingSilent();
     setTimeout(()=>{ applyInactivasToFlujo(); applyInactivasToGuia(); }, 100);
+    // Si el seguimiento está activo, recargarlo con los proyectos ya disponibles
+    if(document.getElementById('page-seguimiento')?.classList.contains('active')){
+      loadSeguimiento();
+    }
     setSyncStatus('ok','Sincronizado');
     await loadHistoryFromSupabase();
   } catch(e){
@@ -9298,6 +9302,9 @@ function loadLocalFallback(){
   renderAllAreas();
   computeRankingSilent();
   setTimeout(()=>{ applyInactivasToFlujo(); applyInactivasToGuia(); }, 100);
+  if(document.getElementById('page-seguimiento')?.classList.contains('active')){
+    loadSeguimiento();
+  }
 }
 
 async function saveToSupabase(trigger='auto'){
@@ -9578,7 +9585,18 @@ function showPage(n){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(n))b.classList.add('active');});
-  if(n==='seguimiento') loadSeguimiento();
+  if(n==='seguimiento'){
+    // Si projects aún no cargó, esperar hasta 3s
+    if(projects.length===0){
+      let retries=0;
+      const wait=setInterval(()=>{
+        retries++;
+        if(projects.length>0||retries>30){ clearInterval(wait); loadSeguimiento(); }
+      },100);
+    } else {
+      loadSeguimiento();
+    }
+  }
   if(n==='flujo')   setTimeout(()=>{ flujoInit(); applyInactivasToFlujo(); }, 50);
   if(n==='tabla')   setTimeout(applyInactivasToGuia, 50);
 }
