@@ -10152,16 +10152,16 @@ const INIT_DATA=[
   {nombre:'Factores Psicosociales',tipo:'core',area:'cv',pilares:['P5','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:4}},
   // ── Sub-iniciativas separadas (pids 33–40) ──────────────────────────────────
   // GDC: las 4 sub-iniciativas de Gestión del Cambio Organizacional (pid 25)
-  {nombre:'GDC: Sistematización Metodología',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
-  {nombre:'GDC: Proyecto Integración PI',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:5}},
-  {nombre:'GDC: Sostenibilidad',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
-  {nombre:'GDC: Datos',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  {nombre:'Gestión del Cambio Organizacional (Sistematización Trabajo)',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  {nombre:'Gestión del Cambio Organizacional (Proyecto Integración PI)',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:5}},
+  {nombre:'Gestión del Cambio Organizacional (Sostenibilidad)',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  {nombre:'Gestión del Cambio Organizacional (Datos)',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
   // Reconocimiento: las 2 sub-iniciativas de pid 26
   {nombre:'Feedback Continuo',tipo:'transformacional',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
   {nombre:'Programa y Sistema de Reconocimiento',tipo:'transformacional',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
   // Cursos: las 2 sub-iniciativas de pid 9
-  {nombre:'Cursos: Módulo Modelo de Competencias',tipo:'core',area:'cap',pilares:['P2','P1'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
-  {nombre:'Cursos: Módulo Programa Trabajo Cultura',tipo:'core',area:'cap',pilares:['P2','P3'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}}
+  {nombre:'Cursos Estratégicos y Multicompetencias (Modelo Competencias)',tipo:'core',area:'cap',pilares:['P2','P1'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
+  {nombre:'Cursos Estratégicos y Multicompetencias (Programa Cultura)',tipo:'core',area:'cap',pilares:['P2','P3'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}}
 ];
 
 
@@ -10545,14 +10545,16 @@ async function addComentario(projectId){
 /* ══════════════════════════════════════════════════════
    RENDER — Vista Lista
 ══════════════════════════════════════════════════════ */
+// PIDs ocultos en Seguimiento: contenedores reemplazados por sus sub-iniciativas
+const SEG_OCULTOS = new Set([9, 25, 26]);
+
 function svGetActivas(){
   const base = projects.length > 0
     ? projects
     : INIT_DATA.map((d,i)=>({...d, id:i+1, deps:[], inactiva:false}));
-  const baseFiltradas = base.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
+  const baseFiltradas = base.filter(p=>!p.inactiva && !SEG_OCULTOS.has(p.id) && p.nombre && p.nombre.trim());
   if(!projects.length) return baseFiltradas;
   // Incluir entradas de INIT_DATA con pid > projects.length que no existen en Supabase
-  // (sub-iniciativas separadas que aún no están en priorizador_state)
   const maxId = Math.max(...projects.map(p=>p.id||0));
   const extras = INIT_DATA
     .map((d,i)=>({...d, id:i+1, deps:[], inactiva:false}))
