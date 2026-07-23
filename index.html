@@ -9024,14 +9024,14 @@ footer{background:transparent;border-top:1px solid var(--border);text-align:cent
     <div class="sv-table-wrap">
       <table class="sv-table">
         <thead>
-          <tr>
-            <th style="width:36%">Iniciativa</th>
-            <th style="width:14%">Responsable</th>
-            <th style="width:11%">Área</th>
-            <th style="width:10%">Estado</th>
-            <th style="width:8%">Prioridad</th>
-            <th style="width:12%">Fecha objetivo</th>
-            <th style="width:9%">Avance</th>
+          <tr id="sv-thead">
+            <th style="width:36%" class="sv-th-sort" onclick="svToggleSort('nombre')"><span>Iniciativa</span><span class="sv-sort-ico" id="sv-si-nombre"></span></th>
+            <th style="width:14%" class="sv-th-sort" onclick="svToggleSort('responsable')"><span>Responsable</span><span class="sv-sort-ico" id="sv-si-responsable"></span></th>
+            <th style="width:11%" class="sv-th-sort" onclick="svToggleSort('area')"><span>Área</span><span class="sv-sort-ico" id="sv-si-area"></span></th>
+            <th style="width:10%" class="sv-th-sort" onclick="svToggleSort('estado')"><span>Estado</span><span class="sv-sort-ico" id="sv-si-estado"></span></th>
+            <th style="width:8%"  class="sv-th-sort" onclick="svToggleSort('prioridad')"><span>Prioridad</span><span class="sv-sort-ico" id="sv-si-prioridad"></span></th>
+            <th style="width:12%" class="sv-th-sort" onclick="svToggleSort('fecha')"><span>Fecha objetivo</span><span class="sv-sort-ico" id="sv-si-fecha"></span></th>
+            <th style="width:9%"  class="sv-th-sort" onclick="svToggleSort('avance')"><span>Avance</span><span class="sv-sort-ico" id="sv-si-avance"></span></th>
           </tr>
         </thead>
         <tbody id="sv-tbody"></tbody>
@@ -10609,6 +10609,56 @@ function svClearFiltros(){
   svRenderLista();
 }
 
+// Estado de ordenamiento de la tabla
+let _svSort = { col: null, asc: true };
+
+function svToggleSort(col){
+  if(_svSort.col === col) _svSort.asc = !_svSort.asc;
+  else { _svSort.col = col; _svSort.asc = true; }
+  svRenderLista();
+}
+
+function svSortActivas(list){
+  if(!_svSort.col) return list;
+  const { col, asc } = _svSort;
+  const PRIO_ORD = { critica:0, alta:1, media:2, baja:3, null:4 };
+  const EST_ORD  = { en_curso:0, bloqueado:1, pendiente:2, pausado:3, completado:4 };
+  return [...list].sort((a, b) => {
+    const ra = _segEstados[a.id]||{}, rb = _segEstados[b.id]||{};
+    let va, vb;
+    if(col==='nombre'){
+      va=(a.nombre||'').toLowerCase(); vb=(b.nombre||'').toLowerCase();
+    } else if(col==='responsable'){
+      va=(ra.responsable||'').split(/[-\/,]/)[0].trim().toLowerCase();
+      vb=(rb.responsable||'').split(/[-\/,]/)[0].trim().toLowerCase();
+    } else if(col==='area'){
+      va=a.area||''; vb=b.area||'';
+    } else if(col==='estado'){
+      va=EST_ORD[ra.estado||'pendiente']??2;
+      vb=EST_ORD[rb.estado||'pendiente']??2;
+    } else if(col==='prioridad'){
+      const pa=getPrioridadAuto(a.id), pb=getPrioridadAuto(b.id);
+      va=PRIO_ORD[pa?.v]??4; vb=PRIO_ORD[pb?.v]??4;
+    } else if(col==='fecha'){
+      va=ra.fecha_fin_objetivo||'9999'; vb=rb.fecha_fin_objetivo||'9999';
+    } else if(col==='avance'){
+      va=calcProgreso(a.id); vb=calcProgreso(b.id);
+    }
+    if(va<vb) return asc ? -1 : 1;
+    if(va>vb) return asc ?  1 : -1;
+    return 0;
+  });
+}
+
+function svUpdateSortIcons(){
+  const cols=['nombre','responsable','area','estado','prioridad','fecha','avance'];
+  cols.forEach(c=>{
+    const el=document.getElementById('sv-si-'+c); if(!el) return;
+    if(_svSort.col!==c){ el.textContent=''; return; }
+    el.textContent = _svSort.asc ? ' ↑' : ' ↓';
+  });
+}
+
 function svRenderLista(){
   const tbody=document.getElementById('sv-tbody'); if(!tbody) return;
   const q=(document.getElementById('sv-search')?.value||'').toLowerCase();
@@ -10630,6 +10680,9 @@ function svRenderLista(){
 
   const count=document.getElementById('sv-count');
   if(count) count.textContent=`${activas.length} iniciativa${activas.length!==1?'s':''}`;
+
+  activas = svSortActivas(activas);
+  svUpdateSortIcons();
 
   tbody.innerHTML = activas.map(p=>{
     const r=_segEstados[p.id]||{};
@@ -11144,6 +11197,9 @@ if(document.readyState !== 'loading'){
 .sv-table{width:100%;border-collapse:collapse;}
 .sv-table thead tr{background:#F8FAFF;}
 .sv-table th{padding:12px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8B95A5;border-bottom:1px solid #F0F3FA;}
+.sv-th-sort{cursor:pointer;user-select:none;transition:background .15s,color .15s;}
+.sv-th-sort:hover{background:#EEF3FF !important;color:#0052CC !important;}
+.sv-sort-ico{font-size:10px;opacity:.8;margin-left:1px;}
 .sv-row{border-bottom:1px solid #F5F7FC;cursor:pointer;transition:background .12s;}
 .sv-row:hover{background:#F8FAFF;}
 .sv-row:last-child{border-bottom:none;}
