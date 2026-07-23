@@ -10149,7 +10149,19 @@ const INIT_DATA=[
   {nombre:'Medición Continua Salud Cultural',tipo:'core',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
   // CALIDAD DE VIDA
   {nombre:'Calidad de Vida — Indicadores y Programas',tipo:'core',area:'cv',pilares:['P5','P3','P6'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:3}},
-  {nombre:'Factores Psicosociales',tipo:'core',area:'cv',pilares:['P5','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:4}}
+  {nombre:'Factores Psicosociales',tipo:'core',area:'cv',pilares:['P5','P6'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:4}},
+  // ── Sub-iniciativas separadas (pids 33–40) ──────────────────────────────────
+  // GDC: las 4 sub-iniciativas de Gestión del Cambio Organizacional (pid 25)
+  {nombre:'GDC: Sistematización Metodología',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  {nombre:'GDC: Proyecto Integración PI',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:5,urgencia:5,facilidad:2,alineacion:5}},
+  {nombre:'GDC: Sostenibilidad',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  {nombre:'GDC: Datos',tipo:'transformacional',area:'cult',pilares:['P3','P4'],scores:{impacto:4,urgencia:3,facilidad:2,alineacion:4}},
+  // Reconocimiento: las 2 sub-iniciativas de pid 26
+  {nombre:'Feedback Continuo',tipo:'transformacional',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
+  {nombre:'Programa y Sistema de Reconocimiento',tipo:'transformacional',area:'cult',pilares:['P3','P5'],scores:{impacto:4,urgencia:4,facilidad:3,alineacion:4}},
+  // Cursos: las 2 sub-iniciativas de pid 9
+  {nombre:'Cursos: Módulo Modelo de Competencias',tipo:'core',area:'cap',pilares:['P2','P1'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}},
+  {nombre:'Cursos: Módulo Programa Trabajo Cultura',tipo:'core',area:'cap',pilares:['P2','P3'],scores:{impacto:4,urgencia:3,facilidad:3,alineacion:4}}
 ];
 
 
@@ -10164,7 +10176,7 @@ const GANTT_SEED_ESTADOS = {
   5:  {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'',alcance:'Capacitación plataforma, Amipass, Seguro.',definicion:'Digitalizar procesos administrativos de Personas para reducir tareas manuales, mejorar la trazabilidad y optimizar la experiencia de colaboradores y equipos de RRHH.',depende_de:null,que_necesita:null},
   7:  {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'Natalia-Leslie-Maca',alcance:'Brindar apoyo metodológico en la definición e implementación del Programa de Reconocimiento, asegurando consistencia con la estrategia cultural de la organización.',definicion:'Aportar metodologías y herramientas de Desarrollo Organizacional para fortalecer el diseño e implementación de iniciativas de cultura organizacional.',depende_de:'Programa Trabajo Cultura',que_necesita:null},
   8:  {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-09-30',responsable:'Natalia-Rose',alcance:'Completo',definicion:'',depende_de:'Modelo de Competencias',que_necesita:'Participación activa en reuniones con R&S sobre el modelo.'},
-  9:  {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-31',responsable:'',alcance:'',definicion:'',depende_de:'Modelo de Competencias · Programa Trabajo Cultura',que_necesita:'Conocimiento de definiciones, objetivos, marco estratégico, diagnóstico, planes de acción, tipo de liderazgo visible y mecanismos de evaluación.'},
+  9:  {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-31',responsable:'',alcance:'',definicion:'',depende_de:null,que_necesita:null},
   10: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-09-30',responsable:'',alcance:'Completo',definicion:'',depende_de:'Proceso de Onboarding',que_necesita:'Definición de estructura, proceso y plazos.'},
   11: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-10-31',responsable:'David-Rose',alcance:'Completo',definicion:'',depende_de:null,que_necesita:null},
   12: {fecha_inicio:'2026-10-01',fecha_fin_objetivo:'2026-11-30',responsable:'',alcance:'Definir con obra el plan de competencias a certificar, tipos y certificaciones legales.',definicion:'',depende_de:'Capacitación Obra - Oficios',que_necesita:null},
@@ -10179,20 +10191,31 @@ const GANTT_SEED_ESTADOS = {
   23: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-31',responsable:'Carlos-Paula',alcance:'Realizar levantamiento por razón social y cargos; rentas variables no formalizadas en anexo de contrato; actualizar modelo de contratos por obra de las Constructoras.',definicion:'',depende_de:null,que_necesita:null},
   24: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-31',responsable:'Leslie-Natalia-Maca',alcance:'Relanzar definiciones estratégicas como marco de gestión organizacional.',definicion:'Propósito, Principios y Pilares estratégicos.',depende_de:null,que_necesita:null},
   25: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:null,responsable:'Leslie-Natalia-Maca-Rose',alcance:'',definicion:'',depende_de:null,que_necesita:null},
-  26: {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'',alcance:'',definicion:'',depende_de:'Programa Trabajo Cultura',que_necesita:'Aprobación de principios.'},
+  26: {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'',alcance:'',definicion:'',depende_de:null,que_necesita:null},
   27: {fecha_inicio:'2026-09-01',fecha_fin_objetivo:null,responsable:'Consuelo',alcance:'Reposicionamiento Sistema Uno como medio de comunicación en EESS.',definicion:'',depende_de:null,que_necesita:null},
   28: {fecha_inicio:'2026-09-01',fecha_fin_objetivo:'2026-10-31',responsable:'',alcance:'Foco en programa cuidadores y equidad de género.',definicion:'',depende_de:null,que_necesita:null},
   29: {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'',alcance:'Definir indicadores de medición.',definicion:'',depende_de:'Programa Trabajo Cultura',que_necesita:null},
   30: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-31',responsable:'Berni-Pauli',alcance:'2 al año (julio y enero). Definir indicadores.',definicion:'',depende_de:null,que_necesita:null},
   31: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:'2026-12-31',responsable:'Leslie-Natalia',alcance:'Seguimiento a cumplimiento normativo oficina.',definicion:'',depende_de:null,que_necesita:null},
   32: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-08-31',responsable:'',alcance:'Diseñar e implementar iniciativas de formación en habilidades digitales, con foco en cursos de Copilot y gestión de proyectos.',definicion:'Fortalecer las capacidades digitales de los colaboradores para mejorar la productividad y facilitar la adopción de nuevas formas de trabajo.',depende_de:'Cursos Estratégicos y Multicompetencias',que_necesita:'Habilidades Gestión de Proyectos / Copilot.'},
+  // ── Sub-iniciativas separadas: GDC (pid 25 → pids 33-36) ──
+  33: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:null,responsable:'Leslie-Natalia-Maca-Rose',alcance:'Definir y establecer estrategia de GDC: variables de evaluación, metodología y gobernanza.',definicion:'',depende_de:null,que_necesita:null},
+  34: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:null,responsable:'Leslie-Natalia-Maca-Rose',alcance:'Acompañar la implementación e incorporación del Proyecto Integración: instalación del modelo e instalación de gobernanza (red y comunidad).',definicion:'',depende_de:null,que_necesita:null},
+  35: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:null,responsable:'Leslie-Natalia-Maca-Rose',alcance:'Acompañar el proceso de cambio cultural en sostenibilidad con iniciativas orientadas a las personas.',definicion:'',depende_de:null,que_necesita:null},
+  36: {fecha_inicio:'2026-06-01',fecha_fin_objetivo:null,responsable:'Leslie-Natalia-Maca-Rose',alcance:'Acompañar la incorporación de la estrategia de gobierno y normativa de datos: despliegue normativa y despliegue gobernanza.',definicion:'',depende_de:null,que_necesita:null},
+  // ── Sub-iniciativas separadas: Reconocimiento (pid 26 → pids 37-38) ──
+  37: {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'',alcance:'',definicion:'',depende_de:'Programa Trabajo Cultura',que_necesita:'Aprobación de principios.'},
+  38: {fecha_inicio:null,fecha_fin_objetivo:null,responsable:'',alcance:'Definición del sistema y lanzamiento de herramienta de reconocimiento: qué reconocer, herramienta y despliegue.',definicion:'',depende_de:'Programa Trabajo Cultura',que_necesita:null},
+  // ── Sub-iniciativas separadas: Cursos (pid 9 → pids 39-40) ──
+  39: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-31',responsable:'',alcance:'Cursos articulados con el Modelo de Competencias.',definicion:'',depende_de:'Modelo de Competencias',que_necesita:'Participación activa en reuniones con R&S sobre el modelo.'},
+  40: {fecha_inicio:'2026-07-01',fecha_fin_objetivo:'2026-12-31',responsable:'',alcance:'Cursos articulados con el Programa Trabajo Cultura.',definicion:'',depende_de:'Programa Trabajo Cultura',que_necesita:'Conocimiento de definiciones, marco estratégico y planes de acción.'},
 };
 
 const GANTT_SEED_HITOS = {
   1:  [{n:'Validación del modelo de competencias',a:''},{n:'Ajuste de competencias por familia de cargos',a:''},{n:'Definición de niveles por cargo y gerencia',a:''},{n:'Presentación al Comité de Gerencia',a:''},{n:'Publicación del modelo corporativo',a:''},{n:'Inicio de implementación en procesos de Personas',a:''}],
   2:  [{n:'Diseño del nuevo proceso de desempeño',a:''},{n:'Configuración de Sistema Uno',a:''},{n:'Capacitación a líderes y colaboradores',a:''},{n:'Inicio del primer ciclo de evaluación',a:''},{n:'Cierre y evaluación del primer ciclo',a:''}],
   8:  [{n:'Definición nuevo modelo de competencias y EDD',a:''}],
-  9:  [{n:'Cursos articulados con Modelo de Competencias',a:'Modelo de Competencias'},{n:'Cursos articulados con Programa Trabajo Cultura',a:'Programa Trabajo Cultura'}],
+  9:  [],
   10: [{n:'Definición de cursos inducción por pilar/área',a:''}],
   11: [{n:'Definición de cursos con equipos de obra',a:''}],
   12: [{n:'Definir con obra el plan de competencias a certificar, tipos y certificaciones legales',a:''}],
@@ -10206,17 +10229,20 @@ const GANTT_SEED_HITOS = {
   22: [{n:'Automatizar avisos de salida no abordados por Sistema Uno',a:''},{n:'Levantamiento proceso de salida en obras o término de faena',a:''}],
   23: [{n:'Revisar cargos que deben marcar asistencia',a:''},{n:'Revisar cargos con renta variable sin anexos',a:''},{n:'Analizar alternativas al actual modelo de contratos por obra',a:''}],
   24: [{n:'Validación de principios y propósito EESS por GG',a:''},{n:'Redefinición y validación pilares estratégicos',a:''}],
-  25: [
-    {n:'Sistematización Trabajo GDC',a:'Definir y establecer estrategia de GDC: variables de evaluación, metodología y gobernanza.'},
-    {n:'Gestión del Cambio PI',a:'Acompañar la implementación e incorporación del Proyecto Integración: instalación del modelo e instalación de gobernanza (red y comunidad).'},
-    {n:'Gestión del Cambio Organizacional (Sostenibilidad)',a:'Acompañar el proceso de cambio cultural en sostenibilidad con iniciativas orientadas a las personas.'},
-    {n:'Gestión del Cambio Datos',a:'Acompañar la incorporación de la estrategia de gobierno y normativa de datos: despliegue normativa y despliegue gobernanza.'}
-  ],
-  26: [
-    {n:'Feedback Continuo',a:''},
-    {n:'Programa y Sistema de Reconocimiento',a:'Definición del sistema y lanzamiento de herramienta de reconocimiento: qué reconocer, herramienta y despliegue.'}
-  ],
+  25: [],
+  26: [],
   27: [{n:'KPI Sistema UNO',a:''},{n:'Elaboración estrategia',a:''},{n:'Implementación estrategia',a:''}],
+  // Sub-iniciativas GDC (pids 33-36)
+  33: [{n:'Variables de evaluación',a:''},{n:'Metodología de evaluación',a:''},{n:'Gobernanza GDC',a:''}],
+  34: [{n:'Instalación Modelo Integración',a:''},{n:'Instalación gobernanza: red y comunidad',a:''}],
+  35: [{n:'Gestión del Cambio Sostenibilidad',a:''}],
+  36: [{n:'Despliegue normativa datos',a:''},{n:'Despliegue gobernanza datos',a:''}],
+  // Sub-iniciativas Reconocimiento (pids 37-38)
+  37: [],
+  38: [{n:'Definir qué reconocer',a:''},{n:'Selección herramienta de reconocimiento',a:''},{n:'Despliegue del sistema de reconocimiento',a:''}],
+  // Sub-iniciativas Cursos (pids 39-40)
+  39: [],
+  40: [],
 };
 
 function _applyGanttSeed(){
@@ -10520,11 +10546,18 @@ async function addComentario(projectId){
    RENDER — Vista Lista
 ══════════════════════════════════════════════════════ */
 function svGetActivas(){
-  // Si projects no cargó aún, usar INIT_DATA como fuente directa
-  const src = projects.length > 0
+  const base = projects.length > 0
     ? projects
     : INIT_DATA.map((d,i)=>({...d, id:i+1, deps:[], inactiva:false}));
-  return src.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
+  const baseFiltradas = base.filter(p=>!p.inactiva && p.nombre && p.nombre.trim());
+  if(!projects.length) return baseFiltradas;
+  // Incluir entradas de INIT_DATA con pid > projects.length que no existen en Supabase
+  // (sub-iniciativas separadas que aún no están en priorizador_state)
+  const maxId = Math.max(...projects.map(p=>p.id||0));
+  const extras = INIT_DATA
+    .map((d,i)=>({...d, id:i+1, deps:[], inactiva:false}))
+    .filter(d => d.id > maxId && d.nombre && d.nombre.trim());
+  return [...baseFiltradas, ...extras];
 }
 function svRenderAll(){
   computeRankingSilent();
