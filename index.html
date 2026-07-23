@@ -10254,30 +10254,39 @@ function _applyGanttSeed(){
 async function _seedHitosToSupabase(){
   if(!_supa||!_currentUser) return;
   const u=_currentUser.email||'seed';
-  const toSeed=Object.entries(GANTT_SEED_HITOS).filter(([pid])=>(_segHitos[parseInt(pid)]||[]).length===0);
-  if(!toSeed.length){ console.log('[seed] Todos los pids ya tienen hitos en Supabase.'); return; }
-  console.log('[seed] Sembrando hitos para pids:', toSeed.map(([pid])=>pid).join(', '));
-  // Insertar secuencialmente para facilitar debug de errores por pid
-  for(const [pid,hitos] of toSeed){
+  let totalInserted=0;
+
+  for(const [pid,hitos] of Object.entries(GANTT_SEED_HITOS)){
     const p=parseInt(pid);
-    const rows=hitos.map((h,i)=>({
+    const existing=_segHitos[p]||[];
+    const existingNames=new Set(existing.map(h=>h.nombre));
+
+    // Insertar solo los hitos del seed que aún no están en Supabase (por nombre)
+    const toInsert=hitos.filter(h=>!existingNames.has(h.n));
+    if(!toInsert.length) continue;
+
+    const rows=toInsert.map((h,i)=>({
       project_id:p,
       nombre:h.n,
       alcance_hito:h.a||null,
       fecha_objetivo:null,
       completado_at:null,
-      orden:i,
+      orden:existing.length+i,
       created_by:u
     }));
+
     const {data,error}=await _supa.from('seg_hitos').insert(rows).select();
     if(error){
-      console.error('[seed] Error pid',p,':', error.message, error.details||'');
+      console.error('[seed] Error pid',p,':',error.message,error.details||'');
       setSyncStatus('err','Error sembrando hitos pid '+p+': '+error.message);
     } else if(data){
-      _segHitos[p]=data;
+      _segHitos[p]=[...existing,...data];
+      totalInserted+=data.length;
       console.log('[seed] pid',p,'→',data.length,'hitos insertados');
     }
   }
+  if(totalInserted) console.log('[seed] Total insertados en Supabase:',totalInserted);
+  else console.log('[seed] Sin cambios: todos los hitos del seed ya existen.');
 }
 
 /* ── Estado options ── */
